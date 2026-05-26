@@ -85,23 +85,24 @@ export async function POST(request: NextRequest) {
     // If a specific provider is chosen, validate and assign directly
     let assignedProviderId = providerId || null;
     let initialStatus = 'PENDING';
+    let providerData: any = null;
 
     if (assignedProviderId) {
-      const provider = await db.provider.findUnique({
+      providerData = await db.provider.findUnique({
         where: { id: assignedProviderId },
         include: { user: { select: { id: true, name: true } } },
       });
 
-      if (!provider) {
+      if (!providerData) {
         return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
       }
 
-      if (provider.verificationStatus !== 'VERIFIED') {
+      if (providerData.verificationStatus !== 'VERIFIED') {
         return NextResponse.json({ error: 'Provider is not verified' }, { status: 400 });
       }
 
       // Check provider offers this service (flexible matching for free-text skills)
-      const providerSkills = provider.skills.split(',').map(s => s.trim().toLowerCase());
+      const providerSkills = providerData.skills.split(',').map(s => s.trim().toLowerCase());
       const serviceTypeLower = serviceType.toLowerCase();
       const hasMatchingSkill = providerSkills.some(skill =>
         skill === serviceTypeLower ||
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
           userId: serviceRequest.provider.user.id,
           type: 'MATCH',
           title: 'New Job Booking',
-          message: `${user.name} has booked you for a ${serviceType.toLowerCase()} service in ${location} on ${new Date(requestedDate).toLocaleDateString()} at ${requestedTime}. Please accept or decline. You will be paid based on hours worked (${serviceRequest.provider?.hourlyRate ? `₦${serviceRequest.provider.hourlyRate.toLocaleString()}/hr` : 'your hourly rate'}).`,
+          message: `${user.name} has booked you for a ${serviceType.toLowerCase()} service in ${location} on ${new Date(requestedDate).toLocaleDateString()} at ${requestedTime}. Please accept or decline. You will be paid based on hours worked (${providerData?.hourlyRate ? `₦${providerData.hourlyRate.toLocaleString()}/hr` : 'your hourly rate'}).`,
         }
       });
     } else {
