@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
           userId: serviceRequest.provider.user.id,
           type: 'MATCH',
           title: 'New Job Booking',
-          message: `${user.name} has booked you for a ${serviceType.toLowerCase()} service in ${location} on ${new Date(requestedDate).toLocaleDateString()} at ${requestedTime}. Please accept or decline. You will be paid based on hours worked (${provider?.hourlyRate ? `₦${provider.hourlyRate.toLocaleString()}/hr` : 'your hourly rate'}).`,
+          message: `${user.name} has booked you for a ${serviceType.toLowerCase()} service in ${location} on ${new Date(requestedDate).toLocaleDateString()} at ${requestedTime}. Please accept or decline. You will be paid based on hours worked (${serviceRequest.provider?.hourlyRate ? `₦${serviceRequest.provider.hourlyRate.toLocaleString()}/hr` : 'your hourly rate'}).`,
         }
       });
     } else {
