@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthUser, SERVICE_TYPES } from '@/lib/auth';
 
-const PLATFORM_FEE_PERCENT = 0.05; // 5% platform fee
-
 // GET /api/services - List service requests (filtered by role)
 export async function GET(request: NextRequest) {
   try {
@@ -60,8 +58,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/services - Create a service request WITH payment on the portal
-// Payment is held in escrow for safety — paid to artisan's bank account after work is completed
+// POST /api/services - Create a service request (booking)
+// No upfront payment — client pays AFTER artisan completes the work
+// Flow: Book → Artisan accepts → Check-in (timer) → Check-out → Client pays → Done
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -74,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { serviceType, description, location, requestedDate, requestedTime, amount, providerId, paymentMethod } = body;
+    const { serviceType, description, location, requestedDate, requestedTime, providerId } = body;
 
     if (!serviceType || !location || !requestedDate || !requestedTime) {
       return NextResponse.json(
@@ -86,12 +85,11 @@ export async function POST(request: NextRequest) {
     // If a specific provider is chosen, validate and assign directly
     let assignedProviderId = providerId || null;
     let initialStatus = 'PENDING';
-    let initialPaymentStatus = 'PENDING';
 
     if (assignedProviderId) {
       const provider = await db.provider.findUnique({
         where: { id: assignedProviderId },
-        include: { user: { select: { id: true } } },
+        include: { user: { select: { id: true, name: true } } },
       });
 
       if (!provider) {
@@ -117,17 +115,6 @@ export async function POST(request: NextRequest) {
       initialStatus = 'MATCHED';
     }
 
-    const paymentAmount = amount || 0;
-
-    // When Paystack is configured, don't auto-create escrow transaction here.
-    // Paystack will handle the payment flow via /api/payments/paystack
-    const paystackConfigured = !!process.env.PAYSTACK_SECRET_KEY;
-
-    // Only auto-create escrow if Paystack is NOT configured (mock mode)
-    if (assignedProviderId && paymentAmount > 0 && !paystackConfigured) {
-      initialPaymentStatus = 'HELD_IN_ESCROW';
-    }
-
     const serviceRequest = await db.serviceRequest.create({
       data: {
         clientId: user.id,
@@ -137,9 +124,8 @@ export async function POST(request: NextRequest) {
         location,
         requestedDate: new Date(requestedDate),
         requestedTime,
-        amount: paymentAmount,
         status: initialStatus,
-        paymentStatus: initialPaymentStatus,
+        paymentStatus: 'PENDING',
       },
       include: {
         client: { select: { id: true, name: true, avatarUrl: true, phone: true } },
@@ -147,56 +133,14 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Only auto-create escrow transaction if Paystack is NOT configured (mock mode)
-    // When Paystack is configured, payment will be created after Paystack verification
-    if (assignedProviderId && paymentAmount > 0 && !paystackConfigured) {
-      const platformFee = Math.round(paymentAmount * PLATFORM_FEE_PERCENT);
-      const providerPayout = paymentAmount - platformFee;
-
-      await db.transaction.create({
-        data: {
-          requestId: serviceRequest.id,
-          clientId: user.id,
-          providerId: assignedProviderId,
-          amount: paymentAmount,
-          platformFee,
-          providerPayout,
-          paymentMethod: paymentMethod || 'CARD',
-          status: 'ESCROW',
-        }
-      });
-
-      // Notify provider that payment is secured in escrow
-      if (serviceRequest.provider) {
-        await db.notification.create({
-          data: {
-            userId: serviceRequest.provider.user.id,
-            type: 'PAYMENT',
-            title: 'Payment Secured in Escrow',
-            message: `₦${paymentAmount.toLocaleString()} has been received from ${user.name} and held in escrow for the ${serviceType.toLowerCase()} service. You will automatically receive ₦${providerPayout.toLocaleString()} in your bank account after you complete the work.`,
-          }
-        });
-      }
-
-      // Notify client that payment is secured
-      await db.notification.create({
-        data: {
-          userId: user.id,
-          type: 'PAYMENT',
-          title: 'Payment Secured in Escrow',
-          message: `Your payment of ₦${paymentAmount.toLocaleString()} for ${serviceType.toLowerCase()} has been secured in escrow. Payment will be automatically released to the artisan's bank account after the work is completed. Platform fee: ₦${platformFee.toLocaleString()} (${(PLATFORM_FEE_PERCENT * 100).toFixed(0)}%).`,
-        }
-      });
-    }
-
-    // Notify the chosen provider about the booking
+    // Notify the chosen provider about the booking (NO payment at this stage)
     if (assignedProviderId && serviceRequest.provider) {
       await db.notification.create({
         data: {
           userId: serviceRequest.provider.user.id,
           type: 'MATCH',
-          title: 'New Job Offer',
-          message: `A client has booked you for a ${serviceType.toLowerCase()} service in ${location}${paymentAmount > 0 ? ` with ₦${paymentAmount.toLocaleString()} secured in escrow` : ''}. Please accept or decline.`,
+          title: 'New Job Booking',
+          message: `${user.name} has booked you for a ${serviceType.toLowerCase()} service in ${location} on ${new Date(requestedDate).toLocaleDateString()} at ${requestedTime}. Please accept or decline. You will be paid based on hours worked (${provider?.hourlyRate ? `₦${provider.hourlyRate.toLocaleString()}/hr` : 'your hourly rate'}).`,
         }
       });
     } else {

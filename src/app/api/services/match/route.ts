@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 
-// GET /api/services/[id] - Get a specific service request
-// PUT /api/services/[id] - Update service request status (accept, decline, complete, cancel)
+const PLATFORM_FEE_PERCENT = 0.05; // 5% platform fee
 
-// Intelligent matching algorithm
+// GET /api/services/match - Intelligent matching algorithm
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -85,7 +84,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Accept/decline/match a provider to a request
+// POST /api/services/match - Actions: accept, decline, checkin, checkout, complete, cancel, assign
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -94,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { requestId, providerId, action } = body; // action: 'accept', 'decline', 'complete', 'cancel', 'assign'
+    const { requestId, providerId, action } = body;
 
     if (!requestId || !action) {
       return NextResponse.json({ error: 'Request ID and action are required' }, { status: 400 });
@@ -102,7 +101,10 @@ export async function POST(request: NextRequest) {
 
     const serviceRequest = await db.serviceRequest.findUnique({
       where: { id: requestId },
-      include: { provider: true }
+      include: {
+        provider: true,
+        client: { select: { id: true, name: true } },
+      }
     });
 
     if (!serviceRequest) {
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'accept': {
-        // Provider accepts the request
+        // Provider accepts the booking
         if (user.role !== 'PROVIDER') {
           return NextResponse.json({ error: 'Only providers can accept requests' }, { status: 403 });
         }
@@ -130,8 +132,8 @@ export async function POST(request: NextRequest) {
           data: {
             userId: serviceRequest.clientId,
             type: 'MATCH',
-            title: 'Provider Accepted',
-            message: `A provider has accepted your ${serviceRequest.serviceType.toLowerCase()} request`,
+            title: 'Provider Accepted Your Booking',
+            message: `${user.name} has accepted your ${serviceRequest.serviceType.toLowerCase()} request. They will check in when they arrive on the scheduled date.`,
           }
         });
         break;
@@ -140,40 +142,116 @@ export async function POST(request: NextRequest) {
         if (user.role !== 'PROVIDER') {
           return NextResponse.json({ error: 'Only providers can decline requests' }, { status: 403 });
         }
-        // Reset the request so it can be re-matched with another provider
+        // Reset the request so it can be re-matched
         updateData = {
           providerId: null,
           status: 'PENDING',
           paymentStatus: 'PENDING',
         };
 
-        // If there was an escrow payment, refund it
-        const declineTx = await db.transaction.findUnique({ where: { requestId } });
-        if (declineTx && declineTx.status === 'ESCROW') {
-          await db.transaction.update({
-            where: { id: declineTx.id },
-            data: { status: 'REFUNDED' }
-          });
-        }
-
         await db.notification.create({
           data: {
             userId: serviceRequest.clientId,
             type: 'SERVICE_REQUEST',
             title: 'Provider Declined',
-            message: `A provider declined your ${serviceRequest.serviceType.toLowerCase()} request. Your payment has been refunded and the request is available for re-matching.`,
+            message: `${user.name} declined your ${serviceRequest.serviceType.toLowerCase()} request. You can try booking another provider.`,
           }
         });
         break;
       }
+
+      case 'checkin': {
+        // Artisan checks in — timer starts, service begins
+        if (user.role !== 'PROVIDER') {
+          return NextResponse.json({ error: 'Only providers can check in' }, { status: 403 });
+        }
+        if (serviceRequest.status !== 'ACCEPTED') {
+          return NextResponse.json({ error: 'Request must be accepted before checking in' }, { status: 400 });
+        }
+
+        const now = new Date();
+        updateData = {
+          status: 'IN_PROGRESS',
+          checkInTime: now,
+        };
+
+        // Notify client that artisan has started
+        await db.notification.create({
+          data: {
+            userId: serviceRequest.clientId,
+            type: 'SERVICE_REQUEST',
+            title: 'Artisan Has Started!',
+            message: `${user.name} has checked in and started your ${serviceRequest.serviceType.toLowerCase()} service. The timer is now running.`,
+          }
+        });
+        break;
+      }
+
+      case 'checkout': {
+        // Artisan checks out — timer stops, calculate total, request payment from client
+        if (user.role !== 'PROVIDER') {
+          return NextResponse.json({ error: 'Only providers can check out' }, { status: 403 });
+        }
+        if (serviceRequest.status !== 'IN_PROGRESS') {
+          return NextResponse.json({ error: 'Service must be in progress to check out' }, { status: 400 });
+        }
+        if (!serviceRequest.checkInTime) {
+          return NextResponse.json({ error: 'No check-in time recorded' }, { status: 400 });
+        }
+
+        const now = new Date();
+        const elapsedMs = now.getTime() - new Date(serviceRequest.checkInTime).getTime();
+        const elapsedHours = Math.max(0.25, elapsedMs / (1000 * 60 * 60)); // Minimum 15 minutes (0.25 hr)
+
+        // Get provider's hourly rate
+        const provider = await db.provider.findUnique({
+          where: { id: serviceRequest.providerId! },
+          include: { user: { select: { id: true, name: true } } },
+        });
+
+        const hourlyRate = provider?.hourlyRate || 0;
+        const totalAmount = Math.round(elapsedHours * hourlyRate);
+        const platformFee = Math.round(totalAmount * PLATFORM_FEE_PERCENT);
+        const providerPayout = totalAmount - platformFee;
+
+        updateData = {
+          status: 'AWAITING_PAYMENT',
+          checkOutTime: now,
+          totalHours: Math.round(elapsedHours * 100) / 100, // 2 decimal places
+          amount: totalAmount,
+        };
+
+        // Notify client to make payment
+        await db.notification.create({
+          data: {
+            userId: serviceRequest.clientId,
+            type: 'PAYMENT',
+            title: 'Service Complete — Payment Required',
+            message: `${user.name} has completed your ${serviceRequest.serviceType.toLowerCase()} service. Time worked: ${elapsedHours.toFixed(1)} hours. Total: ₦${totalAmount.toLocaleString()}. Please make payment to release funds to the artisan.`,
+          }
+        });
+
+        // Notify provider that client has been asked to pay
+        await db.notification.create({
+          data: {
+            userId: user.id,
+            type: 'PAYMENT',
+            title: 'Awaiting Client Payment',
+            message: `You completed the ${serviceRequest.serviceType.toLowerCase()} service (${elapsedHours.toFixed(1)} hours). Total bill: ₦${totalAmount.toLocaleString()} (₦${platformFee.toLocaleString()} platform fee). Your payout: ₦${providerPayout.toLocaleString()}. Waiting for client to pay.`,
+          }
+        });
+        break;
+      }
+
       case 'complete': {
-        // Provider marks as completed — auto-release escrow payment to provider's bank account
+        // This is now triggered automatically when client pays
+        // Kept for backward compatibility
         if (user.role !== 'PROVIDER') {
           return NextResponse.json({ error: 'Only providers can mark as complete' }, { status: 403 });
         }
         updateData = { status: 'COMPLETED' };
 
-        // Auto-release escrow payment to provider's bank account for transparency
+        // Auto-release escrow payment if exists
         const escrowTransaction = await db.transaction.findUnique({
           where: { requestId },
           include: {
@@ -182,7 +260,6 @@ export async function POST(request: NextRequest) {
         });
 
         if (escrowTransaction && escrowTransaction.status === 'ESCROW') {
-          // Release payment automatically
           await db.transaction.update({
             where: { id: escrowTransaction.id },
             data: {
@@ -191,37 +268,25 @@ export async function POST(request: NextRequest) {
             }
           });
 
-          // Update service request payment status
           updateData.paymentStatus = 'RELEASED';
 
-          // Notify provider: payment released to their bank account
           if (escrowTransaction.provider.bankName && escrowTransaction.provider.accountNumber) {
             await db.notification.create({
               data: {
                 userId: escrowTransaction.provider.user.id,
                 type: 'PAYMENT',
                 title: 'Payment Released to Your Account!',
-                message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been automatically released to your ${escrowTransaction.provider.bankName} account (${escrowTransaction.provider.accountNumber}) for the completed ${serviceRequest.serviceType.toLowerCase()} service. Platform fee: ₦${escrowTransaction.platformFee.toLocaleString()}.`,
-              }
-            });
-          } else {
-            await db.notification.create({
-              data: {
-                userId: escrowTransaction.provider.user.id,
-                type: 'PAYMENT',
-                title: 'Payment Ready for Payout!',
-                message: `₦${escrowTransaction.providerPayout.toLocaleString()} is ready for payout. Please add your bank account details in your Profile to receive the payment.`,
+                message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been released to your ${escrowTransaction.provider.bankName} account (${escrowTransaction.provider.accountNumber}). Platform fee: ₦${escrowTransaction.platformFee.toLocaleString()}.`,
               }
             });
           }
 
-          // Notify client: payment auto-released to artisan
           await db.notification.create({
             data: {
               userId: serviceRequest.clientId,
               type: 'PAYMENT',
               title: 'Payment Released to Artisan',
-              message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been automatically released to ${escrowTransaction.provider.user.name}'s bank account for the completed ${serviceRequest.serviceType.toLowerCase()} service. The escrow ensured your money was safe until the work was done.`,
+              message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been released to ${escrowTransaction.provider.user.name}'s bank account.`,
             }
           });
         }
@@ -231,7 +296,7 @@ export async function POST(request: NextRequest) {
             userId: serviceRequest.clientId,
             type: 'SERVICE_REQUEST',
             title: 'Service Completed',
-            message: `Your ${serviceRequest.serviceType.toLowerCase()} service has been marked as completed. Payment has been automatically released to the artisan. Please leave feedback.`,
+            message: `Your ${serviceRequest.serviceType.toLowerCase()} service has been completed. Please leave feedback.`,
           }
         });
         break;
@@ -242,7 +307,7 @@ export async function POST(request: NextRequest) {
         }
         updateData = { status: 'CANCELLED' };
 
-        // Auto-refund escrow payment if client cancels
+        // If there was an escrow payment, refund it
         const cancelTx = await db.transaction.findUnique({
           where: { requestId },
           include: {
@@ -256,23 +321,21 @@ export async function POST(request: NextRequest) {
           });
           updateData.paymentStatus = 'REFUNDED';
 
-          // Notify client about refund
           await db.notification.create({
             data: {
               userId: serviceRequest.clientId,
               type: 'PAYMENT',
               title: 'Refund Processed',
-              message: `₦${cancelTx.amount.toLocaleString()} has been refunded to you for the cancelled ${serviceRequest.serviceType.toLowerCase()} service.`,
+              message: `₦${cancelTx.amount.toLocaleString()} has been refunded for the cancelled ${serviceRequest.serviceType.toLowerCase()} service.`,
             }
           });
 
-          // Notify provider about cancellation and refund
           if (cancelTx.provider?.user?.id) {
             await db.notification.create({
               data: {
                 userId: cancelTx.provider.user.id,
                 type: 'PAYMENT',
-                title: 'Payment Refunded to Client',
+                title: 'Booking Cancelled',
                 message: `₦${cancelTx.amount.toLocaleString()} has been refunded to the client for the cancelled ${serviceRequest.serviceType.toLowerCase()} service.`,
               }
             });
@@ -286,8 +349,8 @@ export async function POST(request: NextRequest) {
               data: {
                 userId: cancelProvider.userId,
                 type: 'SERVICE_REQUEST',
-                title: 'Request Cancelled',
-                message: `A client has cancelled their ${serviceRequest.serviceType.toLowerCase()} request`,
+                title: 'Booking Cancelled',
+                message: `A client has cancelled their ${serviceRequest.serviceType.toLowerCase()} booking.`,
               }
             });
           }
@@ -309,7 +372,24 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'start': {
-        updateData = { status: 'IN_PROGRESS' };
+        // Legacy: mapped to checkin for backward compatibility
+        if (serviceRequest.status !== 'ACCEPTED') {
+          return NextResponse.json({ error: 'Request must be accepted before starting' }, { status: 400 });
+        }
+        const now = new Date();
+        updateData = {
+          status: 'IN_PROGRESS',
+          checkInTime: now,
+        };
+
+        await db.notification.create({
+          data: {
+            userId: serviceRequest.clientId,
+            type: 'SERVICE_REQUEST',
+            title: 'Artisan Has Started!',
+            message: `${user.name} has checked in and started your ${serviceRequest.serviceType.toLowerCase()} service. The timer is now running.`,
+          }
+        });
         break;
       }
       default:
@@ -322,6 +402,7 @@ export async function POST(request: NextRequest) {
       include: {
         client: { select: { id: true, name: true, avatarUrl: true, phone: true } },
         provider: { include: { user: { select: { id: true, name: true, avatarUrl: true, phone: true } } } },
+        transaction: true,
       }
     });
 

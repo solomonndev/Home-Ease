@@ -65,8 +65,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/payments - Process payment on the portal (create escrow transaction)
-// This is called when a client books an artisan — payment is held in escrow for safety
+// POST /api/payments - Client pays AFTER artisan completes the work
+// Flow: Artisan checks out → calculates total (hours × rate) → client pays → artisan gets paid
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -83,7 +83,10 @@ export async function POST(request: NextRequest) {
 
     const serviceRequest = await db.serviceRequest.findUnique({
       where: { id: requestId },
-      include: { provider: true }
+      include: {
+        provider: { include: { user: { select: { id: true, name: true } } },
+        },
+      }
     });
 
     if (!serviceRequest) {
@@ -96,6 +99,11 @@ export async function POST(request: NextRequest) {
 
     if (!serviceRequest.providerId) {
       return NextResponse.json({ error: 'No provider assigned yet' }, { status: 400 });
+    }
+
+    // Must be in AWAITING_PAYMENT status (artisan has checked out)
+    if (serviceRequest.status !== 'AWAITING_PAYMENT') {
+      return NextResponse.json({ error: 'Service must be completed by the artisan before payment' }, { status: 400 });
     }
 
     // Check if payment already exists
@@ -111,14 +119,14 @@ export async function POST(request: NextRequest) {
 
     const amount = serviceRequest.amount;
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid payment amount. Please set a budget for this service.' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid payment amount' }, { status: 400 });
     }
 
     // Calculate platform fee and provider payout
     const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT);
     const providerPayout = amount - platformFee;
 
-    // Create transaction - hold in escrow for safety
+    // Create transaction — mark as completed and paid out
     const transaction = await db.transaction.create({
       data: {
         requestId,
@@ -128,7 +136,8 @@ export async function POST(request: NextRequest) {
         platformFee,
         providerPayout,
         paymentMethod: paymentMethod || 'CARD',
-        status: 'ESCROW',
+        status: 'COMPLETED',
+        paidOutAt: new Date(),
       },
       include: {
         serviceRequest: {
@@ -140,29 +149,49 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update service request payment status
+    // Update service request status to COMPLETED and payment RELEASED
     await db.serviceRequest.update({
       where: { id: requestId },
-      data: { paymentStatus: 'HELD_IN_ESCROW' }
-    });
-
-    // Notify provider that payment is secured in escrow
-    await db.notification.create({
       data: {
-        userId: provider.userId,
-        type: 'PAYMENT',
-        title: 'Payment Secured in Escrow',
-        message: `₦${amount.toLocaleString()} has been received from ${user.name} and held in escrow for the ${serviceRequest.serviceType.toLowerCase()} service. You will automatically receive ₦${providerPayout.toLocaleString()} in your bank account after you complete the work.`,
+        status: 'COMPLETED',
+        paymentStatus: 'RELEASED',
       }
     });
 
-    // Notify client that payment is secured
+    // Update provider completed jobs
+    await db.provider.update({
+      where: { id: provider.id },
+      data: { completedJobs: { increment: 1 } },
+    });
+
+    // Notify provider: payment received and released
+    if (provider.bankName && provider.accountNumber) {
+      await db.notification.create({
+        data: {
+          userId: provider.userId,
+          type: 'PAYMENT',
+          title: 'Payment Received! 💰',
+          message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been sent to your ${provider.bankName} account (${provider.accountNumber}). Platform fee: ₦${platformFee.toLocaleString()}.`,
+        }
+      });
+    } else {
+      await db.notification.create({
+        data: {
+          userId: provider.userId,
+          type: 'PAYMENT',
+          title: 'Payment Received! 💰',
+          message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). Your payout: ₦${providerPayout.toLocaleString()}. Please add bank details in your Profile to receive future payments.`,
+        }
+      });
+    }
+
+    // Notify client: payment confirmed
     await db.notification.create({
       data: {
         userId: user.id,
         type: 'PAYMENT',
-        title: 'Payment Secured in Escrow',
-        message: `Your payment of ₦${amount.toLocaleString()} for ${serviceRequest.serviceType.toLowerCase()} has been secured in escrow. Payment will be automatically released to the artisan's bank account after the work is completed.`,
+        title: 'Payment Confirmed ✅',
+        message: `₦${amount.toLocaleString()} paid for ${serviceRequest.serviceType.toLowerCase()} (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been sent to ${provider.user.name}'s bank account. Platform fee: ₦${platformFee.toLocaleString()}. Please leave a review!`,
       }
     });
 
@@ -173,7 +202,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/payments - Release escrow payment to provider's bank account, or refund
+// PUT /api/payments - Release or refund escrow payment (legacy support)
 export async function PUT(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -214,18 +243,13 @@ export async function PUT(request: NextRequest) {
     let paidOutAt: Date | null = null;
 
     if (action === 'release') {
-      // Only release after service is completed
-      if (transaction.serviceRequest.status !== 'COMPLETED') {
-        return NextResponse.json({ error: 'Service must be completed before releasing payment. The provider needs to mark the job as complete first.' }, { status: 400 });
-      }
       newStatus = 'COMPLETED';
       paymentStatus = 'RELEASED';
       paidOutAt = new Date();
 
-      // Check if provider has bank account details
       if (!transaction.provider.bankName || !transaction.provider.accountNumber) {
         return NextResponse.json({
-          error: 'Provider has not set up bank account details. Payment will be released once bank details are provided.',
+          error: 'Provider has not set up bank account details.',
           needsBankDetails: true,
         }, { status: 400 });
       }
@@ -272,7 +296,7 @@ export async function PUT(request: NextRequest) {
           userId: transaction.clientId,
           type: 'PAYMENT',
           title: 'Payment Released to Provider',
-          message: `₦${transaction.providerPayout.toLocaleString()} has been released to ${transaction.provider.user.name}'s bank account for the completed ${transaction.serviceRequest.serviceType.toLowerCase()} service.`,
+          message: `₦${transaction.providerPayout.toLocaleString()} has been released to ${transaction.provider.user.name}'s bank account.`,
         }
       });
     } else {
@@ -281,7 +305,7 @@ export async function PUT(request: NextRequest) {
           userId: transaction.provider.userId,
           type: 'PAYMENT',
           title: 'Payment Refunded to Client',
-          message: `₦${transaction.amount.toLocaleString()} has been refunded to the client for the ${transaction.serviceRequest.serviceType.toLowerCase()} service.`,
+          message: `₦${transaction.amount.toLocaleString()} has been refunded to the client.`,
         }
       });
       await db.notification.create({
@@ -289,7 +313,7 @@ export async function PUT(request: NextRequest) {
           userId: transaction.clientId,
           type: 'PAYMENT',
           title: 'Refund Processed',
-          message: `₦${transaction.amount.toLocaleString()} has been refunded to you for the ${transaction.serviceRequest.serviceType.toLowerCase()} service.`,
+          message: `₦${transaction.amount.toLocaleString()} has been refunded to you.`,
         }
       });
     }

@@ -1130,13 +1130,12 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
                       <span>🕐 {req.requestedTime}</span>
                       <span>💰 ₦{(req.amount || 0).toLocaleString()}</span>
                     </div>
-                    {req.paymentStatus === 'HELD_IN_ESCROW' && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg">
-                        <span className="text-xs">🔒</span>
-                        <span className="text-xs font-medium text-amber-700">Payment secured in escrow</span>
-                        {req.transaction && (
-                          <span className="text-xs text-amber-600">— you get ₦{(req.transaction.providerPayout || 0).toLocaleString()}</span>
-                        )}
+                    {req.provider && (
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span className="text-xs">💳</span>
+                        <span className="text-xs font-medium text-blue-700">
+                          You&apos;ll be paid per hour (₦{req.provider.hourlyRate?.toLocaleString() || '0'}/hr) after service
+                        </span>
                       </div>
                     )}
                     <p className="text-xs text-gray-400 mt-2">Client: {req.client?.name}</p>
@@ -1612,12 +1611,46 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
   );
 }
 
+// ==================== LIVE TIMER COMPONENT ====================
+function LiveTimer({ checkInTime, checkOutTime }: { checkInTime: string; checkOutTime?: string }) {
+  const [elapsed, setElapsed] = useState('00:00:00');
+
+  useEffect(() => {
+    const endTime = checkOutTime ? new Date(checkOutTime).getTime() : Date.now();
+
+    const update = () => {
+      const start = new Date(checkInTime).getTime();
+      const diff = Math.max(0, endTime - start);
+      const hrs = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      setElapsed(
+        `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+      );
+    };
+
+    update();
+    if (!checkOutTime) {
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [checkInTime, checkOutTime]);
+
+  return (
+    <span className="font-mono text-lg font-bold text-orange-600">
+      {elapsed}
+    </span>
+  );
+}
+
+// ==================== STATUS BADGE ====================
 function StatusBadge({ status }: { status: string }) {
   const statusMap: Record<string, { bg: string; text: string; label: string }> = {
     PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
     MATCHED: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Matched' },
     ACCEPTED: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Accepted' },
     IN_PROGRESS: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'In Progress' },
+    AWAITING_PAYMENT: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Awaiting Payment' },
     COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
     CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
     ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'In Escrow' },
@@ -1689,9 +1722,15 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             <span className="text-xs text-gray-400">
               Payment: <StatusBadge status={request.paymentStatus} />
             </span>
-            {request.transaction && request.paymentStatus === 'HELD_IN_ESCROW' && (
-              <span className="text-xs text-amber-600">🔒 ₦{(request.transaction.providerPayout || request.transaction.amount || 0).toLocaleString()} secured</span>
-            )}
+            {request.checkInTime && (
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+              <span className="text-sm">⏱️</span>
+              <span className="text-xs text-gray-500">Time:</span>
+              <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} />
+              {!request.checkOutTime && <span className="text-xs text-orange-600 font-medium animate-pulse">LIVE</span>}
+              {request.totalHours && <span className="text-xs text-gray-400">({request.totalHours.toFixed(1)}hrs)</span>}
+            </div>
+          )}
           </div>
         </div>
         {showActions && request.status === 'COMPLETED' && !request.feedback && (
@@ -1700,6 +1739,15 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100"
           >
             Leave Review
+          </button>
+        )}
+        {showActions && request.status === 'AWAITING_PAYMENT' && request.paymentStatus === 'PENDING' && (
+          <button
+            onClick={handlePayNow}
+            disabled={payingNow}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
+          >
+            {payingNow ? '⏳' : '💳'} {payingNow ? 'Processing...' : `Pay ₦${(request.amount || 0).toLocaleString()}`}
           </button>
         )}
         {showActions && request.status === 'PENDING' && request.paymentStatus === 'PENDING' && request.amount > 0 && (
@@ -1944,47 +1992,18 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     setBookingLoading(true);
     setBookingError('');
     try {
-      // Step 1: Create the service request first
-      const serviceResult = await api.createService({
+      // Create the booking — no payment upfront
+      await api.createService({
         serviceType: selectedService,
         description: bookingDescription,
         location: bookingLocation,
         requestedDate: bookingDate,
         requestedTime: bookingTime,
-        amount: parseFloat(bookingAmount) || 0,
         providerId: bookingArtisan.id,
-        paymentMethod: bookingPaymentMethod,
       });
 
-      const requestId = serviceResult.id;
-      const payAmount = parseFloat(bookingAmount) || 0;
-
-      // Step 2: Check if Paystack is configured
-      const paystackKey = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-
-      if (paystackKey && payAmount > 0) {
-        try {
-          // Initialize Paystack transaction on the backend
-          const payResult = await api.initializePaystackPayment(requestId);
-
-          // Redirect to Paystack payment page
-          window.location.href = payResult.authorizationUrl;
-          return; // Page will redirect, no need to continue
-        } catch (payErr: any) {
-          // Paystack init failed - fall back to mock payment
-          console.warn('Paystack init failed, using mock payment:', payErr.message);
-          await api.createPayment(requestId, bookingPaymentMethod);
-          setBookingSuccess(true);
-          onSuccess();
-        }
-      } else {
-        // No Paystack key configured - use mock payment (for local testing)
-        if (payAmount > 0) {
-          await api.createPayment(requestId, bookingPaymentMethod);
-        }
-        setBookingSuccess(true);
-        onSuccess();
-      }
+      setBookingSuccess(true);
+      onSuccess();
     } catch (err: any) {
       setBookingError(err.message);
     } finally {
@@ -2419,11 +2438,13 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                   <span className="text-5xl">✅</span>
                   <h3 className="text-xl font-semibold text-gray-900 mt-4">Booking Confirmed!</h3>
                   <p className="text-gray-600 mt-2">
-                    Your payment is being processed via Paystack and will be held safely in escrow. {bookingArtisan.name} will be notified to accept your request.
+                    {bookingArtisan.name} has been notified and will accept your booking. You&apos;ll pay after the service is completed.
                   </p>
-                  <p className="text-sm text-amber-600 mt-2">
-                    Payment will be automatically released to the artisan's bank account once the work is completed.
-                  </p>
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>How it works:</strong> Artisan checks in → Timer starts → Artisan checks out → You see the total and pay.
+                    </p>
+                  </div>
                   <button
                     onClick={closeBookingModal}
                     className="mt-6 px-6 py-2.5 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100"
@@ -2488,7 +2509,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                         required
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
                         <input
@@ -2509,81 +2530,24 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                           required
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Budget (₦)</label>
-                        <input
-                          type="number"
-                          value={bookingAmount}
-                          onChange={(e) => setBookingAmount(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
-                          placeholder="0"
-                        />
-                      </div>
                     </div>
 
-                    {/* Escrow Payment Info */}
-                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    {/* Pay After Service Info */}
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">🔒</span>
-                        <h4 className="text-sm font-semibold text-amber-800">Secure Escrow Payment</h4>
+                        <span className="text-lg">💰</span>
+                        <h4 className="text-sm font-semibold text-green-800">Pay After Service</h4>
                       </div>
-                      <p className="text-xs text-amber-700 leading-relaxed">
-                        Your payment will be processed securely via <strong>Paystack</strong> and held safely in escrow. The artisan automatically gets paid to their bank account after completing the work — no manual action needed. This ensures transparency and protects both parties.
+                      <p className="text-xs text-green-700 leading-relaxed">
+                        No upfront payment required. The artisan will check in when they arrive, a timer tracks the hours worked, and when done, you&apos;ll see the total (hours × ₦{bookingArtisan.hourlyRate.toLocaleString()}/hr) before paying.
                       </p>
-                      {bookingAmount && parseFloat(bookingAmount) > 0 && (
-                        <div className="mt-3 pt-3 border-t border-amber-200 space-y-1">
-                          <div className="flex justify-between text-xs text-amber-700">
-                            <span>Service Amount</span>
-                            <span className="font-medium">₦{parseFloat(bookingAmount).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-amber-600">
-                            <span>Platform Fee (5%)</span>
-                            <span>₦{Math.round(parseFloat(bookingAmount) * 0.05).toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-amber-800 font-semibold pt-1 border-t border-amber-200">
-                            <span>Artisan Receives After Completion</span>
-                            <span>₦{(parseFloat(bookingAmount) - Math.round(parseFloat(bookingAmount) * 0.05)).toLocaleString()}</span>
-                          </div>
-                        </div>
-                      )}
-                      <div className="mt-3 flex items-center gap-2">
-                        <span className="text-xs text-gray-400">Powered by</span>
-                        <span className="text-sm font-bold text-blue-600">Paystack</span>
-                        <span className="text-xs text-gray-400">🔒 PCI Compliant</span>
+                      <div className="mt-2 flex items-center gap-4 text-xs text-green-600">
+                        <span>1. Artisan checks in</span>
+                        <span>→</span>
+                        <span>2. Timer runs</span>
+                        <span>→</span>
+                        <span>3. You pay</span>
                       </div>
-                    </div>
-
-                    {/* Payment Method */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {[
-                          { value: 'CARD', label: 'Card Payment', icon: '💳', desc: 'Debit/Credit Card' },
-                          { value: 'BANK_TRANSFER', label: 'Bank Transfer', icon: '🏦', desc: 'Pay via bank' },
-                        ].map((pm) => (
-                          <label
-                            key={pm.value}
-                            className={`flex flex-col items-center gap-1 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                              bookingPaymentMethod === pm.value
-                                ? 'border-orange-500 bg-orange-50 text-orange-700'
-                                : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="paymentMethod"
-                              value={pm.value}
-                              checked={bookingPaymentMethod === pm.value}
-                              onChange={(e) => setBookingPaymentMethod(e.target.value)}
-                              className="sr-only"
-                            />
-                            <span className="text-xl">{pm.icon}</span>
-                            <span className="text-xs font-medium">{pm.label}</span>
-                            <span className="text-[10px] text-gray-400">{pm.desc}</span>
-                          </label>
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-gray-400 mt-2 text-center">All payments processed securely by Paystack</p>
                     </div>
 
                     <button
@@ -2591,7 +2555,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                       disabled={bookingLoading}
                       className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
                     >
-                      {bookingLoading ? 'Redirecting to Paystack...' : `Pay ₦${parseFloat(bookingAmount || '0').toLocaleString()} & Book`}
+                      {bookingLoading ? 'Booking...' : 'Confirm Booking'}
                     </button>
                   </form>
                 </>
@@ -2622,6 +2586,12 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
 
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
+  // Auto-refresh every 30 seconds for live timer data
+  useEffect(() => {
+    const interval = setInterval(loadJobs, 30000);
+    return () => clearInterval(interval);
+  }, [loadJobs]);
+
   const handleAction = async (jobId: string, action: string) => {
     setActionLoading(jobId);
     try {
@@ -2630,6 +2600,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
       onRefresh();
     } catch (err: any) {
       console.error('Action error:', err);
+      alert(err.message || 'Action failed');
     } finally {
       setActionLoading(null);
     }
@@ -2645,9 +2616,9 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
       {myJobs.length ? (
         <div className="space-y-3">
           {myJobs.map((job: any) => (
-            <div key={job.id} className="bg-white rounded-xl border border-gray-100 p-5">
+            <div key={job.id} className={`bg-white rounded-xl border p-5 ${job.status === 'IN_PROGRESS' ? 'border-orange-300 shadow-md shadow-orange-50' : 'border-gray-100'}`}>
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <StatusBadge status={job.status} />
                     <span className="text-sm font-medium text-gray-500">{job.serviceType}</span>
@@ -2657,54 +2628,84 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                     <span>📍 {job.location}</span>
                     <span>📅 {new Date(job.requestedDate).toLocaleDateString()}</span>
                     <span>🕐 {job.requestedTime}</span>
-                    <span>💰 ₦{(job.amount || 0).toLocaleString()}</span>
                     <span>👤 {job.client?.name}</span>
                   </div>
-                  {job.paymentStatus === 'HELD_IN_ESCROW' && (
-                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg">
-                      <span className="text-xs">🔒</span>
-                      <span className="text-xs font-medium text-amber-700">Payment secured in escrow — auto-released when you complete</span>
+
+                  {/* Live Timer for IN_PROGRESS jobs */}
+                  {job.status === 'IN_PROGRESS' && job.checkInTime && (
+                    <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">⏱️</span>
+                          <span className="text-sm font-medium text-orange-800">Time on Job</span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            <span className="text-xs text-green-600 font-medium">LIVE</span>
+                          </span>
+                        </div>
+                        <LiveTimer checkInTime={job.checkInTime} />
+                      </div>
                     </div>
                   )}
+
+                  {/* Checkout summary for AWAITING_PAYMENT jobs */}
+                  {job.status === 'AWAITING_PAYMENT' && (
+                    <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span>⏱️</span>
+                        <span className="text-sm font-medium text-purple-800">Service Summary</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <span className="text-purple-600">Time: <LiveTimer checkInTime={job.checkInTime} checkOutTime={job.checkOutTime || undefined} /></span>
+                        <span className="text-purple-600">({job.totalHours?.toFixed(1)} hours)</span>
+                      </div>
+                      <div className="mt-1 text-lg font-bold text-purple-900">
+                        Total: ₦{(job.amount || 0).toLocaleString()}
+                      </div>
+                      <p className="text-xs text-purple-500 mt-1">Waiting for client to pay</p>
+                    </div>
+                  )}
+
+                  {/* Payment status badges */}
                   {job.paymentStatus === 'RELEASED' && (
                     <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-lg">
                       <span className="text-xs">✅</span>
-                      <span className="text-xs font-medium text-green-700">Payment released to your bank account</span>
+                      <span className="text-xs font-medium text-green-700">Payment sent to your bank account</span>
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   {job.status === 'ACCEPTED' && (
                     <>
                       <button
-                        onClick={() => handleAction(job.id, 'start')}
+                        onClick={() => handleAction(job.id, 'checkin')}
                         disabled={actionLoading === job.id}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
                       >
-                        {actionLoading === job.id ? '...' : 'Start'}
+                        {actionLoading === job.id ? '...' : '✋ Check In'}
                       </button>
                       <button
                         onClick={() => onNavigate('messages')}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
                       >
-                        💬 Chat
+                        💬
                       </button>
                     </>
                   )}
                   {job.status === 'IN_PROGRESS' && (
                     <>
                       <button
-                        onClick={() => handleAction(job.id, 'complete')}
+                        onClick={() => handleAction(job.id, 'checkout')}
                         disabled={actionLoading === job.id}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                       >
-                        {actionLoading === job.id ? '...' : '✓ Complete'}
+                        {actionLoading === job.id ? '...' : '✓ Check Out'}
                       </button>
                       <button
                         onClick={() => onNavigate('messages')}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
                       >
-                        💬 Chat
+                        💬
                       </button>
                     </>
                   )}

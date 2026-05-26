@@ -55,21 +55,24 @@ model Provider {
 }
 
 model ServiceRequest {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   clientId       String
-  client         User     @relation("ClientRequests", fields: [clientId], references: [id])
+  client         User      @relation("ClientRequests", fields: [clientId], references: [id])
   providerId     String?
   provider       Provider? @relation("ProviderAssignments", fields: [providerId], references: [id])
-  serviceType    String   // CLEANING, COOKING, CAREGIVING, PLUMBING, LAUNDRY, MAINTENANCE, OTHER
+  serviceType    String    // CLEANING, COOKING, CAREGIVING, PLUMBING, LAUNDRY, MAINTENANCE, OTHER
   description    String?
   location       String
   requestedDate  DateTime
-  requestedTime  String   // e.g., "09:00"
-  status         String   @default("PENDING") // PENDING, MATCHED, ACCEPTED, IN_PROGRESS, COMPLETED, CANCELLED
-  paymentStatus  String   @default("PENDING") // PENDING, HELD_IN_ESCROW, RELEASED, REFUNDED
-  amount         Float    @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  requestedTime  String    // e.g., "09:00"
+  status         String    @default("PENDING") // PENDING, MATCHED, ACCEPTED, IN_PROGRESS, AWAITING_PAYMENT, COMPLETED, CANCELLED
+  paymentStatus  String    @default("PENDING") // PENDING, HELD_IN_ESCROW, RELEASED, REFUNDED
+  amount         Float     @default(0)
+  checkInTime    DateTime? // when artisan starts working (timer starts)
+  checkOutTime   DateTime? // when artisan finishes work (timer stops)
+  totalHours     Float?    // calculated on checkout: hours worked
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   transaction    Transaction?
   feedback       Feedback?
