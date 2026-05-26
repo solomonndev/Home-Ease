@@ -14,24 +14,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "HomeEase - Virtual Space for Domestic Services",
+  description: "Find trusted domestic service providers near you. Connect with verified professionals for cleaning, cooking, plumbing, caregiving, and more.",
+  keywords: ["domestic services", "cleaning", "plumbing", "caregiving", "service providers", "home services", "Nigeria"],
+  authors: [{ name: "HomeEase" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "HomeEase - Find Trusted Domestic Service Providers",
+    description: "Connect with verified, rated professionals for cleaning, cooking, plumbing, caregiving, and more.",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
   },
 };
 

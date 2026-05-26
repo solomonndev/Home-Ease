@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,19 +8,131 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  phone          String?
+  passwordHash   String
+  role           String   @default("CLIENT") // CLIENT, PROVIDER, ADMIN
+  avatarUrl      String?
+  status         String   @default("ACTIVE") // ACTIVE, SUSPENDED, INACTIVE
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  provider       Provider?
+  serviceRequests ServiceRequest[] @relation("ClientRequests")
+  transactions   Transaction[] @relation("ClientTransactions")
+  feedbackGiven  Feedback[] @relation("ClientFeedback")
+  notifications  Notification[]
+  sentMessages   Message[] @relation("Sender")
+  adminLogs      AdminLog[]
 }
 
-model Post {
+model Provider {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills             String   // comma-separated service types
+  bio                String?
+  hourlyRate         Float    @default(0)
+  rating             Float    @default(0)
+  totalReviews       Int      @default(0)
+  location           String?
+  availability       String   @default("WEEKDAYS") // WEEKDAYS, WEEKENDS, ALL_WEEK, CUSTOM
+  verificationStatus String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  completedJobs      Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Bank account details for payout after service completion
+  bankName           String?  // e.g., "Access Bank", "GTBank"
+  accountNumber      String?  // e.g., "0123456789"
+  accountName        String?  // e.g., "John Doe"
+
+  assignments        ServiceRequest[] @relation("ProviderAssignments")
+  feedbackReceived   Feedback[] @relation("ProviderFeedback")
+  earnings           Transaction[] @relation("ProviderEarnings")
+}
+
+model ServiceRequest {
+  id             String   @id @default(cuid())
+  clientId       String
+  client         User     @relation("ClientRequests", fields: [clientId], references: [id])
+  providerId     String?
+  provider       Provider? @relation("ProviderAssignments", fields: [providerId], references: [id])
+  serviceType    String   // CLEANING, COOKING, CAREGIVING, PLUMBING, LAUNDRY, MAINTENANCE, OTHER
+  description    String?
+  location       String
+  requestedDate  DateTime
+  requestedTime  String   // e.g., "09:00"
+  status         String   @default("PENDING") // PENDING, MATCHED, ACCEPTED, IN_PROGRESS, COMPLETED, CANCELLED
+  paymentStatus  String   @default("PENDING") // PENDING, HELD_IN_ESCROW, RELEASED, REFUNDED
+  amount         Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  transaction    Transaction?
+  feedback       Feedback?
+  messages       Message[]
+}
+
+model Transaction {
+  id             String   @id @default(cuid())
+  requestId      String   @unique
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id])
+  clientId       String
+  client         User     @relation("ClientTransactions", fields: [clientId], references: [id])
+  providerId     String
+  provider       Provider @relation("ProviderEarnings", fields: [providerId], references: [id])
+  amount         Float    // total amount paid by client
+  platformFee    Float    @default(0) // platform service fee deducted from provider payout
+  providerPayout Float    @default(0) // amount to be paid out to provider (amount - platformFee)
+  paymentMethod  String   @default("CARD") // CARD, MOBILE_MONEY, WALLET, BANK_TRANSFER
+  status         String   @default("PENDING") // PENDING, ESCROW, COMPLETED, FAILED, REFUNDED
+  paidOutAt      DateTime? // when payout was made to provider's bank account
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Feedback {
+  id             String   @id @default(cuid())
+  requestId      String   @unique
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id])
+  clientId       String
+  client         User     @relation("ClientFeedback", fields: [clientId], references: [id])
+  providerId     String
+  provider       Provider @relation("ProviderFeedback", fields: [providerId], references: [id])
+  rating         Int      // 1-5
+  comment        String?
+  createdAt      DateTime @default(now())
+}
+
+model Notification {
   id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // SERVICE_REQUEST, PAYMENT, SYSTEM_ALERT, MATCH, MESSAGE
   title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  message   String
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  requestId String
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation("Sender", fields: [senderId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
 }
