@@ -2,8 +2,17 @@
 
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
+import {
+  Search, MapPin, Calendar, Clock, Star, Shield, MessageSquare,
+  BarChart3, ClipboardList, CreditCard, User, Users, Bell, Settings,
+  CheckCircle, AlertTriangle, Home, Wrench, Briefcase,
+  Building2, Timer, Zap, Wallet, Lock, LogOut, Menu, X,
+  RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
+  CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
+  Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX
+} from 'lucide-react';
 
 type View = 'landing' | 'dashboard';
 
@@ -120,12 +129,12 @@ function LandingView({
   ];
 
   const features = [
-    { icon: '🎯', title: 'Smart Matching', desc: 'Our intelligent algorithm matches you with the perfect service provider based on skills, location, and ratings.' },
-    { icon: '🔒', title: 'Secure Payments', desc: 'Paystack-powered escrow system holds funds safely and auto-releases to artisan after completion, ensuring transparency for both parties.' },
-    { icon: '⭐', title: 'Verified Providers', desc: 'All service providers go through a thorough verification process to ensure quality and reliability.' },
-    { icon: '💬', title: 'Real-time Chat', desc: 'Communicate directly with your service provider through our integrated messaging system.' },
-    { icon: '📊', title: 'Transparent Reviews', desc: 'Honest ratings and reviews help you make informed decisions about service providers.' },
-    { icon: '📅', title: 'Easy Scheduling', desc: 'Book services at your convenience with our flexible scheduling system.' },
+    { icon: <Zap className="w-6 h-6 text-orange-600" />, title: 'Smart Matching', desc: 'Our intelligent algorithm matches you with the perfect service provider based on skills, location, and ratings.' },
+    { icon: <Lock className="w-6 h-6 text-orange-600" />, title: 'Secure Payments', desc: 'Paystack-powered escrow system holds funds safely and auto-releases to artisan after completion, ensuring transparency for both parties.' },
+    { icon: <ShieldCheck className="w-6 h-6 text-orange-600" />, title: 'Verified Providers', desc: 'All service providers go through a thorough verification process to ensure quality and reliability.' },
+    { icon: <MessageSquare className="w-6 h-6 text-orange-600" />, title: 'Real-time Chat', desc: 'Communicate directly with your service provider through our integrated messaging system.' },
+    { icon: <BarChart3 className="w-6 h-6 text-orange-600" />, title: 'Transparent Reviews', desc: 'Honest ratings and reviews help you make informed decisions about service providers.' },
+    { icon: <CalendarDays className="w-6 h-6 text-orange-600" />, title: 'Easy Scheduling', desc: 'Book services at your convenience with our flexible scheduling system.' },
   ];
 
   return (
@@ -164,7 +173,7 @@ function LandingView({
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-              <span>✨</span> Trusted by thousands of households
+              <Sparkles className="w-4 h-4" /> Trusted by thousands of households
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 tracking-tight leading-tight">
               Find Trusted Domestic{' '}
@@ -189,8 +198,9 @@ function LandingView({
               </button>
             </div>
             <div className="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <span className="text-orange-500 font-bold text-lg">4.8★</span>
+              <div className="flex items-center gap-1.5">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <span className="text-orange-500 font-bold text-lg">4.8</span>
                 <span>Average Rating</span>
               </div>
               <div className="w-px h-4 bg-gray-300" />
@@ -239,7 +249,7 @@ function LandingView({
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature) => (
               <div key={feature.title} className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-3xl mb-4">{feature.icon}</div>
+                <div className="mb-4">{feature.icon}</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
               </div>
@@ -442,7 +452,7 @@ function AuthDialog({
                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
-                      <span className="text-2xl block mb-1">🏠</span>
+                      <Home className="w-6 h-6 mx-auto mb-1" />
                       <span className="text-sm font-medium">Service Seeker</span>
                     </button>
                     <button
@@ -454,7 +464,7 @@ function AuthDialog({
                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
-                      <span className="text-2xl block mb-1">🛠️</span>
+                      <Wrench className="w-6 h-6 mx-auto mb-1" />
                       <span className="text-sm font-medium">Service Provider</span>
                     </button>
                   </div>
@@ -503,11 +513,7 @@ function AuthDialog({
                   tabIndex={-1}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
+                  {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
                 </button>
               </div>
             </div>
@@ -568,7 +574,7 @@ function AuthDialog({
                 </div>
                 <div className="pt-3 border-t border-gray-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <span>🏦</span>
+                    <Building2 className="w-4 h-4" />
                     <label className="text-sm font-medium text-gray-700">Bank Account for Payout</label>
                   </div>
                   <p className="text-xs text-gray-400 mb-2">Where you'll receive payments after completing jobs</p>
@@ -663,28 +669,28 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
 
   const navItems = user.role === 'CLIENT'
     ? [
-        { id: 'overview', label: 'Overview', icon: '📊' },
-        { id: 'find-artisans', label: 'Find Artisans', icon: '🔍' },
-        { id: 'my-requests', label: 'My Requests', icon: '📋' },
-        { id: 'payments', label: 'Payments', icon: '💳' },
-        { id: 'messages', label: 'Messages', icon: '💬' },
-        { id: 'profile', label: 'Profile', icon: '👤' },
+        { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+        { id: 'find-artisans', label: 'Find Artisans', icon: <Search className="w-4 h-4" /> },
+        { id: 'my-requests', label: 'My Requests', icon: <ClipboardList className="w-4 h-4" /> },
+        { id: 'payments', label: 'Payments', icon: <CreditCard className="w-4 h-4" /> },
+        { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-4 h-4" /> },
+        { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
       ]
     : user.role === 'PROVIDER'
     ? [
-        { id: 'job-offers', label: 'Job Offers', icon: '📨' },
-        { id: 'my-jobs', label: 'My Jobs', icon: '📋' },
-        { id: 'messages', label: 'Messages', icon: '💬' },
-        { id: 'earnings', label: 'Earnings', icon: '💰' },
-        { id: 'profile', label: 'Profile', icon: '👤' },
+        { id: 'job-offers', label: 'Job Offers', icon: <Inbox className="w-4 h-4" /> },
+        { id: 'my-jobs', label: 'My Jobs', icon: <ClipboardList className="w-4 h-4" /> },
+        { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-4 h-4" /> },
+        { id: 'earnings', label: 'Earnings', icon: <Wallet className="w-4 h-4" /> },
+        { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
       ]
     : [
-        { id: 'overview', label: 'Dashboard', icon: '📊' },
-        { id: 'verifications', label: 'Verifications', icon: '✅' },
-        { id: 'users', label: 'Users', icon: '👥' },
-        { id: 'requests', label: 'All Requests', icon: '📋' },
-        { id: 'disputes', label: 'Disputes', icon: '⚖️' },
-        { id: 'logs', label: 'Audit Logs', icon: '📜' },
+        { id: 'overview', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
+        { id: 'verifications', label: 'Verifications', icon: <CircleCheck className="w-4 h-4" /> },
+        { id: 'users', label: 'Users', icon: <Users className="w-4 h-4" /> },
+        { id: 'requests', label: 'All Requests', icon: <ClipboardList className="w-4 h-4" /> },
+        { id: 'disputes', label: 'Disputes', icon: <Scale className="w-4 h-4" /> },
+        { id: 'logs', label: 'Audit Logs', icon: <ScrollText className="w-4 h-4" /> },
       ];
 
   return (
@@ -762,7 +768,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
               }}
               className="relative p-2 text-gray-500 hover:text-gray-700 rounded-lg"
             >
-              🔔
+              <Bell className="w-5 h-5" />
               {notifs.unreadCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {notifs.unreadCount}
@@ -835,10 +841,10 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Requests" value={stats?.totalRequests || 0} icon="📋" color="orange" />
-          <StatCard label="Pending" value={stats?.pendingRequests || 0} icon="⏳" color="amber" />
-          <StatCard label="Active" value={stats?.activeRequests || 0} icon="🔄" color="blue" />
-          <StatCard label="Total Spent" value={`₦${(stats?.totalSpent || 0).toLocaleString()}`} icon="💳" color="purple" />
+          <StatCard label="Total Requests" value={stats?.totalRequests || 0} icon={<ClipboardList className="w-5 h-5" />} color="orange" />
+          <StatCard label="Pending" value={stats?.pendingRequests || 0} icon={<Hourglass className="w-5 h-5" />} color="amber" />
+          <StatCard label="Active" value={stats?.activeRequests || 0} icon={<RefreshCw className="w-5 h-5" />} color="blue" />
+          <StatCard label="Total Spent" value={`₦${(stats?.totalSpent || 0).toLocaleString()}`} icon={<CreditCard className="w-5 h-5" />} color="purple" />
         </div>
 
         <div className="bg-white rounded-xl border border-gray-100 p-6">
@@ -895,7 +901,7 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>🔒</span>
+              <Lock className="w-3.5 h-3.5" />
               <span className="text-sm font-medium text-amber-800">Held in Escrow</span>
             </div>
             <p className="text-2xl font-bold text-amber-900">₦{(paymentSummary?.totalInEscrow || 0).toLocaleString()}</p>
@@ -903,7 +909,7 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           </div>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>✅</span>
+              <CircleCheck className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-green-800">Released to Artisans</span>
             </div>
             <p className="text-2xl font-bold text-green-900">₦{(paymentSummary?.totalReleased || 0).toLocaleString()}</p>
@@ -911,7 +917,7 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           </div>
           <div className="bg-red-50 border border-red-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>↩️</span>
+              <ArrowLeftRight className="w-3.5 h-3.5" />
               <span className="text-sm font-medium text-red-800">Refunded</span>
             </div>
             <p className="text-2xl font-bold text-red-900">₦{(paymentSummary?.totalRefunded || 0).toLocaleString()}</p>
@@ -924,10 +930,10 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           <h4 className="text-sm font-semibold text-gray-900 mb-3">How Escrow Payments Work</h4>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
-              { step: '1', title: 'You Pay', desc: 'Payment is made securely via Paystack and held in escrow', icon: '💳' },
-              { step: '2', title: 'Held in Escrow', desc: 'Funds are locked until work is completed', icon: '🔒' },
-              { step: '3', title: 'Work Completed', desc: 'Provider finishes the service and marks it complete', icon: '✅' },
-              { step: '4', title: 'Auto-Released', desc: 'Payment is automatically sent to artisan\'s bank account', icon: '🏦' },
+              { step: '1', title: 'You Pay', desc: 'Payment is made securely via Paystack and held in escrow', icon: <CreditCard className="w-4 h-4" /> },
+              { step: '2', title: 'Held in Escrow', desc: 'Funds are locked until work is completed' },
+              { step: '3', title: 'Work Completed', desc: 'Provider finishes the service and marks it complete', icon: <CircleCheck className="w-4 h-4" /> },
+              { step: '4', title: 'Auto-Released', desc: 'Payment is automatically sent to artisan\'s bank account' },
             ].map((s) => (
               <div key={s.step} className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm shrink-0">
@@ -970,10 +976,10 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
                     <td className="px-4 py-3 text-sm text-gray-500">{new Date(tx.createdAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
                       {tx.status === 'ESCROW' && (
-                        <span className="text-xs text-amber-600 flex items-center gap-1">🔒 In escrow — auto-released when work is done</span>
+                        <span className="text-xs text-amber-600 flex items-center gap-1">In escrow — auto-released when work is done</span>
                       )}
                       {tx.status === 'COMPLETED' && tx.paidOutAt && (
-                        <span className="text-xs text-green-600 flex items-center gap-1">✅ Auto-released {new Date(tx.paidOutAt).toLocaleDateString()}</span>
+                        <span className="text-xs text-green-600 flex items-center gap-1">Auto-released {new Date(tx.paidOutAt).toLocaleDateString()}</span>
                       )}
                     </td>
                   </tr>
@@ -1073,7 +1079,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         {/* Error Banner */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-2xl">⚠️</span>
+            <AlertTriangle className="w-8 h-8 text-red-500" />
             <div className="flex-1">
               <p className="font-medium text-red-800">Connection Error</p>
               <p className="text-sm text-red-600">{error}</p>
@@ -1092,7 +1098,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         {/* Verification Banner */}
         {!isVerified && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-2xl">⏳</span>
+            <Hourglass className="w-8 h-8 text-amber-500" />
             <div>
               <p className="font-medium text-amber-800">Verification Pending</p>
               <p className="text-sm text-amber-600">Your profile is awaiting admin verification. You&apos;ll be notified once approved.</p>
@@ -1102,10 +1108,10 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Job Offers" value={jobOffers.length} icon="📨" color="orange" />
-          <StatCard label="Active Jobs" value={stats?.activeJobs || 0} icon="🔄" color="blue" />
-          <StatCard label="Completed" value={stats?.completedJobs || 0} icon="✅" color="amber" />
-          <StatCard label="Rating" value={stats?.rating ? `${stats.rating} ⭐` : 'N/A'} icon="⭐" color="purple" />
+          <StatCard label="Job Offers" value={jobOffers.length} icon={<Inbox className="w-5 h-5" />} color="orange" />
+          <StatCard label="Active Jobs" value={stats?.activeJobs || 0} icon={<RefreshCw className="w-5 h-5" />} color="blue" />
+          <StatCard label="Completed" value={stats?.completedJobs || 0} icon={<CircleCheck className="w-5 h-5" />} color="amber" />
+          <StatCard label="Rating" value={stats?.rating ? `${stats.rating}` : 'N/A'} icon={<Star className="w-5 h-5" />} color="purple" />
         </div>
 
         {/* Job Offers */}
@@ -1125,14 +1131,14 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
                     </div>
                     {req.description && <p className="text-sm text-gray-600 mt-1">{req.description}</p>}
                     <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-                      <span>📍 {req.location}</span>
-                      <span>📅 {new Date(req.requestedDate).toLocaleDateString()}</span>
-                      <span>🕐 {req.requestedTime}</span>
-                      <span>💰 ₦{(req.amount || 0).toLocaleString()}</span>
+                      <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {req.location}</span>
+                      <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(req.requestedDate).toLocaleDateString()}</span>
+                      <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {req.requestedTime}</span>
+                      <span><Wallet className="w-3.5 h-3.5 inline mr-0.5" /> ₦{(req.amount || 0).toLocaleString()}</span>
                     </div>
                     {req.provider && (
                       <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
-                        <span className="text-xs">💳</span>
+                        <CreditCard className="w-3.5 h-3.5" />
                         <span className="text-xs font-medium text-blue-700">
                           You&apos;ll be paid per hour (₦{req.provider.hourlyRate?.toLocaleString() || '0'}/hr) after service
                         </span>
@@ -1177,7 +1183,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
-            <span className="text-4xl">📭</span>
+            <Inbox className="w-12 h-12 text-gray-300 mx-auto" />
             <p className="text-gray-500 mt-3">No job offers right now</p>
             <p className="text-sm text-gray-400 mt-1">When clients book your services, their offers will appear here.<br/>Accept an offer to unlock in-app chat with the client.</p>
           </div>
@@ -1199,7 +1205,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         {/* Bank Account Alert */}
         {!hasBankDetails && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-2xl">🏦</span>
+            <Building2 className="w-8 h-8 text-red-500" />
             <div className="flex-1">
               <p className="font-medium text-red-800">Bank Account Required for Payout</p>
               <p className="text-sm text-red-600">You need to add your bank account details to receive payments. Go to your Profile to set it up.</p>
@@ -1215,7 +1221,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
 
         {hasBankDetails && (
           <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <span className="text-2xl">✅</span>
+            <CircleCheck className="w-8 h-8 text-green-500" />
             <div>
               <p className="font-medium text-green-800">Payout Account Active</p>
               <p className="text-sm text-green-600">
@@ -1229,7 +1235,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>🔒</span>
+              <Lock className="w-3.5 h-3.5" />
               <span className="text-sm font-medium text-amber-800">Pending in Escrow</span>
             </div>
             <p className="text-2xl font-bold text-amber-900">₦{(paymentSummary?.totalInEscrow || stats?.pendingEarnings || 0).toLocaleString()}</p>
@@ -1237,7 +1243,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
           </div>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>💰</span>
+              <Wallet className="w-3.5 h-3.5" />
               <span className="text-sm font-medium text-green-800">Total Earned</span>
             </div>
             <p className="text-2xl font-bold text-green-900">₦{(paymentSummary?.totalReleased || stats?.totalEarnings || 0).toLocaleString()}</p>
@@ -1245,7 +1251,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
           </div>
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <span>📊</span>
+              <BarChart3 className="w-3.5 h-3.5" />
               <span className="text-sm font-medium text-orange-800">Platform Fees</span>
             </div>
             <p className="text-2xl font-bold text-orange-900">₦{(stats?.totalPlatformFees || 0).toLocaleString()}</p>
@@ -1302,9 +1308,9 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {tx.status === 'ESCROW'
-                        ? '🔒 Auto-release on completion'
+                        ? 'Auto-release on completion'
                         : tx.paidOutAt
-                          ? `✅ Paid ${new Date(tx.paidOutAt).toLocaleDateString()}`
+                          ? `Paid ${new Date(tx.paidOutAt).toLocaleDateString()}`
                           : new Date(tx.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -1384,10 +1390,10 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Users" value={summary?.totalUsers || 0} icon="👥" color="orange" />
-          <StatCard label="Service Providers" value={summary?.totalProviders || 0} icon="🛠️" color="blue" />
-          <StatCard label="Total Requests" value={summary?.totalRequests || 0} icon="📋" color="amber" />
-          <StatCard label="Revenue" value={`₦${(summary?.totalRevenue || 0).toLocaleString()}`} icon="💰" color="purple" />
+          <StatCard label="Total Users" value={summary?.totalUsers || 0} icon={<Users className="w-5 h-5" />} color="orange" />
+          <StatCard label="Service Providers" value={summary?.totalProviders || 0} icon={<Wrench className="w-5 h-5" />} color="blue" />
+          <StatCard label="Total Requests" value={summary?.totalRequests || 0} icon={<ClipboardList className="w-5 h-5" />} color="amber" />
+          <StatCard label="Revenue" value={`₦${(summary?.totalRevenue || 0).toLocaleString()}`} icon={<Wallet className="w-5 h-5" />} color="purple" />
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl border border-gray-100 p-6">
@@ -1429,7 +1435,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
                         </span>
                       ))}
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">📍 {p.location} • ₦{p.hourlyRate.toLocaleString()}/hr</p>
+                    <p className="text-sm text-gray-500 mt-2"><MapPin className="w-3.5 h-3.5 inline" /> {p.location} • ₦{p.hourlyRate.toLocaleString()}/hr</p>
                     {p.bio && <p className="text-sm text-gray-600 mt-1">{p.bio}</p>}
                   </div>
                   <div className="flex gap-2">
@@ -1588,7 +1594,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
 }
 
 // ==================== SHARED COMPONENTS ====================
-function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: string; color: string }) {
+function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: ReactNode; color: string }) {
   const colorMap: Record<string, string> = {
     orange: 'bg-orange-50 text-orange-700',
     blue: 'bg-blue-50 text-blue-700',
@@ -1708,14 +1714,14 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
           </div>
           {request.description && <p className="text-sm text-gray-600 mt-1">{request.description}</p>}
           <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
-            <span>📍 {request.location}</span>
-            <span>📅 {new Date(request.requestedDate).toLocaleDateString()}</span>
-            <span>🕐 {request.requestedTime}</span>
-            <span>💰 ₦{(request.amount || 0).toLocaleString()}</span>
+            <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {request.location}</span>
+            <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(request.requestedDate).toLocaleDateString()}</span>
+            <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {request.requestedTime}</span>
+            <span><Wallet className="w-3.5 h-3.5 inline mr-0.5" /> ₦{(request.amount || 0).toLocaleString()}</span>
           </div>
           {request.provider && (
             <p className="text-xs text-gray-400 mt-2">
-              Provider: {request.provider.user?.name} ⭐{request.provider.rating}
+              Provider: {request.provider.user?.name} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" />{request.provider.rating}
             </p>
           )}
           <div className="flex items-center gap-2 mt-1">
@@ -1724,7 +1730,7 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             </span>
             {request.checkInTime && (
             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
-              <span className="text-sm">⏱️</span>
+              <Timer className="w-4 h-4 text-purple-600" />
               <span className="text-xs text-gray-500">Time:</span>
               <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} />
               {!request.checkOutTime && <span className="text-xs text-orange-600 font-medium animate-pulse">LIVE</span>}
@@ -1747,7 +1753,7 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             disabled={payingNow}
             className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
           >
-            {payingNow ? '⏳' : '💳'} {payingNow ? 'Processing...' : `Pay ₦${(request.amount || 0).toLocaleString()}`}
+            {payingNow ? 'Processing...' : `Pay ₦${(request.amount || 0).toLocaleString()}`}
           </button>
         )}
         {showActions && request.status === 'PENDING' && request.paymentStatus === 'PENDING' && request.amount > 0 && (
@@ -1756,7 +1762,7 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             disabled={payingNow}
             className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
           >
-            {payingNow ? '⏳' : '💳'} {payingNow ? 'Processing...' : 'Pay Now'}
+            {payingNow ? 'Processing...' : 'Pay Now'}
           </button>
         )}
         {showActions && request.status === 'PENDING' && (
@@ -1774,7 +1780,7 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
             onClick={() => onNavigate('messages')}
             className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
           >
-            💬 Chat
+            Chat
           </button>
         )}
       </div>
@@ -1787,9 +1793,9 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
               <button
                 key={star}
                 onClick={() => setFeedbackRating(star)}
-                className={`text-2xl ${star <= feedbackRating ? 'text-amber-400' : 'text-gray-300'}`}
+                className={`${star <= feedbackRating ? 'text-amber-400' : 'text-gray-300'}`}
               >
-                ★
+                <Star className={`w-7 h-7 ${star <= feedbackRating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
               </button>
             ))}
           </div>
@@ -2066,7 +2072,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
             <>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -2172,7 +2178,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                 : 'border-gray-200 text-gray-600 hover:border-gray-300'
             }`}
           >
-            <span>⚙️</span> Filters
+            <Settings className="w-3.5 h-3.5" /> Filters
             {activeFilterCount > 0 && (
               <span className="w-5 h-5 flex items-center justify-center bg-orange-600 text-white text-xs rounded-full">
                 {activeFilterCount}
@@ -2326,7 +2332,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-semibold text-gray-900 text-lg">{artisan.name}</h4>
                         {artisan.rating > 0 && (
-                          <span className="text-sm text-amber-600 font-medium">⭐ {artisan.rating.toFixed(1)}</span>
+                          <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-amber-400 text-amber-400" /> <span className="text-sm text-amber-600 font-medium">{artisan.rating.toFixed(1)}</span></span>
                         )}
                         <span className="text-xs text-gray-400">({artisan.totalReviews} reviews)</span>
                       </div>
@@ -2337,16 +2343,16 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
 
                       <div className="flex flex-wrap gap-3 mt-2 text-sm">
                         <span className="flex items-center gap-1 text-gray-600">
-                          📍 {artisan.location || 'Not specified'}
+                          <MapPin className="w-3.5 h-3.5 inline" /> {artisan.location || 'Not specified'}
                         </span>
                         <span className="flex items-center gap-1 font-semibold text-orange-700">
                           ₦{artisan.hourlyRate.toLocaleString()}/hr
                         </span>
                         <span className="flex items-center gap-1 text-gray-500">
-                          📅 {availLabels[artisan.availability] || artisan.availability}
+                          <Calendar className="w-3.5 h-3.5 inline" /> {availLabels[artisan.availability] || artisan.availability}
                         </span>
                         <span className="flex items-center gap-1 text-gray-500">
-                          ✅ {artisan.completedJobs} jobs done
+                          <CheckCircle className="w-3.5 h-3.5 inline text-green-600" /> {artisan.completedJobs} jobs done
                         </span>
                       </div>
 
@@ -2395,7 +2401,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
             </div>
           ) : (
             <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-              <span className="text-5xl">🔍</span>
+              <Search className="w-12 h-12 text-gray-300 mx-auto" />
               <p className="text-gray-600 mt-3 font-medium">No artisans found</p>
               <p className="text-sm text-gray-400 mt-1">Try adjusting your search or filters</p>
             </div>
@@ -2404,7 +2410,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
       ) : (
         /* Initial state - prompt to search */
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-          <span className="text-5xl">👷</span>
+          <HardHat className="w-12 h-12 text-gray-300 mx-auto" />
           <h3 className="text-xl font-semibold text-gray-900 mt-4">Search for an Artisan</h3>
           <p className="text-gray-500 mt-2 max-w-md mx-auto">
             Type a service keyword or select a service category above to find verified artisans with their prices, locations, and reviews.
@@ -2435,7 +2441,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
 
               {bookingSuccess ? (
                 <div className="text-center py-8">
-                  <span className="text-5xl">✅</span>
+                  <CircleCheck className="w-12 h-12 text-green-500 mx-auto" />
                   <h3 className="text-xl font-semibold text-gray-900 mt-4">Booking Confirmed!</h3>
                   <p className="text-gray-600 mt-2">
                     {bookingArtisan.name} has been notified and will accept your booking. You&apos;ll pay after the service is completed.
@@ -2468,7 +2474,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                         {bookingArtisan.rating > 0 && (
                           <>
                             <span>•</span>
-                            <span>⭐ {bookingArtisan.rating.toFixed(1)}</span>
+                            <span><Star className="w-4 h-4 fill-amber-400 text-amber-400 inline" /> {bookingArtisan.rating.toFixed(1)}</span>
                           </>
                         )}
                       </div>
@@ -2535,7 +2541,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                     {/* Pay After Service Info */}
                     <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg">💰</span>
+                        <Wallet className="w-5 h-5" />
                         <h4 className="text-sm font-semibold text-green-800">Pay After Service</h4>
                       </div>
                       <p className="text-xs text-green-700 leading-relaxed">
@@ -2625,10 +2631,10 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                   </div>
                   <p className="text-sm text-gray-600 mt-1">{job.description}</p>
                   <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
-                    <span>📍 {job.location}</span>
-                    <span>📅 {new Date(job.requestedDate).toLocaleDateString()}</span>
-                    <span>🕐 {job.requestedTime}</span>
-                    <span>👤 {job.client?.name}</span>
+                    <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {job.location}</span>
+                    <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(job.requestedDate).toLocaleDateString()}</span>
+                    <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {job.requestedTime}</span>
+                    <span><User className="w-3.5 h-3.5 inline mr-0.5" /> {job.client?.name}</span>
                   </div>
 
                   {/* Live Timer for IN_PROGRESS jobs */}
@@ -2636,7 +2642,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                     <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">⏱️</span>
+                          <Timer className="w-5 h-5 text-orange-600" />
                           <span className="text-sm font-medium text-orange-800">Time on Job</span>
                           <span className="flex items-center gap-1">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -2652,7 +2658,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                   {job.status === 'AWAITING_PAYMENT' && (
                     <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
                       <div className="flex items-center gap-2 mb-1">
-                        <span>⏱️</span>
+                        <Timer className="w-4 h-4" />
                         <span className="text-sm font-medium text-purple-800">Service Summary</span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
@@ -2669,7 +2675,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                   {/* Payment status badges */}
                   {job.paymentStatus === 'RELEASED' && (
                     <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-lg">
-                      <span className="text-xs">✅</span>
+                      <CircleCheck className="w-3.5 h-3.5 text-green-500" />
                       <span className="text-xs font-medium text-green-700">Payment sent to your bank account</span>
                     </div>
                   )}
@@ -2682,13 +2688,13 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                         disabled={actionLoading === job.id}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
                       >
-                        {actionLoading === job.id ? '...' : '✋ Check In'}
+                        {actionLoading === job.id ? '...' : 'Check In'}
                       </button>
                       <button
                         onClick={() => onNavigate('messages')}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
                       >
-                        💬
+                        <MessageSquare className="w-4 h-4" />
                       </button>
                     </>
                   )}
@@ -2699,13 +2705,13 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                         disabled={actionLoading === job.id}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                       >
-                        {actionLoading === job.id ? '...' : '✓ Check Out'}
+                        {actionLoading === job.id ? '...' : 'Check Out'}
                       </button>
                       <button
                         onClick={() => onNavigate('messages')}
                         className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
                       >
-                        💬
+                        <MessageSquare className="w-4 h-4" />
                       </button>
                     </>
                   )}
@@ -3062,13 +3068,13 @@ function ProfileEditor({ user }: { user: any }) {
 
         {user.role === 'PROVIDER' && user.provider?.verificationStatus && (
           <div className="mb-6 flex items-center gap-3 p-4 rounded-lg bg-gray-50">
-            <span className="text-lg">{user.provider.verificationStatus === 'VERIFIED' ? '✅' : '⏳'}</span>
+            <span className="text-lg">{user.provider.verificationStatus === 'VERIFIED' ? <CircleCheck className="w-5 h-5 text-green-600" /> : <Hourglass className="w-5 h-5 text-amber-500" />}</span>
             <div>
               <p className="font-medium text-gray-900">
                 {user.provider.verificationStatus === 'VERIFIED' ? 'Verified Provider' : 'Verification Pending'}
               </p>
               <p className="text-sm text-gray-500">
-                Rating: {user.provider.rating} ⭐ ({user.provider.totalReviews} reviews) • {user.provider.completedJobs} jobs completed
+                Rating: {user.provider.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" /> ({user.provider.totalReviews} reviews) • {user.provider.completedJobs} jobs completed
               </p>
             </div>
           </div>
@@ -3147,7 +3153,7 @@ function ProfileEditor({ user }: { user: any }) {
               {/* Bank Account Details for Payout */}
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 mb-3">
-                  <span>🏦</span>
+                  <Building2 className="w-4 h-4" />
                   <h4 className="text-sm font-semibold text-gray-900">Bank Account for Payout</h4>
                 </div>
                 <p className="text-xs text-gray-500 mb-3">Payments are automatically sent to this account after you complete jobs.</p>
@@ -3200,7 +3206,7 @@ function ProfileEditor({ user }: { user: any }) {
                 </div>
                 {bankName && accountNumber && accountName && (
                   <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                    <span className="text-green-600">✅</span>
+                    <CircleCheck className="w-3.5 h-3.5 text-green-600" />
                     <p className="text-xs text-green-700">
                       Payouts will be sent to <span className="font-medium">{accountName}</span> — {bankName} ({accountNumber.slice(0, 3)}****{accountNumber.slice(-4)})
                     </p>
@@ -3215,7 +3221,7 @@ function ProfileEditor({ user }: { user: any }) {
             disabled={saving}
             className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
           >
-            {saving ? 'Saving...' : saved ? '✅ Saved!' : 'Save Changes'}
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -3226,7 +3232,7 @@ function ProfileEditor({ user }: { user: any }) {
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
-      <span className="text-4xl">📭</span>
+      <Inbox className="w-12 h-12 text-gray-300 mx-auto" />
       <p className="text-gray-500 mt-3">{message}</p>
     </div>
   );
