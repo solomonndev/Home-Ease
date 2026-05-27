@@ -11,7 +11,7 @@ import {
   Building2, Timer, Zap, Wallet, Lock, LogOut, Menu, X,
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
-  Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, ArrowLeft, Download,
+  Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, XCircle, ArrowLeft, Download,
   Trash2
 } from 'lucide-react';
 
@@ -672,6 +672,56 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
   useEffect(() => {
     api.getNotifications().then(setNotifs).catch(() => {});
   }, []);
+
+  const verificationStatus = user.role === 'PROVIDER' ? (user.provider?.verificationStatus || 'PENDING') : null;
+
+  // Blocked screen for unverified/rejected providers
+  if (user.role === 'PROVIDER' && verificationStatus !== 'VERIFIED') {
+    return (
+      <div className="min-h-screen flex bg-gray-50">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-white border-2 border-gray-100 shadow-sm">
+              {verificationStatus === 'REJECTED' ? (
+                <XCircle className="w-10 h-10 text-red-500" />
+              ) : (
+                <Hourglass className="w-10 h-10 text-amber-500" />
+              )}
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {verificationStatus === 'REJECTED' ? 'Application Declined' : 'Verification Pending'}
+            </h2>
+            <p className="text-gray-500 mb-8">
+              {verificationStatus === 'REJECTED'
+                ? 'Unfortunately, your provider application was not approved. Please contact support if you believe this is a mistake.'
+                : 'Your provider account is currently under review. You will get full access once an admin verifies your account. This usually takes 24-48 hours.'}
+            </p>
+            <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-lg">
+                  {user.name?.charAt(0) || '?'}
+                </div>
+                <div className="text-left">
+                  <p className="font-medium text-gray-900">{user.name}</p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                </div>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                {verificationStatus === 'REJECTED' ? <XCircle className="w-4 h-4 text-red-500" /> : <Hourglass className="w-4 h-4 text-amber-500" />}
+                {verificationStatus === 'REJECTED' ? 'Declined' : 'Pending Review'}
+              </div>
+            </div>
+            <button
+              onClick={onLogout}
+              className="w-full px-6 py-3 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const navItems = user.role === 'CLIENT'
     ? [
