@@ -14,17 +14,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HomeEase - Virtual Space for Domestic Services",
+  title: "Home Ease - Virtual Space for Domestic Services",
   description: "Find trusted domestic service providers near you. Connect with verified professionals for cleaning, cooking, plumbing, caregiving, and more.",
   keywords: ["domestic services", "cleaning", "plumbing", "caregiving", "service providers", "home services", "Nigeria"],
-  authors: [{ name: "HomeEase" }],
+  authors: [{ name: "Home Ease" }],
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "HomeEase - Find Trusted Domestic Service Providers",
+    title: "Home Ease - Find Trusted Domestic Service Providers",
     description: "Connect with verified, rated professionals for cleaning, cooking, plumbing, caregiving, and more.",
     type: "website",
   },

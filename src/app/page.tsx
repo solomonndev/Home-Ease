@@ -160,7 +160,7 @@ function LandingView({
               <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">HE</span>
               </div>
-              <span className="font-bold text-xl text-gray-900">HomeEase</span>
+              <span className="font-bold text-xl text-gray-900">Home Ease</span>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -256,7 +256,7 @@ function LandingView({
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Why Choose HomeEase?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Why Choose Home Ease?</h2>
             <p className="mt-4 text-lg text-gray-600">Built for trust, transparency, and convenience</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -327,9 +327,9 @@ function LandingView({
               <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">HE</span>
               </div>
-              <span className="font-bold text-lg text-white">HomeEase</span>
+              <span className="font-bold text-lg text-white">Home Ease</span>
             </div>
-            <p className="text-sm">© 2026 HomeEase. Virtual Space for Domestic Services.</p>
+            <p className="text-sm">© 2026 Home Ease. Virtual Space for Domestic Services.</p>
           </div>
         </div>
       </footer>
@@ -709,7 +709,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
             <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">HE</span>
             </div>
-            <span className="font-bold text-lg text-gray-900">HomeEase</span>
+            <span className="font-bold text-lg text-gray-900">Home Ease</span>
           </div>
           
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
