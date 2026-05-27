@@ -713,7 +713,12 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
       });
       if (res.ok) {
         setNewMessage('');
-        loadMessages();
+        // Immediately refresh messages after sending
+        const refreshRes = await fetch('/api/support/messages', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+        });
+        const refreshData = await refreshRes.json();
+        if (refreshData.messages) setMessages(refreshData.messages);
       }
     } catch {}
     setSending(false);
