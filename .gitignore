@@ -53,6 +53,11 @@ prompt
 server.log
 # Skills directory
 /skills/
+skills/
+
+# Sandbox files
+.zscripts/
+download/
 
 # Deployment temp files
 keep-alive.sh
