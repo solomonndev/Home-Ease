@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Home Ease - Virtual Space for Domestic Services",
+  title: "Home Ease",
   description: "Find trusted domestic service providers near you. Connect with verified professionals for cleaning, cooking, plumbing, caregiving, and more.",
   keywords: ["domestic services", "cleaning", "plumbing", "caregiving", "service providers", "home services", "Nigeria"],
   authors: [{ name: "Home Ease" }],
