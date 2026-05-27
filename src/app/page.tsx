@@ -2214,9 +2214,20 @@ function AdminSupportChat({ user }: { user: any }) {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Get token from Zustand persist store
+  const getToken = () => {
+    try {
+      const stored = localStorage.getItem('domestic-services-auth');
+      if (stored) return JSON.parse(stored).state?.token;
+    } catch {}
+    return null;
+  };
+
+  const headers = () => ({ Authorization: `Bearer ${getToken()}` });
+
   const loadConversations = useCallback(async () => {
     try {
-      const res = await api.fetch('/api/support/messages');
+      const res = await fetch('/api/support/messages', { headers: headers() });
       const data = await res.json();
       if (data.conversations) {
         setConversations(data.conversations);
@@ -2228,7 +2239,7 @@ function AdminSupportChat({ user }: { user: any }) {
 
   const loadChat = useCallback(async (userId: string) => {
     try {
-      const res = await api.fetch(`/api/support/messages?userId=${userId}`);
+      const res = await fetch(`/api/support/messages?userId=${userId}`, { headers: headers() });
       const data = await res.json();
       if (data.messages) setMessages(data.messages);
     } catch {}
@@ -2237,7 +2248,7 @@ function AdminSupportChat({ user }: { user: any }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.fetch('/api/support/messages');
+        const res = await fetch('/api/support/messages', { headers: headers() });
         const data = await res.json();
         if (data.conversations) {
           setConversations(data.conversations);
@@ -2252,7 +2263,7 @@ function AdminSupportChat({ user }: { user: any }) {
     let mounted = true;
     (async () => {
       try {
-        const res = await api.fetch(`/api/support/messages?userId=${selectedUser}`);
+        const res = await fetch(`/api/support/messages?userId=${selectedUser}`, { headers: headers() });
         const data = await res.json();
         if (mounted && data.messages) setMessages(data.messages);
       } catch {}
@@ -2269,8 +2280,9 @@ function AdminSupportChat({ user }: { user: any }) {
     if (!newMessage.trim() || !selectedUser || sending) return;
     setSending(true);
     try {
-      const res = await api.fetch('/api/support/messages', {
+      const res = await fetch('/api/support/messages', {
         method: 'POST',
+        headers: { ...headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: selectedUser, content: newMessage }),
       });
       if (res.ok) {
