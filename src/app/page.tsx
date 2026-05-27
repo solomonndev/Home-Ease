@@ -662,12 +662,170 @@ function AuthDialog({
   );
 }
 
+// ==================== PROVIDER RESTRICTED VIEW (Pending/Rejected) ====================
+function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: any; verificationStatus: string; onLogout: () => void }) {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isRejected = verificationStatus === 'REJECTED';
+
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(loadMessages, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  async function loadMessages() {
+    try {
+      const res = await fetch('/api/support/messages', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+      });
+      const data = await res.json();
+      if (data.messages) setMessages(data.messages);
+    } catch {}
+  }
+
+  async function sendMessage() {
+    if (!newMessage.trim() || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch('/api/support/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('homeease_token')}`,
+        },
+        body: JSON.stringify({ content: newMessage }),
+      });
+      if (res.ok) {
+        setNewMessage('');
+        loadMessages();
+      }
+    } catch {}
+    setSending(false);
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-100 px-6 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">HE</span>
+          </div>
+          <span className="font-bold text-lg text-gray-900">Home Ease</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-sm">
+              {user.name?.charAt(0) || '?'}
+            </div>
+            <span className="text-sm font-medium text-gray-700">{user.name}</span>
+          </div>
+          <button onClick={onLogout} className="text-sm text-red-600 hover:text-red-700 font-medium">
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
+        {/* Status Card */}
+        <div className="max-w-lg w-full mb-6 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-white border-2 border-gray-100 shadow-sm">
+            {isRejected ? <XCircle className="w-8 h-8 text-red-500" /> : <Hourglass className="w-8 h-8 text-amber-500" />}
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">
+            {isRejected ? 'Application Declined' : 'Verification Pending'}
+          </h2>
+          <p className="text-sm text-gray-500 mb-3">
+            {isRejected
+              ? 'Your provider application was not approved. Use the chat below to contact admin for clarification.'
+              : 'Your account is under review. You will get full access once verified. You can chat with admin below.'}
+          </p>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+            {isRejected ? <XCircle className="w-3.5 h-3.5 text-red-500" /> : <Hourglass className="w-3.5 h-3.5 text-amber-500" />}
+            {isRejected ? 'Declined' : 'Pending Review'}
+          </div>
+        </div>
+
+        {/* Chat Box */}
+        <div className="max-w-lg w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Chat with Admin</span>
+          </div>
+
+          {/* Messages */}
+          <div className="h-64 overflow-y-auto p-4 space-y-3">
+            {messages.length === 0 && (
+              <p className="text-center text-sm text-gray-400 py-8">No messages yet. Say hello to the admin!</p>
+            )}
+            {messages.map((msg: any) => {
+              const isMe = msg.senderId === user.id;
+              return (
+                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] ${isMe ? 'order-1' : ''}`}>
+                    {!isMe && (
+                      <p className="text-xs font-medium text-gray-500 mb-1 ml-1">
+                        {msg.sender?.name || 'Admin'}
+                      </p>
+                    )}
+                    <div className={`px-3 py-2 rounded-xl text-sm whitespace-pre-wrap ${
+                      isMe
+                        ? 'bg-orange-500 text-white rounded-br-sm'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                    }`}>
+                      {msg.content}
+                    </div>
+                    <p className={`text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-3 border-t border-gray-100">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                placeholder="Type a message..."
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={sending || !newMessage.trim()}
+                className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {sending ? '...' : <Send className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== DASHBOARD VIEW ====================
 function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) {
   const [activeTab, setActiveTab] = useState<string>(user.role === 'PROVIDER' ? 'job-offers' : 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifs, setNotifs] = useState<{ notifications: any[]; unreadCount: number }>({ notifications: [], unreadCount: 0 });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [supportChatUser, setSupportChatUser] = useState<string | null>(null);
+  const [supportMessages, setSupportMessages] = useState<any[]>([]);
 
   useEffect(() => {
     api.getNotifications().then(setNotifs).catch(() => {});
@@ -675,52 +833,9 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
 
   const verificationStatus = user.role === 'PROVIDER' ? (user.provider?.verificationStatus || 'PENDING') : null;
 
-  // Blocked screen for unverified/rejected providers
+  // Blocked screen for unverified/rejected providers with support chat
   if (user.role === 'PROVIDER' && verificationStatus !== 'VERIFIED') {
-    return (
-      <div className="min-h-screen flex bg-gray-50">
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center bg-white border-2 border-gray-100 shadow-sm">
-              {verificationStatus === 'REJECTED' ? (
-                <XCircle className="w-10 h-10 text-red-500" />
-              ) : (
-                <Hourglass className="w-10 h-10 text-amber-500" />
-              )}
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {verificationStatus === 'REJECTED' ? 'Application Declined' : 'Verification Pending'}
-            </h2>
-            <p className="text-gray-500 mb-8">
-              {verificationStatus === 'REJECTED'
-                ? 'Unfortunately, your provider application was not approved. Please contact support if you believe this is a mistake.'
-                : 'Your provider account is currently under review. You will get full access once an admin verifies your account. This usually takes 24-48 hours.'}
-            </p>
-            <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-lg">
-                  {user.name?.charAt(0) || '?'}
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-gray-900">{user.name}</p>
-                  <p className="text-sm text-gray-500">{user.email}</p>
-                </div>
-              </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                {verificationStatus === 'REJECTED' ? <XCircle className="w-4 h-4 text-red-500" /> : <Hourglass className="w-4 h-4 text-amber-500" />}
-                {verificationStatus === 'REJECTED' ? 'Declined' : 'Pending Review'}
-              </div>
-            </div>
-            <button
-              onClick={onLogout}
-              className="w-full px-6 py-3 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ProviderRestrictedView user={user} verificationStatus={verificationStatus} onLogout={onLogout} />;
   }
 
   const navItems = user.role === 'CLIENT'
@@ -744,6 +859,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
         { id: 'overview', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
         { id: 'verifications', label: 'Verifications', icon: <CircleCheck className="w-4 h-4" /> },
         { id: 'users', label: 'Users', icon: <Users className="w-4 h-4" /> },
+        { id: 'support-chat', label: 'Support Chat', icon: <MessageSquare className="w-4 h-4" /> },
         { id: 'payouts', label: 'Payouts', icon: <Wallet className="w-4 h-4" /> },
         { id: 'requests', label: 'All Requests', icon: <ClipboardList className="w-4 h-4" /> },
         { id: 'disputes', label: 'Disputes', icon: <Scale className="w-4 h-4" /> },
@@ -2047,7 +2163,194 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
     );
   }
 
+  if (tab === 'support-chat') {
+    return <AdminSupportChat user={user} />;
+  }
+
   return null;
+}
+
+// ==================== ADMIN SUPPORT CHAT ====================
+function AdminSupportChat({ user }: { user: any }) {
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [lastMessages, setLastMessages] = useState<Record<string, any>>({});
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { loadConversations(); }, []);
+  useEffect(() => {
+    if (selectedUser) loadChat(selectedUser);
+    const interval = setInterval(() => {
+      loadConversations();
+      if (selectedUser) loadChat(selectedUser);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [selectedUser]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  async function loadConversations() {
+    try {
+      const res = await api.fetch('/api/support/messages');
+      const data = await res.json();
+      if (data.conversations) {
+        setConversations(data.conversations);
+        setLastMessages(data.lastMessages || {});
+        setUnreadCounts(data.unreadCounts || {});
+      }
+    } catch {}
+  }
+
+  async function loadChat(userId: string) {
+    try {
+      const res = await api.fetch(`/api/support/messages?userId=${userId}`);
+      const data = await res.json();
+      if (data.messages) setMessages(data.messages);
+    } catch {}
+  }
+
+  async function sendMessage() {
+    if (!newMessage.trim() || !selectedUser || sending) return;
+    setSending(true);
+    try {
+      const res = await api.fetch('/api/support/messages', {
+        method: 'POST',
+        body: JSON.stringify({ receiverId: selectedUser, content: newMessage }),
+      });
+      if (res.ok) {
+        setNewMessage('');
+        loadChat(selectedUser);
+        loadConversations();
+      }
+    } catch {}
+    setSending(false);
+  }
+
+  return (
+    <div className="h-[calc(100vh-4rem)] flex bg-white rounded-xl border border-gray-100 overflow-hidden">
+      {/* Conversations list */}
+      <div className={`w-72 border-r border-gray-100 flex flex-col ${selectedUser ? 'hidden lg:flex' : ''}`}>
+        <div className="p-4 border-b border-gray-100">
+          <h3 className="font-semibold text-gray-900">Support Chats</h3>
+          <p className="text-xs text-gray-500 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {conversations.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8 px-4">No support conversations yet</p>
+          ) : (
+            conversations.map((c: any) => {
+              const lastMsg = lastMessages[c.id];
+              const unread = unreadCounts[c.id] || 0;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => { setSelectedUser(c.id); loadChat(c.id); }}
+                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedUser === c.id ? 'bg-orange-50' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-sm flex-shrink-0">
+                      {c.name?.charAt(0) || '?'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
+                        {unread > 0 && (
+                          <span className="ml-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center flex-shrink-0">{unread}</span>
+                        )}
+                      </div>
+                      {lastMsg && (
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{lastMsg.sender?.name}: {lastMsg.content}</p>
+                      )}
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {c.role === 'PROVIDER' ? `Provider • ${c.provider?.verificationStatus || 'PENDING'}` : c.role}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Chat area */}
+      <div className="flex-1 flex flex-col">
+        {selectedUser ? (
+          <>
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+              <button onClick={() => setSelectedUser(null)} className="lg:hidden text-gray-500 hover:text-gray-700">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-sm">
+                {conversations.find((c: any) => c.id === selectedUser)?.name?.charAt(0) || '?'}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">{conversations.find((c: any) => c.id === selectedUser)?.name}</p>
+                <p className="text-xs text-gray-500">{conversations.find((c: any) => c.id === selectedUser)?.role}</p>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {messages.length === 0 && (
+                <p className="text-center text-sm text-gray-400 py-8">No messages in this conversation</p>
+              )}
+              {messages.map((msg: any) => {
+                const isMe = msg.senderId === user.id;
+                return (
+                  <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                    <div className="max-w-[70%]">
+                      {!isMe && (
+                        <p className="text-xs font-medium text-gray-500 mb-1 ml-1">{msg.sender?.name}</p>
+                      )}
+                      <div className={`px-3 py-2 rounded-xl text-sm whitespace-pre-wrap ${
+                        isMe ? 'bg-orange-500 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                      }`}>
+                        {msg.content}
+                      </div>
+                      <p className={`text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="p-3 border-t border-gray-100">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                  placeholder="Type a message..."
+                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={sending || !newMessage.trim()}
+                  className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {sending ? '...' : <Send className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-400">Select a conversation to start chatting</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ==================== SHARED COMPONENTS ====================

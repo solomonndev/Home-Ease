@@ -41,14 +41,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Block login for rejected providers
-    if (user.role === 'PROVIDER' && user.provider?.verificationStatus === 'REJECTED') {
-      return NextResponse.json(
-        { error: 'Your provider account has been declined. Contact support for more information.' },
-        { status: 403 }
-      );
-    }
-
     const token = generateToken({
       userId: user.id,
       email: user.email,

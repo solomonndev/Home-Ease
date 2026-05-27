@@ -25,8 +25,10 @@ model User {
   transactions   Transaction[] @relation("ClientTransactions")
   feedbackGiven  Feedback[] @relation("ClientFeedback")
   notifications  Notification[]
-  sentMessages   Message[] @relation("Sender")
-  adminLogs      AdminLog[]
+  sentMessages       Message[] @relation("Sender")
+  adminLogs          AdminLog[]
+  supportSent        SupportMessage[] @relation("SupportSender")
+  supportReceived    SupportMessage[] @relation("SupportReceiver")
 }
 
 model Provider {
@@ -140,5 +142,16 @@ model AdminLog {
   admin     User     @relation(fields: [adminId], references: [id])
   action    String   @db.VarChar(100)
   details   String?
+  createdAt DateTime @default(now())
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  sender    User     @relation("SupportSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver  User     @relation("SupportReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
