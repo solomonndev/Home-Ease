@@ -55,6 +55,19 @@ export async function POST(request: NextRequest) {
           accountName: accountName || null,
         }
       });
+
+      // Notify all admin users about the new provider registration
+      const admins = await db.user.findMany({ where: { role: 'ADMIN' } });
+      if (admins.length > 0) {
+        await db.notification.createMany({
+          data: admins.map(admin => ({
+            userId: admin.id,
+            type: 'SYSTEM_ALERT',
+            title: 'New Provider Registration',
+            message: `A new provider "${name}" (${email}) has registered with skills: ${skills || 'none specified'}. Please review and verify their account.`,
+          }))
+        });
+      }
     }
 
     const token = generateToken({
