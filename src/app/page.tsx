@@ -664,46 +664,45 @@ function AuthDialog({
 
 // ==================== PROVIDER RESTRICTED VIEW (Pending/Rejected) ====================
 function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: any; verificationStatus: string; onLogout: () => void }) {
+  const authToken = useAuthStore((s) => s.token);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [chatError, setChatError] = useState('');
+  const [chatLoading, setChatLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatSectionRef = useRef<HTMLDivElement>(null);
   const isRejected = verificationStatus === 'REJECTED';
 
-  // Get token from Zustand persist store
-  const getToken = () => {
-    try {
-      const stored = localStorage.getItem('domestic-services-auth');
-      if (stored) return JSON.parse(stored).state?.token;
-    } catch {}
-    return null;
+  const headers = (): Record<string, string> => {
+    const h: Record<string, string> = {};
+    if (authToken) h['Authorization'] = `Bearer ${authToken}`;
+    return h;
   };
 
+  const fetchMessages = useCallback(async () => {
+    if (!authToken) return;
+    try {
+      setChatError('');
+      const res = await fetch('/api/support/messages', { headers: headers() });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.messages) setMessages(data.messages);
+    } catch (err: any) {
+      console.error('[SupportChat] Fetch error:', err);
+      setChatError(err.message || 'Failed to load messages');
+    }
+  }, [authToken]);
+
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/support/messages', {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        const data = await res.json();
-        if (mounted && data.messages) setMessages(data.messages);
-      } catch {}
-    })();
-    const interval = setInterval(() => {
-      (async () => {
-        try {
-          const res = await fetch('/api/support/messages', {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          });
-          const data = await res.json();
-          if (data.messages) setMessages(data.messages);
-        } catch {}
-      })();
-    }, 5000);
-    return () => { mounted = false; clearInterval(interval); };
-  }, []);
+    setChatLoading(true);
+    fetchMessages().finally(() => setChatLoading(false));
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -712,25 +711,23 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   async function sendMessage() {
     if (!newMessage.trim() || sending) return;
     setSending(true);
+    setChatError('');
     try {
       const res = await fetch('/api/support/messages', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
+        headers: { ...headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newMessage }),
       });
-      if (res.ok) {
-        setNewMessage('');
-        // Immediately refresh messages after sending
-        const refreshRes = await fetch('/api/support/messages', {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
-        const refreshData = await refreshRes.json();
-        if (refreshData.messages) setMessages(refreshData.messages);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Send failed (${res.status})`);
       }
-    } catch {}
+      setNewMessage('');
+      await fetchMessages();
+    } catch (err: any) {
+      console.error('[SupportChat] Send error:', err);
+      setChatError(err.message || 'Failed to send message');
+    }
     setSending(false);
   }
 
@@ -793,9 +790,20 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
             <span className="text-sm font-medium text-gray-700">Chat with Admin</span>
           </div>
 
+          {/* Error banner */}
+          {chatError && (
+            <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-red-600 text-xs flex items-center justify-between">
+              <span>{chatError}</span>
+              <button onClick={() => setChatError('')} className="text-red-400 hover:text-red-600"><X className="w-3 h-3" /></button>
+            </div>
+          )}
+
           {/* Messages */}
           <div className="h-64 overflow-y-auto p-4 space-y-3">
-            {messages.length === 0 && (
+            {chatLoading && messages.length === 0 && (
+              <p className="text-center text-sm text-gray-400 py-8">Loading messages...</p>
+            )}
+            {!chatLoading && messages.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">No messages yet. Say hello to the admin!</p>
             )}
             {messages.map((msg: any) => {
@@ -853,6 +861,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
 
 // ==================== DASHBOARD VIEW ====================
 function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) {
+  const authToken = useAuthStore((s) => s.token);
   const [activeTab, setActiveTab] = useState<string>(user.role === 'PROVIDER' ? 'job-offers' : 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifs, setNotifs] = useState<{ notifications: any[]; unreadCount: number }>({ notifications: [], unreadCount: 0 });
@@ -867,24 +876,24 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
 
   // Poll support chat unread count for admin
   useEffect(() => {
-    if (user.role !== 'ADMIN') return;
+    if (user.role !== 'ADMIN' || !authToken) return;
     const fetchUnread = async () => {
       try {
-        const stored = localStorage.getItem('domestic-services-auth');
-        const token = stored ? JSON.parse(stored).state?.token : null;
-        if (!token) return;
-        const res = await fetch('/api/support/messages', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/support/messages', { headers: { Authorization: `Bearer ${authToken}` } });
+        if (!res.ok) return;
         const data = await res.json();
         if (data.unreadCounts) {
           const total = Object.values(data.unreadCounts).reduce((sum: number, n: any) => sum + (n || 0), 0);
           setSupportUnread(total);
         }
-      } catch {}
+      } catch (err) {
+        console.error('[Dashboard] Support unread poll error:', err);
+      }
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 5000);
     return () => clearInterval(interval);
-  }, [user.role]);
+  }, [user.role, authToken]);
 
   const verificationStatus = user.role === 'PROVIDER' ? (user.provider?.verificationStatus || 'PENDING') : null;
 
@@ -2233,6 +2242,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
 
 // ==================== ADMIN SUPPORT CHAT ====================
 function AdminSupportChat({ user }: { user: any }) {
+  const authToken = useAuthStore((s) => s.token);
   const [conversations, setConversations] = useState<any[]>([]);
   const [lastMessages, setLastMessages] = useState<Record<string, any>>({});
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
@@ -2240,85 +2250,101 @@ function AdminSupportChat({ user }: { user: any }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [chatLoading, setChatLoading] = useState(true);
+  const [chatError, setChatError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get token from Zustand persist store
-  const getToken = () => {
-    try {
-      const stored = localStorage.getItem('domestic-services-auth');
-      if (stored) return JSON.parse(stored).state?.token;
-    } catch {}
-    return null;
+  const headers = (): Record<string, string> => {
+    const h: Record<string, string> = {};
+    if (authToken) h['Authorization'] = `Bearer ${authToken}`;
+    return h;
   };
 
-  const headers = () => ({ Authorization: `Bearer ${getToken()}` });
-
   const loadConversations = useCallback(async () => {
+    if (!authToken) return;
     try {
       const res = await fetch('/api/support/messages', { headers: headers() });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('[AdminChat] Load conversations error:', res.status, errData);
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
       if (data.conversations) {
         setConversations(data.conversations);
         setLastMessages(data.lastMessages || {});
         setUnreadCounts(data.unreadCounts || {});
       }
-    } catch {}
-  }, []);
+    } catch (err: any) {
+      console.error('[AdminChat] Load conversations failed:', err);
+      setChatError(err.message || 'Failed to load conversations');
+    }
+  }, [authToken]);
 
   const loadChat = useCallback(async (userId: string) => {
+    if (!authToken) return;
     try {
+      setChatError('');
       const res = await fetch(`/api/support/messages?userId=${userId}`, { headers: headers() });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('[AdminChat] Load chat error:', res.status, errData);
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
       const data = await res.json();
+      console.log('[AdminChat] Messages loaded:', data.messages?.length || 0, 'messages for user', userId);
       if (data.messages) setMessages(data.messages);
-    } catch {}
-  }, []);
+    } catch (err: any) {
+      console.error('[AdminChat] Load chat failed:', err);
+      setChatError(err.message || 'Failed to load messages');
+    }
+  }, [authToken]);
 
+  // Initial load
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch('/api/support/messages', { headers: headers() });
-        const data = await res.json();
-        if (data.conversations) {
-          setConversations(data.conversations);
-          setLastMessages(data.lastMessages || {});
-          setUnreadCounts(data.unreadCounts || {});
-        }
-      } catch {}
-    })();
-  }, []);
+    loadConversations().finally(() => setChatLoading(false));
+  }, [loadConversations]);
+
+  // When a user is selected, load their chat + polling
   useEffect(() => {
     if (!selectedUser) return;
     let mounted = true;
+    setMessages([]);
     (async () => {
-      try {
-        const res = await fetch(`/api/support/messages?userId=${selectedUser}`, { headers: headers() });
-        const data = await res.json();
-        if (mounted && data.messages) setMessages(data.messages);
-      } catch {}
+      await loadChat(selectedUser);
     })();
     const interval = setInterval(() => {
-      loadConversations();
-      if (selectedUser) loadChat(selectedUser);
+      if (mounted) {
+        loadConversations();
+        loadChat(selectedUser);
+      }
     }, 5000);
     return () => { mounted = false; clearInterval(interval); };
   }, [selectedUser, loadChat, loadConversations]);
+
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   async function sendMessage() {
     if (!newMessage.trim() || !selectedUser || sending) return;
     setSending(true);
+    setChatError('');
     try {
       const res = await fetch('/api/support/messages', {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: selectedUser, content: newMessage }),
       });
-      if (res.ok) {
-        setNewMessage('');
-        loadChat(selectedUser);
-        loadConversations();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Send failed (${res.status})`);
       }
-    } catch {}
+      setNewMessage('');
+      await loadChat(selectedUser);
+      await loadConversations();
+    } catch (err: any) {
+      console.error('[AdminChat] Send failed:', err);
+      setChatError(err.message || 'Failed to send message');
+    }
     setSending(false);
   }
 
@@ -2330,8 +2356,17 @@ function AdminSupportChat({ user }: { user: any }) {
           <h3 className="text-sm font-semibold text-gray-900">Support Chats</h3>
           <p className="text-[11px] text-gray-500 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
         </div>
+        {/* Error banner */}
+        {chatError && (
+          <div className="px-2 py-1.5 bg-red-50 border-b border-red-100 text-red-600 text-[10px] flex items-center justify-between">
+            <span className="truncate mr-1">{chatError}</span>
+            <button onClick={() => setChatError('')} className="text-red-400 hover:text-red-600 flex-shrink-0"><X className="w-3 h-3" /></button>
+          </div>
+        )}
         <div className="flex-1 overflow-y-auto">
-          {conversations.length === 0 ? (
+          {chatLoading && conversations.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8 px-4">Loading...</p>
+          ) : conversations.length === 0 ? (
             <p className="text-sm text-gray-400 text-center py-8 px-4">No support conversations yet</p>
           ) : (
             conversations.map((c: any) => {
@@ -2340,7 +2375,7 @@ function AdminSupportChat({ user }: { user: any }) {
               return (
                 <button
                   key={c.id}
-                  onClick={() => { setSelectedUser(c.id); loadChat(c.id); }}
+                  onClick={() => setSelectedUser(c.id)}
                   className={`w-full text-left px-3 py-2 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedUser === c.id ? 'bg-orange-50' : ''}`}
                 >
                   <div className="flex items-center gap-2">
@@ -2412,6 +2447,14 @@ function AdminSupportChat({ user }: { user: any }) {
               })}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Send error */}
+            {chatError && selectedUser && (
+              <div className="px-3 py-1.5 bg-red-50 border-t border-red-100 text-red-600 text-[10px] flex items-center justify-between">
+                <span className="truncate mr-1">{chatError}</span>
+                <button onClick={() => setChatError('')} className="text-red-400 hover:text-red-600 flex-shrink-0"><X className="w-3 h-3" /></button>
+              </div>
+            )}
 
             <div className="px-3 py-2 border-t border-gray-100">
               <div className="flex gap-2">

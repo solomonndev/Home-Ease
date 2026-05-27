@@ -7,11 +7,13 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
     if (!user) {
+      console.log('[SupportMessages GET] Unauthorized - no valid user from token');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    console.log(`[SupportMessages GET] user=${user.id} role=${user.role} userId=${userId || 'none'}`);
 
     if (user.role === 'ADMIN' && !userId) {
       // Admin without userId — return list of conversations
@@ -57,7 +59,8 @@ export async function GET(request: NextRequest) {
         unreadCounts[uid] = count;
       }
 
-      return NextResponse.json({ conversations: users, lastMessages, unreadCounts });
+      console.log(`[SupportMessages GET] Returning ${users.length} conversations`);
+    return NextResponse.json({ conversations: users, lastMessages, unreadCounts });
     }
 
     // Get messages for a specific conversation
@@ -97,6 +100,7 @@ export async function GET(request: NextRequest) {
       data: { read: true },
     });
 
+    console.log(`[SupportMessages GET] Returning ${messages.length} messages for ${user.role}`);
     return NextResponse.json({ messages });
   } catch (error) {
     console.error('Support messages GET error:', error);
@@ -135,6 +139,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Receiver is required' }, { status: 400 });
     }
 
+    console.log(`[SupportMessages POST] user=${user.id} → receiver=${targetReceiverId} content="${content.substring(0, 50)}"`);
+
     const message = await db.supportMessage.create({
       data: {
         senderId: user.id,
@@ -156,6 +162,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log(`[SupportMessages POST] Message created id=${message.id}`);
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
     console.error('Support messages POST error:', error);
