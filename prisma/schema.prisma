@@ -3,26 +3,20 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
-
-// ============================================================
-// TO DEPLOY TO VERCEL/RAILWAY:
-// 1. Change provider below to "postgresql"
-// 2. Set DATABASE_URL to your PostgreSQL connection string
-// 3. Run: npx prisma db push
-// ============================================================
 
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
-  name           String
+  name           String   @db.VarChar(191)
   phone          String?
-  passwordHash   String
-  role           String   @default("CLIENT") // CLIENT, PROVIDER, ADMIN
+  passwordHash   String   @db.VarChar(255)
+  role           String   @default("CLIENT") @db.VarChar(20) // CLIENT, PROVIDER, ADMIN
   avatarUrl      String?
-  status         String   @default("ACTIVE") // ACTIVE, SUSPENDED, INACTIVE
+  status         String   @default("ACTIVE") @db.VarChar(20) // ACTIVE, SUSPENDED, INACTIVE
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -39,14 +33,14 @@ model Provider {
   id                 String   @id @default(cuid())
   userId             String   @unique
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skills             String   // comma-separated service types
+  skills             String   @db.Text // comma-separated service types
   bio                String?
   hourlyRate         Float    @default(0)
   rating             Float    @default(0)
   totalReviews       Int      @default(0)
   location           String?
-  availability       String   @default("WEEKDAYS") // WEEKDAYS, WEEKENDS, ALL_WEEK, CUSTOM
-  verificationStatus String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  availability       String   @default("WEEKDAYS") @db.VarChar(20) // WEEKDAYS, WEEKENDS, ALL_WEEK, CUSTOM
+  verificationStatus String   @default("PENDING") @db.VarChar(20) // PENDING, VERIFIED, REJECTED
   completedJobs      Int      @default(0)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -67,13 +61,13 @@ model ServiceRequest {
   client         User      @relation("ClientRequests", fields: [clientId], references: [id])
   providerId     String?
   provider       Provider? @relation("ProviderAssignments", fields: [providerId], references: [id])
-  serviceType    String    // CLEANING, COOKING, CAREGIVING, PLUMBING, LAUNDRY, MAINTENANCE, OTHER
+  serviceType    String    @db.VarChar(50) // CLEANING, COOKING, CAREGIVING, PLUMBING, LAUNDRY, MAINTENANCE, OTHER
   description    String?
-  location       String
+  location       String   @db.VarChar(500)
   requestedDate  DateTime
-  requestedTime  String    // e.g., "09:00"
-  status         String    @default("PENDING") // PENDING, MATCHED, ACCEPTED, IN_PROGRESS, AWAITING_PAYMENT, COMPLETED, CANCELLED
-  paymentStatus  String    @default("PENDING") // PENDING, HELD_IN_ESCROW, RELEASED, REFUNDED
+  requestedTime  String   @db.VarChar(10) // e.g., "09:00"
+  status         String    @default("PENDING") @db.VarChar(30) // PENDING, MATCHED, ACCEPTED, IN_PROGRESS, AWAITING_PAYMENT, COMPLETED, CANCELLED
+  paymentStatus  String    @default("PENDING") @db.VarChar(30) // PENDING, HELD_IN_ESCROW, RELEASED, REFUNDED
   amount         Float     @default(0)
   checkInTime    DateTime? // when artisan starts working (timer starts)
   checkOutTime   DateTime? // when artisan finishes work (timer stops)
@@ -97,11 +91,11 @@ model Transaction {
   amount         Float    // total amount paid by client
   platformFee    Float    @default(0) // platform service fee deducted from provider payout
   providerPayout Float    @default(0) // amount to be paid out to provider (amount - platformFee)
-  paymentMethod  String   @default("CARD") // CARD, MOBILE_MONEY, WALLET, BANK_TRANSFER
-  status         String   @default("PENDING") // PENDING, ESCROW, COMPLETED, FAILED, REFUNDED
+  paymentMethod  String   @default("CARD") @db.VarChar(20) // CARD, MOBILE_MONEY, WALLET, BANK_TRANSFER
+  status         String   @default("PENDING") @db.VarChar(20) // PENDING, ESCROW, COMPLETED, FAILED, REFUNDED
   paidOutAt      DateTime? // when payout was made to provider's bank account
   transferRef    String?  // Paystack transfer reference
-  transferStatus String?  // PENDING, PROCESSING, SUCCESS, FAILED, REVERSED
+  transferStatus String?  @db.VarChar(20) // PENDING, PROCESSING, SUCCESS, FAILED, REVERSED
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -123,7 +117,7 @@ model Notification {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // SERVICE_REQUEST, PAYMENT, SYSTEM_ALERT, MATCH, MESSAGE
+  type      String   @db.VarChar(30) // SERVICE_REQUEST, PAYMENT, SYSTEM_ALERT, MATCH, MESSAGE
   title     String
   message   String
   read      Boolean  @default(false)
@@ -144,7 +138,7 @@ model AdminLog {
   id        String   @id @default(cuid())
   adminId   String
   admin     User     @relation(fields: [adminId], references: [id])
-  action    String
+  action    String   @db.VarChar(100)
   details   String?
   createdAt DateTime @default(now())
 }
