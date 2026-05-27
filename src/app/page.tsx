@@ -671,12 +671,21 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   const chatSectionRef = useRef<HTMLDivElement>(null);
   const isRejected = verificationStatus === 'REJECTED';
 
+  // Get token from Zustand persist store
+  const getToken = () => {
+    try {
+      const stored = localStorage.getItem('domestic-services-auth');
+      if (stored) return JSON.parse(stored).state?.token;
+    } catch {}
+    return null;
+  };
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const res = await fetch('/api/support/messages', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+          headers: { Authorization: `Bearer ${getToken()}` },
         });
         const data = await res.json();
         if (mounted && data.messages) setMessages(data.messages);
@@ -686,7 +695,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
       (async () => {
         try {
           const res = await fetch('/api/support/messages', {
-            headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+            headers: { Authorization: `Bearer ${getToken()}` },
           });
           const data = await res.json();
           if (data.messages) setMessages(data.messages);
@@ -708,7 +717,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('homeease_token')}`,
+          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ content: newMessage }),
       });
@@ -716,7 +725,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
         setNewMessage('');
         // Immediately refresh messages after sending
         const refreshRes = await fetch('/api/support/messages', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+          headers: { Authorization: `Bearer ${getToken()}` },
         });
         const refreshData = await refreshRes.json();
         if (refreshData.messages) setMessages(refreshData.messages);
