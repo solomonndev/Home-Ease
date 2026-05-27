@@ -859,10 +859,32 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [supportChatUser, setSupportChatUser] = useState<string | null>(null);
   const [supportMessages, setSupportMessages] = useState<any[]>([]);
+  const [supportUnread, setSupportUnread] = useState(0);
 
   useEffect(() => {
     api.getNotifications().then(setNotifs).catch(() => {});
   }, []);
+
+  // Poll support chat unread count for admin
+  useEffect(() => {
+    if (user.role !== 'ADMIN') return;
+    const fetchUnread = async () => {
+      try {
+        const stored = localStorage.getItem('domestic-services-auth');
+        const token = stored ? JSON.parse(stored).state?.token : null;
+        if (!token) return;
+        const res = await fetch('/api/support/messages', { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.unreadCounts) {
+          const total = Object.values(data.unreadCounts).reduce((sum: number, n: any) => sum + (n || 0), 0);
+          setSupportUnread(total);
+        }
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 5000);
+    return () => clearInterval(interval);
+  }, [user.role]);
 
   const verificationStatus = user.role === 'PROVIDER' ? (user.provider?.verificationStatus || 'PENDING') : null;
 
@@ -922,7 +944,13 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
-                <span>{item.icon}</span>
+                <span className="relative">{item.icon}
+                  {item.id === 'support-chat' && supportUnread > 0 && (
+                    <span className="absolute -top-1 -right-1.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {supportUnread > 9 ? '9+' : supportUnread}
+                    </span>
+                  )}
+                </span>
                 <span>{item.label}</span>
               </button>
             ))}

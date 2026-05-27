@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
           { senderId: user.id, receiverId: userId },
         ]
       };
-    } else if (user.role === 'PROVIDER') {
+    } else if (user.role === 'PROVIDER' || user.role === 'CLIENT') {
       const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
       if (!admin) return NextResponse.json({ messages: [] });
       where = {
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     let targetReceiverId = receiverId;
 
     if (!targetReceiverId) {
-      if (user.role === 'PROVIDER') {
+      if (user.role === 'PROVIDER' || user.role === 'CLIENT') {
         const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
         if (!admin) return NextResponse.json({ error: 'No admin found' }, { status: 404 });
         targetReceiverId = admin.id;
