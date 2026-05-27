@@ -2274,12 +2274,12 @@ function AdminSupportChat({ user }: { user: any }) {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex bg-white rounded-xl border border-gray-100 overflow-hidden">
+    <div className="max-w-5xl mx-auto flex bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ height: 'calc(100vh - 8rem)' }}>
       {/* Conversations list */}
-      <div className={`w-72 border-r border-gray-100 flex flex-col ${selectedUser ? 'hidden lg:flex' : ''}`}>
-        <div className="p-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900">Support Chats</h3>
-          <p className="text-xs text-gray-500 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
+      <div className={`w-56 border-r border-gray-100 flex flex-col ${selectedUser ? 'hidden lg:flex' : ''}`}>
+        <div className="px-3 py-2.5 border-b border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900">Support Chats</h3>
+          <p className="text-[11px] text-gray-500 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
@@ -2292,21 +2292,21 @@ function AdminSupportChat({ user }: { user: any }) {
                 <button
                   key={c.id}
                   onClick={() => { setSelectedUser(c.id); loadChat(c.id); }}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedUser === c.id ? 'bg-orange-50' : ''}`}
+                  className={`w-full text-left px-3 py-2 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedUser === c.id ? 'bg-orange-50' : ''}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-sm flex-shrink-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-xs flex-shrink-0">
                       {c.name?.charAt(0) || '?'}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
+                        <p className="text-xs font-medium text-gray-900 truncate">{c.name}</p>
                         {unread > 0 && (
-                          <span className="ml-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center flex-shrink-0">{unread}</span>
+                          <span className="ml-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center flex-shrink-0">{unread}</span>
                         )}
                       </div>
                       {lastMsg && (
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{lastMsg.sender?.name}: {lastMsg.content}</p>
+                        <p className="text-[11px] text-gray-500 truncate mt-0.5">{lastMsg.content}</p>
                       )}
                       <p className="text-[10px] text-gray-400 mt-0.5">
                         {c.role === 'PROVIDER' ? `Provider • ${c.provider?.verificationStatus || 'PENDING'}` : c.role}
@@ -2324,20 +2324,20 @@ function AdminSupportChat({ user }: { user: any }) {
       <div className="flex-1 flex flex-col">
         {selectedUser ? (
           <>
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+            <div className="px-3 py-2 border-b border-gray-100 flex items-center gap-2">
               <button onClick={() => setSelectedUser(null)} className="lg:hidden text-gray-500 hover:text-gray-700">
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </button>
-              <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-sm">
+              <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-xs">
                 {conversations.find((c: any) => c.id === selectedUser)?.name?.charAt(0) || '?'}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{conversations.find((c: any) => c.id === selectedUser)?.name}</p>
-                <p className="text-xs text-gray-500">{conversations.find((c: any) => c.id === selectedUser)?.role}</p>
+                <p className="text-xs font-medium text-gray-900">{conversations.find((c: any) => c.id === selectedUser)?.name}</p>
+                <p className="text-[11px] text-gray-500">{conversations.find((c: any) => c.id === selectedUser)?.role}</p>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messages.length === 0 && (
                 <p className="text-center text-sm text-gray-400 py-8">No messages in this conversation</p>
               )}
@@ -2347,14 +2347,14 @@ function AdminSupportChat({ user }: { user: any }) {
                   <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <div className="max-w-[70%]">
                       {!isMe && (
-                        <p className="text-xs font-medium text-gray-500 mb-1 ml-1">{msg.sender?.name}</p>
+                        <p className="text-[11px] font-medium text-gray-500 mb-0.5 ml-1">{msg.sender?.name}</p>
                       )}
-                      <div className={`px-3 py-2 rounded-xl text-sm whitespace-pre-wrap ${
+                      <div className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-pre-wrap ${
                         isMe ? 'bg-orange-500 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                       }`}>
                         {msg.content}
                       </div>
-                      <p className={`text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
+                      <p className={`text-[9px] text-gray-400 mt-0.5 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -2364,7 +2364,7 @@ function AdminSupportChat({ user }: { user: any }) {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-3 border-t border-gray-100">
+            <div className="px-3 py-2 border-t border-gray-100">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -2372,14 +2372,14 @@ function AdminSupportChat({ user }: { user: any }) {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  className="flex-1 px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                 />
                 <button
                   onClick={sendMessage}
                   disabled={sending || !newMessage.trim()}
-                  className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {sending ? '...' : <Send className="w-4 h-4" />}
+                  {sending ? '...' : <Send className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -2387,8 +2387,8 @@ function AdminSupportChat({ user }: { user: any }) {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-400">Select a conversation to start chatting</p>
+              <MessageSquare className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-xs text-gray-400">Select a conversation to start chatting</p>
             </div>
           </div>
         )}
