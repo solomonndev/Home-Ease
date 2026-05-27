@@ -24,3 +24,22 @@ Stage Summary:
   2. Push schema with `prisma db push`
   3. Create a Vercel project and set environment variables
   4. Deploy
+
+---
+Task ID: 1
+Agent: Main
+Task: Fix build failure - standalone copy error and lint errors
+
+Work Log:
+- Identified build script still referenced `.next/standalone/` directory which doesn't exist (removed `output: "standalone"` from next.config.ts in previous session)
+- Fixed `package.json` build script: removed `cp` commands for standalone, simplified to just `next build`
+- Fixed `package.json` start script: simplified to `next start`
+- Fixed 3 lint errors (`react-hooks/immutability` + `react-hooks/set-state-in-effect`) in `src/app/page.tsx`:
+  - `ProviderRestrictedView`: Refactored `loadMessages` to use async IIFE inside `useEffect` instead of calling function with setState before declaration
+  - `AdminSupportChat`: Refactored `loadConversations` and `loadChat` using async IIFE patterns inside `useEffect` to avoid synchronous setState
+  - Both components now use `(async () => { ... })()` pattern inside effects for initial data fetch
+
+Stage Summary:
+- Build now passes: `bun run build` completes successfully
+- Lint now passes: `bun run lint` exits clean
+- Dev server running on port 3000

@@ -671,24 +671,33 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   const isRejected = verificationStatus === 'REJECTED';
 
   useEffect(() => {
-    loadMessages();
-    const interval = setInterval(loadMessages, 5000);
-    return () => clearInterval(interval);
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/support/messages', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+        });
+        const data = await res.json();
+        if (mounted && data.messages) setMessages(data.messages);
+      } catch {}
+    })();
+    const interval = setInterval(() => {
+      (async () => {
+        try {
+          const res = await fetch('/api/support/messages', {
+            headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
+          });
+          const data = await res.json();
+          if (data.messages) setMessages(data.messages);
+        } catch {}
+      })();
+    }, 5000);
+    return () => { mounted = false; clearInterval(interval); };
   }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  async function loadMessages() {
-    try {
-      const res = await fetch('/api/support/messages', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('homeease_token')}` },
-      });
-      const data = await res.json();
-      if (data.messages) setMessages(data.messages);
-    } catch {}
-  }
 
   async function sendMessage() {
     if (!newMessage.trim() || sending) return;
@@ -2181,18 +2190,7 @@ function AdminSupportChat({ user }: { user: any }) {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { loadConversations(); }, []);
-  useEffect(() => {
-    if (selectedUser) loadChat(selectedUser);
-    const interval = setInterval(() => {
-      loadConversations();
-      if (selectedUser) loadChat(selectedUser);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [selectedUser]);
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-
-  async function loadConversations() {
+  const loadConversations = useCallback(async () => {
     try {
       const res = await api.fetch('/api/support/messages');
       const data = await res.json();
@@ -2202,15 +2200,46 @@ function AdminSupportChat({ user }: { user: any }) {
         setUnreadCounts(data.unreadCounts || {});
       }
     } catch {}
-  }
+  }, []);
 
-  async function loadChat(userId: string) {
+  const loadChat = useCallback(async (userId: string) => {
     try {
       const res = await api.fetch(`/api/support/messages?userId=${userId}`);
       const data = await res.json();
       if (data.messages) setMessages(data.messages);
     } catch {}
-  }
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.fetch('/api/support/messages');
+        const data = await res.json();
+        if (data.conversations) {
+          setConversations(data.conversations);
+          setLastMessages(data.lastMessages || {});
+          setUnreadCounts(data.unreadCounts || {});
+        }
+      } catch {}
+    })();
+  }, []);
+  useEffect(() => {
+    if (!selectedUser) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await api.fetch(`/api/support/messages?userId=${selectedUser}`);
+        const data = await res.json();
+        if (mounted && data.messages) setMessages(data.messages);
+      } catch {}
+    })();
+    const interval = setInterval(() => {
+      loadConversations();
+      if (selectedUser) loadChat(selectedUser);
+    }, 5000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, [selectedUser, loadChat, loadConversations]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   async function sendMessage() {
     if (!newMessage.trim() || !selectedUser || sending) return;
