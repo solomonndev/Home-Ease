@@ -655,15 +655,7 @@ function AuthDialog({
             )}
           </div>
 
-          {/* Demo accounts */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <p className="text-xs text-gray-400 mb-2 text-center">Demo Accounts</p>
-            <div className="space-y-1 text-xs text-gray-500">
-              <div className="flex justify-between"><span>Client:</span><span>adaeze@example.com / client123</span></div>
-              <div className="flex justify-between"><span>Provider:</span><span>ngozi@example.com / provider123</span></div>
-              <div className="flex justify-between"><span>Admin:</span><span>admin@domestic-services.com / admin123</span></div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
