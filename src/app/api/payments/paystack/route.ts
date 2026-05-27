@@ -39,7 +39,15 @@ export async function POST(request: NextRequest) {
     // Check if payment already exists
     const existingTx = await db.transaction.findUnique({ where: { requestId } });
     if (existingTx) {
-      return NextResponse.json({ error: 'Payment already processed for this request' }, { status: 400 });
+      return NextResponse.json({
+        alreadyPaid: true,
+        status: existingTx.status,
+        message: existingTx.status === 'ESCROW'
+          ? 'Payment was already made and is held in escrow.'
+          : existingTx.status === 'COMPLETED'
+          ? 'Payment has already been completed.'
+          : 'Payment already processed for this request.',
+      }, { status: 200 });
     }
 
     const amount = serviceRequest.amount;
@@ -68,7 +76,6 @@ export async function POST(request: NextRequest) {
         email: user.email,
         amount: amountInKobo,
         reference: `HE-${requestId}-${Date.now()}`,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payments/paystack/verify`,
         metadata: {
           requestId,
           clientId: user.id,
@@ -106,6 +113,7 @@ export async function POST(request: NextRequest) {
       accessCode: paystackData.data.access_code,
       amount,
       requestId,
+      email: user.email,
     });
   } catch (error) {
     console.error('Paystack init error:', error);

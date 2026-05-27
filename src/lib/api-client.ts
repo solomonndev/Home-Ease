@@ -29,7 +29,8 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+      const msg = error.details ? `${error.error}: ${error.details}` : (error.error || `HTTP ${response.status}`);
+      throw new Error(msg);
     }
 
     return response.json();
@@ -65,6 +66,13 @@ class ApiClient {
       body: JSON.stringify(data),
     });
     return result;
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<{ message: string }>('/profile', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
   }
 
   // Services
@@ -217,6 +225,19 @@ class ApiClient {
     return this.request<any>('/admin', {
       method: 'POST',
       body: JSON.stringify({ action, targetId, details }),
+    });
+  }
+
+  // Payouts (Admin)
+  async getPayouts(status?: string) {
+    const query = status ? `?status=${status}` : '';
+    return this.request<{ transactions: any[]; summary: { pendingPayout: number; inTransit: number; totalPaid: number; totalFailed: number } }>(`/payments/payout${query}`);
+  }
+
+  async initiatePayout(transactionId: string) {
+    return this.request<{ success: boolean; transfer: any; transaction: any }>('/payments/payout', {
+      method: 'POST',
+      body: JSON.stringify({ transactionId }),
     });
   }
 }

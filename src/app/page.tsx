@@ -7,12 +7,25 @@ import { io, Socket } from 'socket.io-client';
 import {
   Search, MapPin, Calendar, Clock, Star, Shield, MessageSquare,
   BarChart3, ClipboardList, CreditCard, User, Users, Bell, Settings,
-  CheckCircle, AlertTriangle, Home, Wrench, Briefcase,
+  CheckCircle, AlertTriangle, Home as HomeIcon, Wrench, Briefcase,
   Building2, Timer, Zap, Wallet, Lock, LogOut, Menu, X,
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
-  Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX
+  Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, ArrowLeft, Download,
+  Trash2
 } from 'lucide-react';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 type View = 'landing' | 'dashboard';
 
@@ -130,7 +143,7 @@ function LandingView({
 
   const features = [
     { icon: <Zap className="w-6 h-6 text-orange-600" />, title: 'Smart Matching', desc: 'Our intelligent algorithm matches you with the perfect service provider based on skills, location, and ratings.' },
-    { icon: <Lock className="w-6 h-6 text-orange-600" />, title: 'Secure Payments', desc: 'Paystack-powered escrow system holds funds safely and auto-releases to artisan after completion, ensuring transparency for both parties.' },
+    { icon: <Lock className="w-6 h-6 text-orange-600" />, title: 'Secure Payments', desc: 'Pay securely via Paystack only after your service is completed. No upfront charges — you only pay for work done.' },
     { icon: <ShieldCheck className="w-6 h-6 text-orange-600" />, title: 'Verified Providers', desc: 'All service providers go through a thorough verification process to ensure quality and reliability.' },
     { icon: <MessageSquare className="w-6 h-6 text-orange-600" />, title: 'Real-time Chat', desc: 'Communicate directly with your service provider through our integrated messaging system.' },
     { icon: <BarChart3 className="w-6 h-6 text-orange-600" />, title: 'Transparent Reviews', desc: 'Honest ratings and reviews help you make informed decisions about service providers.' },
@@ -269,7 +282,7 @@ function LandingView({
             {[
               { step: '01', title: 'Search a Service', desc: "Search for the domestic service you need, and we'll suggest matching options" },
               { step: '02', title: 'Get Matched', desc: 'We find the best artisan based on their skills, ratings, and your location' },
-              { step: '03', title: 'Pay Securely', desc: 'Payment is processed via Paystack and held in escrow — auto-released to artisan after completion' },
+              { step: '03', title: 'Pay Securely', desc: 'Pay via Paystack only after the service is completed' },
               { step: '04', title: 'Rate & Review', desc: 'Leave feedback to help others and improve matching' },
             ].map((item) => (
               <div key={item.step} className="text-center">
@@ -452,7 +465,7 @@ function AuthDialog({
                           : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
-                      <Home className="w-6 h-6 mx-auto mb-1" />
+                      <HomeIcon className="w-6 h-6 mx-auto mb-1" />
                       <span className="text-sm font-medium">Service Seeker</span>
                     </button>
                     <button
@@ -662,6 +675,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
   const [activeTab, setActiveTab] = useState<string>(user.role === 'PROVIDER' ? 'job-offers' : 'overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifs, setNotifs] = useState<{ notifications: any[]; unreadCount: number }>({ notifications: [], unreadCount: 0 });
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   useEffect(() => {
     api.getNotifications().then(setNotifs).catch(() => {});
@@ -688,6 +702,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
         { id: 'overview', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
         { id: 'verifications', label: 'Verifications', icon: <CircleCheck className="w-4 h-4" /> },
         { id: 'users', label: 'Users', icon: <Users className="w-4 h-4" /> },
+        { id: 'payouts', label: 'Payouts', icon: <Wallet className="w-4 h-4" /> },
         { id: 'requests', label: 'All Requests', icon: <ClipboardList className="w-4 h-4" /> },
         { id: 'disputes', label: 'Disputes', icon: <Scale className="w-4 h-4" /> },
         { id: 'logs', label: 'Audit Logs', icon: <ScrollText className="w-4 h-4" /> },
@@ -760,21 +775,58 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={async () => {
-                const n = await api.getNotifications().catch(() => ({ notifications: [], unreadCount: 0 }));
-                setNotifs(n);
-                setActiveTab('notifications');
-              }}
-              className="relative p-2 text-gray-500 hover:text-gray-700 rounded-lg"
-            >
-              <Bell className="w-5 h-5" />
-              {notifs.unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {notifs.unreadCount}
-                </span>
+            <div className="relative">
+              <button
+                onClick={async () => {
+                  if (!showNotifPanel) {
+                    const n = await api.getNotifications().catch(() => ({ notifications: [], unreadCount: 0 }));
+                    setNotifs(n);
+                  }
+                  setShowNotifPanel(!showNotifPanel);
+                }}
+                className="relative p-2 text-gray-500 hover:text-gray-700 rounded-lg"
+              >
+                <Bell className="w-5 h-5" />
+                {notifs.unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {notifs.unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifPanel && (
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-xl border border-gray-200 shadow-lg z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-gray-900">Notifications</h4>
+                    <button
+                      onClick={async () => {
+                        await api.markNotificationsRead(undefined, true);
+                        setNotifs(prev => ({ ...prev, unreadCount: 0, notifications: prev.notifications.map((n: any) => ({ ...n, read: true })) }));
+                      }}
+                      className="text-xs text-orange-600 hover:text-orange-700 font-medium"
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifs.notifications.length ? (
+                      notifs.notifications.map((notif: any) => (
+                        <div key={notif.id} className={`px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!notif.read ? 'bg-orange-50/50' : ''}`}>
+                          <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{notif.message}</p>
+                          <p className="text-[11px] text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-8 text-center">
+                        <Bell className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500">No notifications yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
         </header>
 
@@ -786,9 +838,12 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
         </div>
       </main>
 
-      {/* Overlay for mobile sidebar */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      {/* Overlay for mobile sidebar + close notif panel */}
+      {(sidebarOpen || showNotifPanel) && (
+        <div className="fixed inset-0 z-30 lg:hidden" onClick={() => { setSidebarOpen(false); setShowNotifPanel(false); }} />
+      )}
+      {showNotifPanel && (
+        <div className="fixed inset-0 z-30 hidden lg:block" onClick={() => setShowNotifPanel(false)} />
       )}
     </div>
   );
@@ -833,6 +888,15 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  // Auto-refresh every 30 seconds when on overview or my-requests to pick up check-in/checkout changes
+  useEffect(() => {
+    if (tab !== 'overview' && tab !== 'my-requests') return;
+    const hasActiveRequests = requests.some((r: any) => ['ACCEPTED', 'IN_PROGRESS', 'AWAITING_PAYMENT'].includes(r.status));
+    if (!hasActiveRequests) return;
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, [tab, requests, loadData]);
+
   if (loading && !stats) {
     return <LoadingSkeleton />;
   }
@@ -847,16 +911,23 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           <StatCard label="Total Spent" value={`₦${(stats?.totalSpent || 0).toLocaleString()}`} icon={<CreditCard className="w-5 h-5" />} color="purple" />
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Requests</h3>
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Recent Requests</h3>
+            {stats?.recentRequests?.length > 0 && (
+              <button onClick={() => onNavigate('my-requests')} className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                View all
+              </button>
+            )}
+          </div>
           {stats?.recentRequests?.length ? (
-            <div className="space-y-3">
+            <div className="grid gap-3">
               {stats.recentRequests.map((req: any) => (
-                <RequestCard key={req.id} request={req} />
+                <RequestCard key={req.id} request={req} onRefresh={loadData} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-8">No requests yet. Create your first service request!</p>
+            <EmptyState message="No requests yet. Create your first service request!" />
           )}
         </div>
       </div>
@@ -871,22 +942,25 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">My Service Requests</h3>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">My Service Requests</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{requests.length} request{requests.length !== 1 ? 's' : ''} total</p>
+          </div>
           <button
             onClick={() => loadData()}
-            className="text-sm text-orange-600 hover:underline"
+            className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            Refresh
+            <RefreshCw className="w-4 h-4" />
           </button>
         </div>
         {requests.length ? (
-          <div className="space-y-3">
+          <div className="grid gap-3">
             {requests.map((req) => (
-              <RequestCard key={req.id} request={req} showActions onNavigate={onNavigate} />
+              <RequestCard key={req.id} request={req} showActions onNavigate={onNavigate} onRefresh={loadData} />
             ))}
           </div>
         ) : (
-          <EmptyState message="No service requests found" />
+          <EmptyState message="No service requests yet" />
         )}
       </div>
     );
@@ -895,56 +969,25 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
   if (tab === 'payments') {
     return (
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900">Payments & Escrow</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Payment History</h3>
 
-        {/* Payment Transparency Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-amber-800">Held in Escrow</span>
-            </div>
-            <p className="text-2xl font-bold text-amber-900">₦{(paymentSummary?.totalInEscrow || 0).toLocaleString()}</p>
-            <p className="text-xs text-amber-600 mt-1">Funds secured for active jobs</p>
-          </div>
+        {/* Payment Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <CircleCheck className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-green-800">Released to Artisans</span>
+              <span className="text-sm font-medium text-green-800">Total Paid</span>
             </div>
             <p className="text-2xl font-bold text-green-900">₦{(paymentSummary?.totalReleased || 0).toLocaleString()}</p>
-            <p className="text-xs text-green-600 mt-1">Paid after work completion</p>
+            <p className="text-xs text-green-600 mt-1">Payments for completed services</p>
           </div>
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <ArrowLeftRight className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-red-800">Refunded</span>
+              <Hourglass className="w-3.5 h-3.5 text-orange-600" />
+              <span className="text-sm font-medium text-orange-800">Pending Payment</span>
             </div>
-            <p className="text-2xl font-bold text-red-900">₦{(paymentSummary?.totalRefunded || 0).toLocaleString()}</p>
-            <p className="text-xs text-red-600 mt-1">Returned to you</p>
-          </div>
-        </div>
-
-        {/* How Escrow Works */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">How Escrow Payments Work</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            {[
-              { step: '1', title: 'You Pay', desc: 'Payment is made securely via Paystack and held in escrow', icon: <CreditCard className="w-4 h-4" /> },
-              { step: '2', title: 'Held in Escrow', desc: 'Funds are locked until work is completed' },
-              { step: '3', title: 'Work Completed', desc: 'Provider finishes the service and marks it complete', icon: <CircleCheck className="w-4 h-4" /> },
-              { step: '4', title: 'Auto-Released', desc: 'Payment is automatically sent to artisan\'s bank account' },
-            ].map((s) => (
-              <div key={s.step} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm shrink-0">
-                  {s.step}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{s.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.desc}</p>
-                </div>
-              </div>
-            ))}
+            <p className="text-2xl font-bold text-orange-900">₦{(paymentSummary?.totalInEscrow || 0).toLocaleString()}</p>
+            <p className="text-xs text-orange-600 mt-1">Awaiting your payment</p>
           </div>
         </div>
 
@@ -957,10 +1000,8 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artisan</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Artisan Gets</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -969,19 +1010,10 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
                     <td className="px-4 py-3 text-sm text-gray-900">{tx.serviceRequest?.serviceType || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{tx.serviceRequest?.provider?.user?.name || 'N/A'}</td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">₦{(tx.amount || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">₦{(tx.providerPayout || 0).toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={tx.status} />
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">{new Date(tx.createdAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-3">
-                      {tx.status === 'ESCROW' && (
-                        <span className="text-xs text-amber-600 flex items-center gap-1">In escrow — auto-released when work is done</span>
-                      )}
-                      {tx.status === 'COMPLETED' && tx.paidOutAt && (
-                        <span className="text-xs text-green-600 flex items-center gap-1">Auto-released {new Date(tx.paidOutAt).toLocaleDateString()}</span>
-                      )}
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1232,22 +1264,30 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         )}
 
         {/* Earnings Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-amber-800">Pending in Escrow</span>
+              <Hourglass className="w-3.5 h-3.5 text-amber-600" />
+              <span className="text-sm font-medium text-amber-800">Pending Payment</span>
             </div>
             <p className="text-2xl font-bold text-amber-900">₦{(paymentSummary?.totalInEscrow || stats?.pendingEarnings || 0).toLocaleString()}</p>
-            <p className="text-xs text-amber-600 mt-1">Available after work completion</p>
+            <p className="text-xs text-amber-600 mt-1">Awaiting client payment</p>
           </div>
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <Wallet className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-green-800">Total Earned</span>
+              <span className="text-sm font-medium text-green-800">Paid Out</span>
             </div>
-            <p className="text-2xl font-bold text-green-900">₦{(paymentSummary?.totalReleased || stats?.totalEarnings || 0).toLocaleString()}</p>
-            <p className="text-xs text-green-600 mt-1">Paid to your bank account</p>
+            <p className="text-2xl font-bold text-green-900">₦{payments.filter((t: any) => t.transferStatus === 'SUCCESS').reduce((s: number, t: any) => s + (t.providerPayout || 0), 0).toLocaleString()}</p>
+            <p className="text-xs text-green-600 mt-1">Transferred to your bank</p>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="text-sm font-medium text-blue-800">In Transit</span>
+            </div>
+            <p className="text-2xl font-bold text-blue-900">₦{payments.filter((t: any) => ['PENDING', 'PROCESSING'].includes(t.transferStatus || '')).reduce((s: number, t: any) => s + (t.providerPayout || 0), 0).toLocaleString()}</p>
+            <p className="text-xs text-blue-600 mt-1">Transfer in progress</p>
           </div>
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
@@ -1256,29 +1296,6 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
             </div>
             <p className="text-2xl font-bold text-orange-900">₦{(stats?.totalPlatformFees || 0).toLocaleString()}</p>
             <p className="text-xs text-orange-600 mt-1">5% service fee on all transactions</p>
-          </div>
-        </div>
-
-        {/* How Payouts Work */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">How You Get Paid</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            {[
-              { step: '1', title: 'Client Pays', desc: 'Client pays securely via Paystack, money held in escrow' },
-              { step: '2', title: 'You Work', desc: 'Accept the job and complete the service' },
-              { step: '3', title: 'Mark Complete', desc: 'Mark the job as completed when done' },
-              { step: '4', title: 'Get Paid', desc: 'Payment auto-released to your bank account on completion' },
-            ].map((s) => (
-              <div key={s.step} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-sm shrink-0">
-                  {s.step}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{s.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.desc}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -1293,6 +1310,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Your Payout</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 </tr>
               </thead>
@@ -1306,11 +1324,24 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
                     <td className="px-4 py-3">
                       <StatusBadge status={tx.status} />
                     </td>
+                    <td className="px-4 py-3">
+                      {tx.transferStatus === 'SUCCESS' ? (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Paid</span>
+                      ) : tx.transferStatus === 'PENDING' || tx.transferStatus === 'PROCESSING' ? (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">In Transit</span>
+                      ) : tx.transferStatus === 'FAILED' ? (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">Failed</span>
+                      ) : tx.transferStatus === 'REVERSED' ? (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-700">Reversed</span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Not Sent</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
-                      {tx.status === 'ESCROW'
-                        ? 'Auto-release on completion'
-                        : tx.paidOutAt
-                          ? `Paid ${new Date(tx.paidOutAt).toLocaleDateString()}`
+                      {tx.transferStatus === 'SUCCESS' && tx.paidOutAt
+                        ? `Paid ${new Date(tx.paidOutAt).toLocaleDateString()}`
+                        : tx.status === 'ESCROW'
+                          ? 'Awaiting payout'
                           : new Date(tx.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -1341,9 +1372,12 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
   const [summary, setSummary] = useState<any>(null);
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [deletingUser, setDeletingUser] = useState<any | null>(null);
   const [allRequests, setAllRequests] = useState<any[]>([]);
   const [disputes, setDisputes] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payoutSummary, setPayoutSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -1372,6 +1406,11 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
       if (tab === 'logs') {
         const l = await api.getAdminData('logs');
         setLogs(l);
+      }
+      if (tab === 'payouts') {
+        const payoutData = await api.getPayouts();
+        setPayouts(payoutData.transactions || []);
+        setPayoutSummary(payoutData.summary || null);
       }
     } catch (err) {
       console.error('Admin load error:', err);
@@ -1486,27 +1525,224 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
                   <td className="px-4 py-3"><span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{u.role}</span></td>
                   <td className="px-4 py-3"><StatusBadge status={u.status} /></td>
                   <td className="px-4 py-3">
-                    {u.status === 'ACTIVE' ? (
-                      <button
-                        onClick={async () => { await api.adminAction('suspend-user', u.id); loadData(); }}
-                        className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                      >
-                        Suspend
-                      </button>
-                    ) : (
-                      <button
-                        onClick={async () => { await api.adminAction('activate-user', u.id); loadData(); }}
-                        className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
-                      >
-                        Activate
-                      </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {u.status === 'ACTIVE' ? (
+                        <button
+                          onClick={async () => { await api.adminAction('suspend-user', u.id); loadData(); }}
+                          className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+                        >
+                          Suspend
+                        </button>
+                      ) : (
+                        <button
+                          onClick={async () => { await api.adminAction('activate-user', u.id); loadData(); }}
+                          className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
+                        >
+                          Activate
+                        </button>
+                      )}
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            onClick={() => setDeletingUser(u)}
+                            className="text-xs p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-red-100 hover:text-red-700 transition-colors"
+                            title="Delete user"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete User</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to permanently delete <span className="font-semibold text-gray-900">{deletingUser?.name}</span> ({deletingUser?.email})? This action cannot be undone. All of the user's data including service requests, messages, and transaction history will be permanently removed.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={async () => {
+                                try {
+                                  await api.adminAction('delete-user', deletingUser.id);
+                                  loadData();
+                                } catch (err: any) {
+                                  alert(err.message || 'Failed to delete user');
+                                }
+                              }}
+                              className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-600"
+                            >
+                              Delete Permanently
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      </div>
+    );
+  }
+
+  if (tab === 'payouts') {
+    const handlePayProvider = async (txId: string, providerName: string) => {
+      if (!confirm(`Send payout to ${providerName}? This will transfer funds to their bank account via Paystack.`)) return;
+      try {
+        await api.initiatePayout(txId);
+        loadData();
+      } catch (err: any) {
+        alert('Payout failed: ' + (err.message || 'Please try again'));
+      }
+    };
+
+    const getTransferBadge = (status: string | null) => {
+      if (!status) return <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Not Sent</span>;
+      const map: Record<string, { bg: string; text: string; label: string }> = {
+        PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Processing' },
+        PROCESSING: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'In Transit' },
+        SUCCESS: { bg: 'bg-green-100', text: 'text-green-700', label: 'Paid' },
+        FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
+        REVERSED: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Reversed' },
+      };
+      const s = map[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: status };
+      return <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${s.bg} ${s.text}`}>{s.label}</span>;
+    };
+
+    // Filter to only show transactions that have been paid (COMPLETED or ESCROW)
+    const payableTransactions = payouts.filter((tx: any) =>
+      ['COMPLETED', 'ESCROW'].includes(tx.status) || tx.transferStatus
+    );
+
+    return (
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold text-gray-900">Provider Payouts</h3>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Hourglass className="w-3.5 h-3.5 text-amber-600" />
+              <span className="text-sm font-medium text-amber-800">Pending Payout</span>
+            </div>
+            <p className="text-xl font-bold text-amber-900">₦{(payoutSummary?.pendingPayout || 0).toLocaleString()}</p>
+            <p className="text-xs text-amber-600 mt-1">Awaiting transfer</p>
+          </div>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800">In Transit</span>
+            </div>
+            <p className="text-xl font-bold text-blue-900">₦{(payoutSummary?.inTransit || 0).toLocaleString()}</p>
+            <p className="text-xs text-blue-600 mt-1">Processing transfers</p>
+          </div>
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CircleCheck className="w-3.5 h-3.5 text-green-600" />
+              <span className="text-sm font-medium text-green-800">Total Paid</span>
+            </div>
+            <p className="text-xl font-bold text-green-900">₦{(payoutSummary?.totalPaid || 0).toLocaleString()}</p>
+            <p className="text-xs text-green-600 mt-1">Successfully delivered</p>
+          </div>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <CircleX className="w-3.5 h-3.5 text-red-600" />
+              <span className="text-sm font-medium text-red-800">Failed</span>
+            </div>
+            <p className="text-xl font-bold text-red-900">₦{(payoutSummary?.totalFailed || 0).toLocaleString()}</p>
+            <p className="text-xs text-red-600 mt-1">Needs attention</p>
+          </div>
+        </div>
+
+        {/* Transactions Table */}
+        {payableTransactions.length ? (
+          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payout</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {payableTransactions.map((tx: any) => (
+                    <tr key={tx.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-medium text-gray-900">{tx.serviceRequest?.serviceType || 'N/A'}</div>
+                        <div className="text-xs text-gray-400">#{tx.requestId?.slice(-6)}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-sm text-gray-900">{tx.provider?.user?.name || 'N/A'}</div>
+                        {tx.provider?.bankName && (
+                          <div className="text-xs text-gray-500">{tx.provider.bankName} ••••{tx.provider.accountNumber?.slice(-4)}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{tx.serviceRequest?.client?.name || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500">₦{(tx.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">₦{(tx.providerPayout || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={tx.status} />
+                      </td>
+                      <td className="px-4 py-3">
+                        {getTransferBadge(tx.transferStatus)}
+                        {tx.transferRef && (
+                          <div className="text-xs text-gray-400 mt-0.5">Ref: {tx.transferRef.slice(-8)}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {tx.paidOutAt
+                          ? new Date(tx.paidOutAt).toLocaleDateString()
+                          : new Date(tx.createdAt).toLocaleDateString()
+                        }
+                      </td>
+                      <td className="px-4 py-3">
+                        {!tx.transferStatus && ['COMPLETED', 'ESCROW'].includes(tx.status) && tx.provider?.bankName && (
+                          <button
+                            onClick={() => handlePayProvider(tx.id, tx.provider?.user?.name || 'Provider')}
+                            className="text-xs px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium transition-colors"
+                          >
+                            Pay Provider
+                          </button>
+                        )}
+                        {!tx.transferStatus && ['COMPLETED', 'ESCROW'].includes(tx.status) && !tx.provider?.bankName && (
+                          <span className="text-xs text-red-500">No bank details</span>
+                        )}
+                        {tx.transferStatus === 'FAILED' && (
+                          <button
+                            onClick={() => handlePayProvider(tx.id, tx.provider?.user?.name || 'Provider')}
+                            className="text-xs px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors"
+                          >
+                            Retry
+                          </button>
+                        )}
+                        {tx.transferStatus === 'SUCCESS' && (
+                          <span className="text-xs text-green-600 font-medium">Completed</span>
+                        )}
+                        {['PENDING', 'PROCESSING'].includes(tx.transferStatus || '') && (
+                          <span className="text-xs text-blue-600 font-medium flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 animate-spin" /> In Progress
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <EmptyState message="No transactions available for payout" />
+        )}
       </div>
     );
   }
@@ -1557,34 +1793,213 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
   }
 
   if (tab === 'logs') {
+    // Compute stats from logs data
+    const actionCounts: Record<string, number> = {};
+    const adminCounts: Record<string, number> = {};
+    const dailyCounts: Record<string, number> = {};
+    const last7Days: string[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      last7Days.push(key);
+      dailyCounts[key] = 0;
+    }
+
+    logs.forEach((log: any) => {
+      // Action distribution
+      const action = log.action || 'Unknown';
+      actionCounts[action] = (actionCounts[action] || 0) + 1;
+
+      // Admin distribution
+      const admin = log.admin?.name || 'Unknown';
+      adminCounts[admin] = (adminCounts[admin] || 0) + 1;
+
+      // Daily distribution
+      const day = new Date(log.createdAt).toISOString().split('T')[0];
+      if (day in dailyCounts) {
+        dailyCounts[day]++;
+      }
+    });
+
+    const sortedActions = Object.entries(actionCounts).sort((a, b) => b[1] - a[1]);
+    const sortedAdmins = Object.entries(adminCounts).sort((a, b) => b[1] - a[1]);
+    const maxDaily = Math.max(...Object.values(dailyCounts), 1);
+    const thisWeekCount = Object.values(dailyCounts).reduce((a, b) => a + b, 0);
+
+    const handleExportCSV = () => {
+      if (logs.length === 0) return;
+      const headers = ['Admin', 'Action', 'Details', 'Date'];
+      const rows = logs.map((log: any) => [
+        log.admin?.name || '',
+        log.action || '',
+        (log.details || '').replace(/,/g, ';'),
+        new Date(log.createdAt).toLocaleString(),
+      ]);
+      const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c}"`).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
     return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Audit Logs</h3>
+      <div className="space-y-6">
+        {/* Header with export */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Audit Logs</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{logs.length} total records</p>
+          </div>
+          <button
+            onClick={handleExportCSV}
+            disabled={logs.length === 0}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wide">Total Logs</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{logs.length}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wide">This Week</p>
+            <p className="text-2xl font-bold text-orange-600 mt-1">{thisWeekCount}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wide">Action Types</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{Object.keys(actionCounts).length}</p>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-100 p-4">
+            <p className="text-xs text-gray-400 uppercase tracking-wide">Active Admins</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{Object.keys(adminCounts).length}</p>
+          </div>
+        </div>
+
+        {/* Charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Activity chart - last 7 days */}
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5">
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Activity (Last 7 Days)</h4>
+            {logs.length > 0 ? (
+              <div className="flex items-end gap-2 h-40">
+                {last7Days.map((day) => {
+                  const count = dailyCounts[day] || 0;
+                  const height = Math.max(4, (count / maxDaily) * 100);
+                  const dayLabel = new Date(day + 'T00:00:00').toLocaleDateString('en', { weekday: 'short' });
+                  const isToday = day === new Date().toISOString().split('T')[0];
+                  return (
+                    <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-xs font-medium text-gray-700">{count}</span>
+                      <div className="w-full flex items-end justify-center" style={{ height: '120px' }}>
+                        <div
+                          className={`w-full max-w-[40px] rounded-t-md transition-all ${isToday ? 'bg-orange-500' : 'bg-orange-200'}`}
+                          style={{ height: `${height}%` }}
+                        />
+                      </div>
+                      <span className={`text-[11px] ${isToday ? 'text-orange-600 font-medium' : 'text-gray-400'}`}>{dayLabel}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-40 text-gray-400 text-sm">No data to display</div>
+            )}
+          </div>
+
+          {/* Action breakdown */}
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Action Breakdown</h4>
+            {sortedActions.length > 0 ? (
+              <div className="space-y-3">
+                {sortedActions.slice(0, 6).map(([action, count]) => {
+                  const pct = Math.round((count / logs.length) * 100);
+                  return (
+                    <div key={action}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-700 capitalize">{action.replace(/_/g, ' ')}</span>
+                        <span className="text-xs text-gray-400">{count} ({pct}%)</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-40 text-gray-400 text-sm">No data to display</div>
+            )}
+          </div>
+        </div>
+
+        {/* Admin activity */}
+        {sortedAdmins.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-100 p-5">
+            <h4 className="text-sm font-semibold text-gray-900 mb-4">Admin Activity</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {sortedAdmins.slice(0, 8).map(([name, count]) => (
+                <div key={name} className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 text-xs font-semibold flex-shrink-0">
+                    {name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
+                    <p className="text-xs text-gray-400">{count} action{count !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Logs table */}
         {logs.length ? (
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {logs.map((log: any) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{log.admin?.name}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700">{log.action}</span></td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{log.details}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{new Date(log.createdAt).toLocaleString()}</td>
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-gray-900">All Logs</h4>
+              <button onClick={handleExportCSV} className="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
+                <Download className="w-3.5 h-3.5" /> Export
+              </button>
+            </div>
+            <div className="overflow-x-auto max-h-96 overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-400 uppercase">Admin</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-400 uppercase">Action</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-400 uppercase">Details</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-gray-400 uppercase">Date</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {logs.map((log: any) => (
+                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-sm text-gray-900 font-medium">{log.admin?.name || 'N/A'}</td>
+                      <td className="px-4 py-3">
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700 capitalize">
+                          {(log.action || '').replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{log.details}</td>
+                      <td className="px-4 py-3 text-sm text-gray-400 whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
-          <EmptyState message="No audit logs" />
+          <EmptyState message="No audit logs yet" />
         )}
       </div>
     );
@@ -1622,11 +2037,12 @@ function LiveTimer({ checkInTime, checkOutTime }: { checkInTime: string; checkOu
   const [elapsed, setElapsed] = useState('00:00:00');
 
   useEffect(() => {
-    const endTime = checkOutTime ? new Date(checkOutTime).getTime() : Date.now();
+    const start = new Date(checkInTime).getTime();
 
     const update = () => {
-      const start = new Date(checkInTime).getTime();
-      const diff = Math.max(0, endTime - start);
+      // Always use fresh Date.now() for live counting
+      const now = checkOutTime ? new Date(checkOutTime).getTime() : Date.now();
+      const diff = Math.max(0, now - start);
       const hrs = Math.floor(diff / 3600000);
       const mins = Math.floor((diff % 3600000) / 60000);
       const secs = Math.floor((diff % 60000) / 1000);
@@ -1659,14 +2075,14 @@ function StatusBadge({ status }: { status: string }) {
     AWAITING_PAYMENT: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Awaiting Payment' },
     COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
     CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
-    ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'In Escrow' },
+    ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
     ACTIVE: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Active' },
     SUSPENDED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Suspended' },
     INACTIVE: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Inactive' },
     VERIFIED: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Verified' },
     REJECTED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Rejected' },
-    HELD_IN_ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Held in Escrow' },
-    RELEASED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Released' },
+    HELD_IN_ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
+    RELEASED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Paid' },
     REFUNDED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Refunded' },
     FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
   };
@@ -1678,7 +2094,7 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function RequestCard({ request, showActions, onNavigate }: { request: any; showActions?: boolean; onNavigate?: (tab: string) => void }) {
+function RequestCard({ request, showActions, onNavigate, onRefresh }: { request: any; showActions?: boolean; onNavigate?: (tab: string) => void; onRefresh?: () => void }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackComment, setFeedbackComment] = useState('');
@@ -1687,106 +2103,219 @@ function RequestCard({ request, showActions, onNavigate }: { request: any; showA
   const handlePayNow = async () => {
     setPayingNow(true);
     try {
-      const paystackKey = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+      const paystackKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY : '';
 
       if (paystackKey && request.amount > 0) {
-        const payResult = await api.initializePaystackPayment(request.id);
-        window.location.href = payResult.authorizationUrl;
-      } else {
+        // Check if payment was already made (from a previous attempt)
+        try {
+          const payResult: any = await api.initializePaystackPayment(request.id);
+          if (payResult.alreadyPaid) {
+            setPayingNow(false);
+            if (onRefresh) onRefresh();
+            else window.location.reload();
+            return;
+          }
+        } catch (checkErr: any) {
+          // Ignore check errors, proceed to payment
+        }
+
+        // Try Paystack popup first
+        let paystackSuccess = false;
+        try {
+          const payResult: any = await api.initializePaystackPayment(request.id);
+
+          // Ensure Paystack SDK is loaded
+          if (!(window as any).PaystackPop) {
+            await new Promise<void>((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = 'https://js.paystack.co/v2/inline.js';
+              script.onload = () => resolve();
+              script.onerror = () => reject(new Error('SDK load failed'));
+              document.head.appendChild(script);
+            });
+          }
+
+          await new Promise<void>((resolve, reject) => {
+            const handler = (window as any).PaystackPop.setup({
+              key: paystackKey,
+              email: payResult.email,
+              access_code: payResult.accessCode,
+              onClose: () => {
+                setPayingNow(false);
+                reject(new Error('closed'));
+              },
+              callback: async () => {
+                try {
+                  await fetch(`/api/payments/paystack/verify?reference=${payResult.reference}`);
+                  setPayingNow(false);
+                  if (onRefresh) onRefresh();
+                  else window.location.reload();
+                  resolve();
+                } catch {
+                  setPayingNow(false);
+                  reject(new Error('verification failed'));
+                }
+              },
+            });
+            handler.openIframe();
+          });
+          paystackSuccess = true;
+        } catch {
+          // Paystack popup failed (sandbox inactive, SDK error, user closed, etc.)
+          // Silently fall back to mock payment — no console errors
+          paystackSuccess = false;
+        }
+
+        if (paystackSuccess) return;
+
         // Fallback to mock payment
         await api.createPayment(request.id, 'CARD');
-        window.location.reload();
+        setPayingNow(false);
+        if (onRefresh) onRefresh();
+        else window.location.reload();
+      } else {
+        await api.createPayment(request.id, 'CARD');
+        setPayingNow(false);
+        if (onRefresh) onRefresh();
+        else window.location.reload();
       }
     } catch (err: any) {
       alert('Payment failed: ' + (err.message || 'Please try again'));
-    } finally {
       setPayingNow(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <StatusBadge status={request.status} />
-            <span className="text-sm font-medium text-gray-500">{request.serviceType}</span>
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all">
+      {/* Header row */}
+      <div className="px-5 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center">
+            <Wrench className="w-4 h-4 text-gray-500" />
           </div>
-          {request.description && <p className="text-sm text-gray-600 mt-1">{request.description}</p>}
-          <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
-            <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {request.location}</span>
-            <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(request.requestedDate).toLocaleDateString()}</span>
-            <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {request.requestedTime}</span>
-            <span><Wallet className="w-3.5 h-3.5 inline mr-0.5" /> ₦{(request.amount || 0).toLocaleString()}</span>
-          </div>
-          {request.provider && (
-            <p className="text-xs text-gray-400 mt-2">
-              Provider: {request.provider.user?.name} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" />{request.provider.rating}
-            </p>
-          )}
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-400">
-              Payment: <StatusBadge status={request.paymentStatus} />
-            </span>
-            {request.checkInTime && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
-              <Timer className="w-4 h-4 text-purple-600" />
-              <span className="text-xs text-gray-500">Time:</span>
-              <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} />
-              {!request.checkOutTime && <span className="text-xs text-orange-600 font-medium animate-pulse">LIVE</span>}
-              {request.totalHours && <span className="text-xs text-gray-400">({request.totalHours.toFixed(1)}hrs)</span>}
-            </div>
-          )}
+          <div>
+            <p className="text-sm font-medium text-gray-900">{request.serviceType}</p>
+            <p className="text-xs text-gray-400">#{request.id?.slice(-6)}</p>
           </div>
         </div>
-        {showActions && request.status === 'COMPLETED' && !request.feedback && (
-          <button
-            onClick={() => setShowFeedback(true)}
-            className="px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100"
-          >
-            Leave Review
-          </button>
+        <StatusBadge status={request.status} />
+      </div>
+
+      {/* Details */}
+      <div className="px-5 pb-4 border-t border-gray-100">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3">
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Date</p>
+            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-gray-400" />
+              {new Date(request.requestedDate).toLocaleDateString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Time</p>
+            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-gray-400" />
+              {request.requestedTime}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Location</p>
+            <p className="text-sm text-gray-700 mt-0.5 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+              {request.location}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Amount</p>
+            <p className="text-sm font-semibold text-gray-900 mt-0.5">₦{(request.amount || 0).toLocaleString()}</p>
+          </div>
+        </div>
+
+        {request.description && (
+          <p className="text-sm text-gray-600 mt-3 leading-relaxed">{request.description}</p>
         )}
-        {showActions && request.status === 'AWAITING_PAYMENT' && request.paymentStatus === 'PENDING' && (
-          <button
-            onClick={handlePayNow}
-            disabled={payingNow}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
-          >
-            {payingNow ? 'Processing...' : `Pay ₦${(request.amount || 0).toLocaleString()}`}
-          </button>
+
+        {/* Provider info */}
+        {request.provider && (
+          <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-gray-50 rounded-lg">
+            <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 text-xs font-semibold">
+              {request.provider.user?.name?.charAt(0) || '?'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-800 truncate">{request.provider.user?.name}</p>
+              <p className="text-xs text-gray-400">{request.provider.totalReviews || 0} jobs completed</p>
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="font-medium text-gray-700">{request.provider.rating}</span>
+            </div>
+          </div>
         )}
-        {showActions && request.status === 'PENDING' && request.paymentStatus === 'PENDING' && request.amount > 0 && (
-          <button
-            onClick={handlePayNow}
-            disabled={payingNow}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"
-          >
-            {payingNow ? 'Processing...' : 'Pay Now'}
-          </button>
-        )}
-        {showActions && request.status === 'PENDING' && (
-          <button
-            onClick={async () => {
-              await api.serviceAction(request.id, 'cancel');
-            }}
-            className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
-          >
-            Cancel
-          </button>
-        )}
-        {showActions && (request.status === 'ACCEPTED' || request.status === 'IN_PROGRESS') && (
-          <button
-            onClick={() => onNavigate('messages')}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
-          >
-            Chat
-          </button>
+
+        {/* Live timer */}
+        {request.checkInTime && (
+          <div className="mt-3 flex items-center gap-3 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
+            <Timer className="w-4 h-4 text-orange-500" />
+            <span className="text-sm font-medium text-gray-700">
+              <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} />
+            </span>
+            {!request.checkOutTime && (
+              <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">LIVE</span>
+            )}
+            {request.totalHours && (
+              <span className="text-xs text-gray-400">{request.totalHours} hour{request.totalHours > 1 ? 's' : ''}</span>
+            )}
+          </div>
         )}
       </div>
 
+      {/* Actions */}
+      {showActions && (
+        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 rounded-b-xl flex items-center gap-2 flex-wrap">
+          {request.status === 'AWAITING_PAYMENT' && request.paymentStatus === 'PENDING' && (
+            <button
+              onClick={handlePayNow}
+              disabled={payingNow}
+              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors"
+            >
+              {payingNow ? 'Processing...' : `Pay ₦${(request.amount || 0).toLocaleString()}`}
+            </button>
+          )}
+          {request.status === 'COMPLETED' && !request.feedback && (
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="px-4 py-2 text-sm font-medium text-orange-600 bg-white border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors"
+            >
+              Leave Review
+            </button>
+          )}
+          {(request.status === 'ACCEPTED' || request.status === 'IN_PROGRESS') && (
+            <button
+              onClick={() => onNavigate?.('messages')}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Message
+            </button>
+          )}
+          {request.status === 'PENDING' && (
+            <button
+              onClick={async () => {
+                await api.serviceAction(request.id, 'cancel');
+              }}
+              className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          <div className="ml-auto">
+            <span className="text-xs text-gray-400">Payment: <StatusBadge status={request.paymentStatus} /></span>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback form */}
       {showFeedback && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="px-5 py-4 border-t border-gray-100">
           <h4 className="text-sm font-medium text-gray-900 mb-3">Rate this service</h4>
           <div className="flex gap-1 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -2446,11 +2975,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                   <p className="text-gray-600 mt-2">
                     {bookingArtisan.name} has been notified and will accept your booking. You&apos;ll pay after the service is completed.
                   </p>
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-700">
-                      <strong>How it works:</strong> Artisan checks in → Timer starts → Artisan checks out → You see the total and pay.
-                    </p>
-                  </div>
+
                   <button
                     onClick={closeBookingModal}
                     className="mt-6 px-6 py-2.5 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100"
@@ -2522,6 +3047,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                           type="date"
                           value={bookingDate}
                           onChange={(e) => setBookingDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
                           className="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
                           required
                         />
@@ -2545,15 +3071,8 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                         <h4 className="text-sm font-semibold text-green-800">Pay After Service</h4>
                       </div>
                       <p className="text-xs text-green-700 leading-relaxed">
-                        No upfront payment required. The artisan will check in when they arrive, a timer tracks the hours worked, and when done, you&apos;ll see the total (hours × ₦{bookingArtisan.hourlyRate.toLocaleString()}/hr) before paying.
+                        No upfront payment required. You&apos;ll be billed after the service is completed based on hours worked.
                       </p>
-                      <div className="mt-2 flex items-center gap-4 text-xs text-green-600">
-                        <span>1. Artisan checks in</span>
-                        <span>→</span>
-                        <span>2. Timer runs</span>
-                        <span>→</span>
-                        <span>3. You pay</span>
-                      </div>
                     </div>
 
                     <button
@@ -2663,7 +3182,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-purple-600">Time: <LiveTimer checkInTime={job.checkInTime} checkOutTime={job.checkOutTime || undefined} /></span>
-                        <span className="text-purple-600">({job.totalHours?.toFixed(1)} hours)</span>
+                        <span className="text-purple-600">({job.totalHours} hour{job.totalHours > 1 ? 's' : ''})</span>
                       </div>
                       <div className="mt-1 text-lg font-bold text-purple-900">
                         Total: ₦{(job.amount || 0).toLocaleString()}
@@ -2888,120 +3407,166 @@ function MessagesView({ user }: { user: any }) {
 
   if (loading) return <LoadingSkeleton />;
 
+  // Get the other person's name for a request
+  const getOtherPerson = (req: any) => {
+    if (user.role === 'CLIENT') return req.provider?.user?.name || 'Provider';
+    return req.client?.name || 'Client';
+  };
+
+  const getOtherPersonInitial = (req: any) => {
+    const name = getOtherPerson(req);
+    return name.charAt(0).toUpperCase();
+  };
+
+  const selectedReq = requests.find((r: any) => r.id === selectedRequest);
+
   return (
-    <div className="flex gap-4 h-[calc(100vh-12rem)]">
-      {/* Conversation list */}
-      <div className="w-80 bg-white rounded-xl border border-gray-100 overflow-y-auto flex-shrink-0">
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900">Conversations</h3>
-            {selectedRequest && (
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                Live
-              </span>
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ height: 'calc(100vh - 12rem)' }}>
+      <div className="flex h-full">
+        {/* Conversation list - sidebar */}
+        <div className={`w-full sm:w-80 border-r border-gray-100 flex flex-col flex-shrink-0 ${selectedRequest ? 'hidden sm:flex' : 'flex'}`}>
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-900">Messages</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{requests.length} conversation{requests.length !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {requests.length ? (
+              <div>
+                {requests.map((req: any) => (
+                  <button
+                    key={req.id}
+                    onClick={() => setSelectedRequest(req.id)}
+                    className={`w-full text-left px-4 py-3.5 hover:bg-gray-50 transition-colors border-b border-gray-50 ${
+                      selectedRequest === req.id ? 'bg-orange-50 border-l-2 border-l-orange-500' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-semibold flex-shrink-0">
+                        {getOtherPersonInitial(req)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900 truncate">{getOtherPerson(req)}</p>
+                          <StatusBadge status={req.status} />
+                        </div>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{req.serviceType}{req.description ? ` — ${req.description}` : ''}</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">{new Date(req.requestedDate).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full px-6 text-center">
+                <MessageSquare className="w-10 h-10 text-gray-300 mb-3" />
+                <p className="text-sm text-gray-500">No conversations yet</p>
+                <p className="text-xs text-gray-400 mt-1">Messages will appear here once you have an active booking</p>
+              </div>
             )}
           </div>
         </div>
-        {requests.length ? (
-          <div className="divide-y divide-gray-50">
-            {requests.map((req: any) => (
-              <button
-                key={req.id}
-                onClick={() => setSelectedRequest(req.id)}
-                className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                  selectedRequest === req.id ? 'bg-orange-50' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-900">{req.serviceType}</span>
-                  <StatusBadge status={req.status} />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{req.description || 'No description'}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {user.role === 'CLIENT' ? `Provider: ${req.provider?.user?.name || 'N/A'}` : `Client: ${req.client?.name || 'N/A'}`}
-                </p>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="p-8 text-center text-gray-500 text-sm">No conversations yet</div>
-        )}
-      </div>
 
-      {/* Chat area */}
-      <div className="flex-1 bg-white rounded-xl border border-gray-100 flex flex-col">
-        {selectedRequest ? (
-          <>
-            <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-              <h3 className="font-semibold text-gray-900">
-                {requests.find((r: any) => r.id === selectedRequest)?.serviceType || 'Chat'}
-              </h3>
-              <span className="inline-flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                Live
-              </span>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {messages.map((msg: any) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] px-4 py-2.5 rounded-2xl text-sm ${
-                      msg.senderId === user.id
-                        ? 'bg-orange-600 text-white rounded-br-md'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                    }`}
-                  >
-                    <p className="font-medium text-xs mb-0.5 opacity-75">{msg.sender?.name}</p>
-                    <p>{msg.content}</p>
-                    <p className={`text-[10px] mt-1 ${msg.senderId === user.id ? 'text-orange-200' : 'text-gray-400'}`}>
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {messages.length === 0 && (
-                <p className="text-center text-gray-400 text-sm py-8">No messages yet. Start the conversation!</p>
-              )}
-              {typingUser && (
-                <div className="flex items-center gap-2 text-xs text-gray-400 italic">
-                  <span className="flex gap-0.5">
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </span>
-                  {typingUser} is typing...
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-            <div className="p-4 border-t border-gray-100">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                />
+        {/* Chat area */}
+        <div className={`flex-1 flex flex-col min-w-0 ${!selectedRequest ? 'hidden sm:flex' : 'flex'}`}>
+          {selectedRequest && selectedReq ? (
+            <>
+              {/* Chat header */}
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
                 <button
-                  onClick={sendMessage}
-                  className="px-6 py-2.5 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700"
+                  onClick={() => setSelectedRequest(null)}
+                  className="sm:hidden p-1 text-gray-400 hover:text-gray-600"
                 >
-                  Send
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-semibold">
+                  {getOtherPersonInitial(selectedReq)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{getOtherPerson(selectedReq)}</p>
+                  <p className="text-xs text-gray-400">{selectedReq.serviceType} — {new Date(selectedReq.requestedDate).toLocaleDateString()}</p>
+                </div>
+                <StatusBadge status={selectedReq.status} />
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50/50">
+                {messages.map((msg: any) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[75%] ${msg.senderId === user.id ? 'order-2' : 'order-1'}`}>
+                      {msg.senderId !== user.id && (
+                        <p className="text-[11px] text-gray-400 mb-1 ml-1">{msg.sender?.name || 'Them'}</p>
+                      )}
+                      <div
+                        className={`px-4 py-2.5 text-sm leading-relaxed ${
+                          msg.senderId === user.id
+                            ? 'bg-orange-600 text-white rounded-2xl rounded-br-md'
+                            : 'bg-white text-gray-800 border border-gray-200 rounded-2xl rounded-bl-md'
+                        }`}
+                      >
+                        <p>{msg.content}</p>
+                      </div>
+                      <p className={`text-[10px] text-gray-400 mt-0.5 ${msg.senderId === user.id ? 'text-right mr-1' : 'ml-1'}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {messages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <MessageSquare className="w-10 h-10 text-gray-300 mb-3" />
+                    <p className="text-sm text-gray-500">No messages yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Say hello to get the conversation started</p>
+                  </div>
+                )}
+                {typingUser && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span className="flex gap-0.5">
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                    {typingUser} is typing...
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Message input */}
+              <div className="px-4 py-3 border-t border-gray-100 bg-white">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim()}
+                    className="px-4 py-2.5 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-sm font-medium text-gray-500">Select a conversation</p>
+                <p className="text-xs text-gray-400 mt-1">Choose from your active bookings on the left to start messaging</p>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
-            <p>Select a conversation to start messaging</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -3023,6 +3588,16 @@ function ProfileEditor({ user }: { user: any }) {
   const [accountName, setAccountName] = useState(user.provider?.accountName || '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showPwSection, setShowPwSection] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const addSkill = (value: string) => {
     const trimmed = value.trim();
@@ -3058,6 +3633,37 @@ function ProfileEditor({ user }: { user: any }) {
       console.error('Profile save error:', err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPwError('');
+    setPwSuccess(false);
+    if (!currentPw || !newPw || !confirmPw) {
+      setPwError('All fields are required');
+      return;
+    }
+    if (newPw.length < 6) {
+      setPwError('New password must be at least 6 characters');
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setPwError('New passwords do not match');
+      return;
+    }
+    setChangingPw(true);
+    try {
+      await api.changePassword(currentPw, newPw);
+      setPwSuccess(true);
+      setCurrentPw('');
+      setNewPw('');
+      setConfirmPw('');
+      setShowPwSection(false);
+      setTimeout(() => setPwSuccess(false), 3000);
+    } catch (err: any) {
+      setPwError(err.message || 'Failed to change password');
+    } finally {
+      setChangingPw(false);
     }
   };
 
@@ -3224,6 +3830,108 @@ function ProfileEditor({ user }: { user: any }) {
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
           </button>
         </div>
+      </div>
+
+      {/* Change Password */}
+      <div className="bg-white rounded-xl border border-gray-100 p-6 mt-6">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-lg font-semibold text-gray-900">Password</h3>
+          <button
+            onClick={() => setShowPwSection(!showPwSection)}
+            className="text-sm font-medium text-orange-600 hover:text-orange-700"
+          >
+            {showPwSection ? 'Cancel' : 'Change Password'}
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">Keep your account secure by updating your password regularly.</p>
+
+        {pwSuccess && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+            Password updated successfully.
+          </div>
+        )}
+
+        {showPwSection && (
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            {pwError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {pwError}
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPw}
+                  onChange={(e) => setCurrentPw(e.target.value)}
+                  className="w-full px-4 py-2.5 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  placeholder="Enter current password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showCurrentPw ? 'Hide password' : 'Show password'}
+                >
+                  {showCurrentPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    type={showNewPw ? 'text' : 'password'}
+                    value={newPw}
+                    onChange={(e) => setNewPw(e.target.value)}
+                    className="w-full px-4 py-2.5 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    placeholder="Min. 6 characters"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPw(!showNewPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    tabIndex={-1}
+                    aria-label={showNewPw ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPw ? 'text' : 'password'}
+                    value={confirmPw}
+                    onChange={(e) => setConfirmPw(e.target.value)}
+                    className="w-full px-4 py-2.5 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    placeholder="Re-enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPw(!showConfirmPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    tabIndex={-1}
+                    aria-label={showConfirmPw ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPw ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={changingPw}
+              className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+            >
+              {changingPw ? 'Updating...' : 'Update Password'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

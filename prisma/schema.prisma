@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// TO DEPLOY TO VERCEL/RAILWAY:
+// 1. Change provider below to "postgresql"
+// 2. Set DATABASE_URL to your PostgreSQL connection string
+// 3. Run: npx prisma db push
+// ============================================================
+
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
@@ -93,6 +100,8 @@ model Transaction {
   paymentMethod  String   @default("CARD") // CARD, MOBILE_MONEY, WALLET, BANK_TRANSFER
   status         String   @default("PENDING") // PENDING, ESCROW, COMPLETED, FAILED, REFUNDED
   paidOutAt      DateTime? // when payout was made to provider's bank account
+  transferRef    String?  // Paystack transfer reference
+  transferStatus String?  // PENDING, PROCESSING, SUCCESS, FAILED, REVERSED
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

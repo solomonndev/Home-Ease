@@ -179,6 +179,86 @@ export async function POST(request: NextRequest) {
         logAction = 'ACTIVATE_USER';
         break;
       }
+      case 'delete-user': {
+        // Prevent self-deletion
+        if (targetId === user.id) {
+          return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 });
+        }
+
+        // Check if target is the last admin
+        const targetUser = await db.user.findUnique({ where: { id: targetId } });
+        if (!targetUser) {
+          return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+        if (targetUser.role === 'ADMIN') {
+          const adminCount = await db.user.count({ where: { role: 'ADMIN' } });
+          if (adminCount <= 1) {
+            return NextResponse.json({ error: 'Cannot delete the last admin account' }, { status: 400 });
+          }
+        }
+
+        // Get provider ID if exists
+        const provider = await db.provider.findUnique({ where: { userId: targetId } });
+
+        // Delete related records in dependency order
+        await db.adminLog.deleteMany({ where: { adminId: targetId } });
+        
+        // Delete feedback where user is client or provider
+        if (provider) {
+          await db.feedback.deleteMany({ where: { providerId: provider.id } });
+        }
+        await db.feedback.deleteMany({ where: { clientId: targetId } });
+
+        // Delete transactions where user is client or provider
+        if (provider) {
+          // Null out provider references in transactions first
+          await db.transaction.deleteMany({ where: { providerId: provider.id } });
+        }
+        await db.transaction.deleteMany({ where: { clientId: targetId } });
+
+        // Delete messages (sender relation)
+        await db.message.deleteMany({ where: { senderId: targetId } });
+
+        // Delete service requests (client relation)
+        // First delete messages on those requests, then feedback, then transactions, then requests
+        const requests = await db.serviceRequest.findMany({
+          where: { clientId: targetId },
+          select: { id: true }
+        });
+        const requestIds = requests.map(r => r.id);
+        if (requestIds.length > 0) {
+          await db.message.deleteMany({ where: { requestId: { in: requestIds } } });
+          await db.feedback.deleteMany({ where: { requestId: { in: requestIds } } });
+          await db.transaction.deleteMany({ where: { requestId: { in: requestIds } } });
+          await db.serviceRequest.deleteMany({ where: { id: { in: requestIds } } });
+        }
+
+        // Also handle requests assigned to this provider
+        if (provider) {
+          const assignedRequests = await db.serviceRequest.findMany({
+            where: { providerId: provider.id },
+            select: { id: true }
+          });
+          const assignedIds = assignedRequests.map(r => r.id);
+          if (assignedIds.length > 0) {
+            await db.message.deleteMany({ where: { requestId: { in: assignedIds } } });
+            await db.feedback.deleteMany({ where: { requestId: { in: assignedIds } } });
+            await db.transaction.deleteMany({ where: { requestId: { in: assignedIds } } });
+            await db.serviceRequest.updateMany({
+              where: { id: { in: assignedIds } },
+              data: { providerId: null }
+            });
+          }
+        }
+
+        // Notifications have onDelete: Cascade, but delete explicitly to be safe
+        await db.notification.deleteMany({ where: { userId: targetId } });
+
+        // Finally delete the user
+        await db.user.delete({ where: { id: targetId } });
+        logAction = 'DELETE_USER';
+        break;
+      }
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }

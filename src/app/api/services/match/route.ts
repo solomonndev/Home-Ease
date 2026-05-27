@@ -201,7 +201,8 @@ export async function POST(request: NextRequest) {
 
         const now = new Date();
         const elapsedMs = now.getTime() - new Date(serviceRequest.checkInTime).getTime();
-        const elapsedHours = Math.max(0.25, elapsedMs / (1000 * 60 * 60)); // Minimum 15 minutes (0.25 hr)
+        const rawHours = elapsedMs / (1000 * 60 * 60);
+        const elapsedHours = Math.max(1, Math.ceil(rawHours)); // Minimum 1 hour, billed per hour (any partial hour rounds up)
 
         // Get provider's hourly rate
         const provider = await db.provider.findUnique({
@@ -217,7 +218,7 @@ export async function POST(request: NextRequest) {
         updateData = {
           status: 'AWAITING_PAYMENT',
           checkOutTime: now,
-          totalHours: Math.round(elapsedHours * 100) / 100, // 2 decimal places
+          totalHours: elapsedHours,
           amount: totalAmount,
         };
 
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest) {
             userId: serviceRequest.clientId,
             type: 'PAYMENT',
             title: 'Service Complete — Payment Required',
-            message: `${user.name} has completed your ${serviceRequest.serviceType.toLowerCase()} service. Time worked: ${elapsedHours.toFixed(1)} hours. Total: ₦${totalAmount.toLocaleString()}. Please make payment to release funds to the artisan.`,
+            message: `${user.name} has completed your ${serviceRequest.serviceType.toLowerCase()} service. Time worked: ${elapsedHours} hour${elapsedHours > 1 ? 's' : ''}. Total: ₦${totalAmount.toLocaleString()}. Please make payment to release funds to the artisan.`,
           }
         });
 
@@ -237,7 +238,7 @@ export async function POST(request: NextRequest) {
             userId: user.id,
             type: 'PAYMENT',
             title: 'Awaiting Client Payment',
-            message: `You completed the ${serviceRequest.serviceType.toLowerCase()} service (${elapsedHours.toFixed(1)} hours). Total bill: ₦${totalAmount.toLocaleString()} (₦${platformFee.toLocaleString()} platform fee). Your payout: ₦${providerPayout.toLocaleString()}. Waiting for client to pay.`,
+            message: `You completed the ${serviceRequest.serviceType.toLowerCase()} service (${elapsedHours} hour${elapsedHours > 1 ? 's' : ''}). Total bill: ₦${totalAmount.toLocaleString()} (₦${platformFee.toLocaleString()} platform fee). Your payout: ₦${providerPayout.toLocaleString()}. Waiting for client to pay.`,
           }
         });
         break;

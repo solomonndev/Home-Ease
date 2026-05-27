@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payment already processed for this request' }, { status: 400 });
     }
 
-    const provider = await db.provider.findUnique({ where: { id: serviceRequest.providerId } });
+    const provider = await db.provider.findUnique({ where: { id: serviceRequest.providerId }, include: { user: true } });
     if (!provider) {
       return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
     }
