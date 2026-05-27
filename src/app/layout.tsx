@@ -19,7 +19,9 @@ export const metadata: Metadata = {
   keywords: ["domestic services", "cleaning", "plumbing", "caregiving", "service providers", "home services", "Nigeria"],
   authors: [{ name: "HomeEase" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "HomeEase - Find Trusted Domestic Service Providers",
