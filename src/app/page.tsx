@@ -668,6 +668,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatSectionRef = useRef<HTMLDivElement>(null);
   const isRejected = verificationStatus === 'REJECTED';
 
   useEffect(() => {
@@ -765,10 +766,19 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
             {isRejected ? <XCircle className="w-3.5 h-3.5 text-red-500" /> : <Hourglass className="w-3.5 h-3.5 text-amber-500" />}
             {isRejected ? 'Declined' : 'Pending Review'}
           </div>
+          {isRejected && (
+            <button
+              onClick={() => chatSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Contact Support
+            </button>
+          )}
         </div>
 
         {/* Chat Box */}
-        <div className="max-w-lg w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div ref={chatSectionRef} className="max-w-lg w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-gray-500" />
             <span className="text-sm font-medium text-gray-700">Chat with Admin</span>
