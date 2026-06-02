@@ -261,35 +261,69 @@ export async function POST(request: NextRequest) {
         });
 
         if (escrowTransaction && escrowTransaction.status === 'ESCROW') {
+          // --- ACTUAL BANK TRANSFER VIA PAYSTACK ---
+          let transferSuccess = false;
+          let transferRef: string | null = null;
+          let transferStatus: string | null = null;
+
+          if (escrowTransaction.provider.bankName && escrowTransaction.provider.accountNumber) {
+            const { sendToBank } = await import('@/lib/paystack-transfer');
+            const result = await sendToBank({
+              bankName: escrowTransaction.provider.bankName,
+              accountNumber: escrowTransaction.provider.accountNumber,
+              accountName: escrowTransaction.provider.accountName || escrowTransaction.provider.user.name,
+              amountInNaira: escrowTransaction.providerPayout,
+              requestId,
+              serviceType: serviceRequest.serviceType,
+            });
+            transferSuccess = result.success;
+            transferRef = result.reference || null;
+            transferStatus = result.transferStatus || null;
+          }
+
           await db.transaction.update({
             where: { id: escrowTransaction.id },
             data: {
-              status: 'COMPLETED',
-              paidOutAt: new Date(),
+              status: transferSuccess ? 'COMPLETED' : 'ESCROW',
+              paidOutAt: transferSuccess ? new Date() : null,
+              transferRef,
+              transferStatus: transferStatus || (transferSuccess ? 'PENDING' : 'FAILED'),
             }
           });
 
-          updateData.paymentStatus = 'RELEASED';
+          if (transferSuccess) {
+            updateData.paymentStatus = 'RELEASED';
 
-          if (escrowTransaction.provider.bankName && escrowTransaction.provider.accountNumber) {
+            if (escrowTransaction.provider.bankName && escrowTransaction.provider.accountNumber) {
+              await db.notification.create({
+                data: {
+                  userId: escrowTransaction.provider.user.id,
+                  type: 'PAYMENT',
+                  title: 'Payment Transferred to Your Bank! 💰',
+                  message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been transferred to your ${escrowTransaction.provider.bankName} account (${escrowTransaction.provider.accountNumber}). Transfer ref: ${transferRef || 'N/A'}. Status: ${transferStatus || 'processing'}. Money should arrive within 1-24 hours. Platform fee: ₦${escrowTransaction.platformFee.toLocaleString()}.`,
+                }
+              });
+            }
+
+            await db.notification.create({
+              data: {
+                userId: serviceRequest.clientId,
+                type: 'PAYMENT',
+                title: 'Payment Released to Artisan',
+                message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been transferred to ${escrowTransaction.provider.user.name}'s ${escrowTransaction.provider.bankName || 'bank'} account. Transfer ref: ${transferRef || 'N/A'}. Platform fee: ₦${escrowTransaction.platformFee.toLocaleString()}.`,
+              }
+            });
+          } else {
+            // Transfer failed — notify admin and provider
             await db.notification.create({
               data: {
                 userId: escrowTransaction.provider.user.id,
                 type: 'PAYMENT',
-                title: 'Payment Released to Your Account!',
-                message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been released to your ${escrowTransaction.provider.bankName} account (${escrowTransaction.provider.accountNumber}). Platform fee: ₦${escrowTransaction.platformFee.toLocaleString()}.`,
+                title: 'Payment Transfer Pending',
+                message: `₦${escrowTransaction.providerPayout.toLocaleString()} is ready for your account but the automatic bank transfer failed. Please verify your bank details in Profile. An admin can release the payment manually.`,
               }
             });
           }
-
-          await db.notification.create({
-            data: {
-              userId: serviceRequest.clientId,
-              type: 'PAYMENT',
-              title: 'Payment Released to Artisan',
-              message: `₦${escrowTransaction.providerPayout.toLocaleString()} has been released to ${escrowTransaction.provider.user.name}'s bank account.`,
-            }
-          });
         }
 
         await db.notification.create({
