@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { searchServices, SERVICE_TYPES } from '@/lib/auth';
 
 // GET /api/artisans/search - Search and filter artisans
+// Shows all registered providers (VERIFIED, PENDING, DECLINED) with status badge
 export async function GET(request: NextRequest) {
   try {
     const user = await (await import('@/lib/auth')).getAuthUser(request.headers);
@@ -20,10 +21,8 @@ export async function GET(request: NextRequest) {
     const availabilityFilter = searchParams.get('availability') || '';
     const sortBy = searchParams.get('sort') || 'rating';
 
-    // Build where clause - only show verified providers
-    const andConditions: any[] = [
-      { verificationStatus: 'VERIFIED' },
-    ];
+    // Build where clause - show all registered providers (no verification filter)
+    const andConditions: any[] = [];
 
     // Determine which service types to search for
     let targetServices: string[] = [];
@@ -86,15 +85,17 @@ export async function GET(request: NextRequest) {
 
     // Combine conditions: use AND with OR for skill matching
     let where: any;
-    if (andConditions.length === 1) {
+    if (andConditions.length === 0) {
+      where = {};
+    } else if (andConditions.length === 1) {
       where = andConditions[0];
     } else {
       // For service/skill matching, wrap the relevant conditions in an OR
       // so either predefined service type OR free-text query matches
       const nonSkillConditions = andConditions.filter((_, i) => {
         // Skip the service type filter (index 1) and the free-text query filter
-        if (targetServices.length > 0 && i === 1) return false;
-        if (query && i === (targetServices.length > 0 ? 2 : 1)) return false;
+        if (targetServices.length > 0 && i === 0) return false;
+        if (query && i === (targetServices.length > 0 ? 1 : 0)) return false;
         return true;
       });
 
@@ -178,6 +179,7 @@ export async function GET(request: NextRequest) {
         totalReviews: p.totalReviews,
         completedJobs: p.completedJobs,
         bio: p.bio,
+        verificationStatus: p.verificationStatus,
         matchScore,
         recentReviews: p.Feedback.map(f => ({
           rating: f.rating,
@@ -205,6 +207,9 @@ export async function GET(request: NextRequest) {
       case 'rating':
       default:
         formatted.sort((a, b) => {
+          // Verified providers first
+          if (a.verificationStatus === 'VERIFIED' && b.verificationStatus !== 'VERIFIED') return -1;
+          if (b.verificationStatus === 'VERIFIED' && a.verificationStatus !== 'VERIFIED') return 1;
           if (b.rating !== a.rating) return b.rating - a.rating;
           if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
           return b.completedJobs - a.completedJobs;
@@ -212,10 +217,9 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Get filter metadata from all verified providers
+    // Get filter metadata from all registered providers
     const allProviders = await db.provider.findMany({
-      where: { verificationStatus: 'VERIFIED' },
-      select: { location: true, hourlyRate: true, availability: true, skills: true },
+      select: { location: true, hourlyRate: true, availability: true, skills: true, verificationStatus: true },
     });
 
     // Extract all unique skills across all providers

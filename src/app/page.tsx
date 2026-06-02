@@ -139,11 +139,21 @@ function LandingView({
     { name: 'Cooking', desc: 'Expert chefs for your meals & events' },
     { name: 'Caregiving', desc: 'Trusted childcare & elderly care' },
     { name: 'Plumbing', desc: 'Fast plumbing repairs & installation' },
-    { name: 'Laundry', desc: 'Wash, dry & fold services' },
-    { name: 'Maintenance', desc: 'General home repairs & fixes' },
     { name: 'Electrical', desc: 'Certified electrical work' },
+    { name: 'Engineering', desc: 'Structural, civil & mechanical engineering' },
+    { name: 'Carpentry', desc: 'Custom woodwork & furniture' },
     { name: 'Painting', desc: 'Interior & exterior painting' },
     { name: 'Gardening', desc: 'Landscape & garden maintenance' },
+    { name: 'Security', desc: 'Professional security services' },
+    { name: 'Driving', desc: 'Chauffeur & delivery services' },
+    { name: 'Hairstyling', desc: 'Professional hair styling & braids' },
+    { name: 'Barbing', desc: 'Expert haircuts & grooming' },
+    { name: 'Tutoring', desc: 'Academic & skill tutoring' },
+    { name: 'HVAC', desc: 'Air conditioning & ventilation' },
+    { name: 'Pest Control', desc: 'Fumigation & pest removal' },
+    { name: 'Moving', desc: 'Packing & relocation services' },
+    { name: 'Laundry', desc: 'Wash, dry & fold services' },
+    { name: 'Maintenance', desc: 'General home repairs & fixes' },
   ];
 
   const features = [
@@ -243,7 +253,7 @@ function LandingView({
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Services We Offer</h2>
             <p className="mt-4 text-lg text-gray-600">From daily household tasks to specialized maintenance</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {services.map((service) => (
               <div
                 key={service.name}
@@ -3085,15 +3095,25 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
 
   // Service data for per-word matching
   const serviceData = [
-    { value: 'CLEANING', label: 'Cleaning', keywords: ['clean', 'wash', 'sweep', 'mop', 'dust', 'sanitize', 'tidy', 'scrub', 'vacuum', 'housekeeping', 'maid'] },
+    { value: 'CLEANING', label: 'Cleaning', keywords: ['clean', 'wash', 'sweep', 'mop', 'dust', 'sanitize', 'tidy', 'scrub', 'vacuum', 'housekeeping', 'maid', 'janitor'] },
     { value: 'COOKING', label: 'Cooking', keywords: ['cook', 'chef', 'meal', 'food', 'kitchen', 'catering', 'recipe', 'dinner', 'lunch', 'breakfast', 'private chef'] },
     { value: 'CAREGIVING', label: 'Caregiving', keywords: ['care', 'caregiver', 'nanny', 'babysitter', 'elderly', 'senior', 'childcare', 'nurse', 'companion', 'sitter', 'home care'] },
     { value: 'PLUMBING', label: 'Plumbing', keywords: ['plumb', 'plumber', 'pipe', 'leak', 'drain', 'toilet', 'faucet', 'tap', 'water', 'sink', 'bathroom', 'shower'] },
-    { value: 'LAUNDRY', label: 'Laundry', keywords: ['laundry', 'wash', 'dry clean', 'iron', 'press', 'fold', 'clothes', 'dry cleaning', 'fabric care'] },
+    { value: 'LAUNDRY', label: 'Laundry', keywords: ['laundry', 'dry clean', 'iron', 'press', 'fold', 'clothes', 'dry cleaning', 'fabric care'] },
     { value: 'MAINTENANCE', label: 'Maintenance', keywords: ['maintain', 'repair', 'fix', 'handyman', 'renovation', 'restore', 'general repair', 'home repair', 'door', 'window', 'furniture'] },
     { value: 'ELECTRICAL', label: 'Electrical', keywords: ['electric', 'wiring', 'wire', 'light', 'power', 'switch', 'outlet', 'socket', 'circuit', 'generator', 'fan', 'ac', 'bulb', 'appliance'] },
     { value: 'PAINTING', label: 'Painting', keywords: ['paint', 'painter', 'decorate', 'wall', 'interior', 'exterior', 'color', 'varnish', 'stain'] },
     { value: 'GARDENING', label: 'Gardening', keywords: ['garden', 'lawn', 'mow', 'landscape', 'plant', 'flower', 'grass', 'weed', 'trim', 'hedge', 'tree', 'yard'] },
+    { value: 'ENGINEERING', label: 'Engineering', keywords: ['engineer', 'engineering', 'structural', 'civil', 'mechanical', 'construction', 'building', 'site engineer', 'project engineer'] },
+    { value: 'CARPENTRY', label: 'Carpentry', keywords: ['carpenter', 'carpentry', 'wood', 'woodwork', 'furniture', 'cabinet', 'shelf', 'joinery', 'wooden'] },
+    { value: 'SECURITY', label: 'Security', keywords: ['security', 'guard', 'security guard', 'watchman', 'protection', 'safety', 'surveillance', 'cctv', 'bodyguard'] },
+    { value: 'DRIVING', label: 'Driving', keywords: ['driver', 'driving', 'chauffeur', 'uber', 'taxi', 'delivery', 'transport', 'ride', 'logistics', 'courier'] },
+    { value: 'TUTORING', label: 'Tutoring', keywords: ['tutor', 'tutoring', 'teacher', 'lesson', 'learn', 'study', 'academic', 'math', 'english', 'science', 'training', 'instructor'] },
+    { value: 'HAIRSTYLING', label: 'Hairstyling', keywords: ['hair', 'hairstyle', 'stylist', 'styling', 'braids', 'weave', 'wig', 'salon', 'cornrow', 'dreadlock'] },
+    { value: 'BARBING', label: 'Barbing', keywords: ['barber', 'barbing', 'haircut', 'trim', 'shave', 'grooming', 'beard', 'fade', 'clippers', 'barbershop'] },
+    { value: 'HVAC', label: 'HVAC', keywords: ['hvac', 'air conditioning', 'ac', 'refrigeration', 'cooling', 'heating', 'ventilation', 'compressor', 'thermostat'] },
+    { value: 'MOVING', label: 'Moving', keywords: ['moving', 'mover', 'pack', 'packing', 'relocate', 'relocation', 'furniture moving', 'loading', 'haul', 'transport'] },
+    { value: 'PEST_CONTROL', label: 'Pest Control', keywords: ['pest', 'pest control', 'fumigation', 'insect', 'rodent', 'rat', 'cockroach', 'termite', 'exterminator', 'bug'] },
     { value: 'OTHER', label: 'Other', keywords: ['other', 'custom', 'special'] },
   ];
 
@@ -3568,6 +3588,22 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                           <span className="flex items-center gap-1"><Star className="w-4 h-4 fill-amber-400 text-amber-400" /> <span className="text-sm text-amber-600 font-medium">{artisan.rating.toFixed(1)}</span></span>
                         )}
                         <span className="text-xs text-gray-400">({artisan.totalReviews} reviews)</span>
+                        {artisan.verificationStatus && artisan.verificationStatus !== 'VERIFIED' && (
+                          <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${
+                            artisan.verificationStatus === 'PENDING'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : artisan.verificationStatus === 'DECLINED'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {artisan.verificationStatus === 'PENDING' ? '⏳ Pending Verification' : artisan.verificationStatus === 'DECLINED' ? '⚠️ Declined' : artisan.verificationStatus}
+                          </span>
+                        )}
+                        {artisan.verificationStatus === 'VERIFIED' && (
+                          <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                            ✓ Verified
+                          </span>
+                        )}
                       </div>
 
                       {artisan.bio && (

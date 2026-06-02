@@ -17,11 +17,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Service type is required' }, { status: 400 });
     }
 
-    // Find verified providers whose skills include the requested service type
+    // Find all registered providers (not just verified) whose skills include the requested service type
     const providers = await db.provider.findMany({
       where: {
-        verificationStatus: 'VERIFIED',
-        skills: { contains: serviceType },
+        skills: { contains: serviceType, mode: 'insensitive' },
       },
       include: {
         user: { select: { id: true, name: true, avatarUrl: true, phone: true } },
@@ -49,6 +48,7 @@ export async function GET(request: NextRequest) {
       totalReviews: p.totalReviews,
       completedJobs: p.completedJobs,
       bio: p.bio,
+      verificationStatus: p.verificationStatus,
       recentReviews: p.feedbackReceived.map(f => ({
         rating: f.rating,
         comment: f.comment,
@@ -57,8 +57,10 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
-    // Sort by rating (highest first), then by completed jobs
+    // Sort: verified first, then by rating, then by completed jobs
     formatted.sort((a, b) => {
+      if (a.verificationStatus === 'VERIFIED' && b.verificationStatus !== 'VERIFIED') return -1;
+      if (b.verificationStatus === 'VERIFIED' && a.verificationStatus !== 'VERIFIED') return 1;
       if (b.rating !== a.rating) return b.rating - a.rating;
       return b.completedJobs - a.completedJobs;
     });

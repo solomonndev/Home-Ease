@@ -57,7 +57,7 @@ export async function getAuthUser(headers: Headers) {
 
 export const SERVICE_TYPES = [
   'CLEANING',
-  'COOKING', 
+  'COOKING',
   'CAREGIVING',
   'PLUMBING',
   'LAUNDRY',
@@ -65,6 +65,16 @@ export const SERVICE_TYPES = [
   'ELECTRICAL',
   'PAINTING',
   'GARDENING',
+  'ENGINEERING',
+  'CARPENTRY',
+  'SECURITY',
+  'DRIVING',
+  'TUTORING',
+  'HAIRSTYLING',
+  'BARBING',
+  'HVAC',
+  'MOVING',
+  'PEST_CONTROL',
   'OTHER'
 ] as const;
 
@@ -78,6 +88,16 @@ export const SERVICE_LABELS: Record<string, string> = {
   ELECTRICAL: 'Electrical',
   PAINTING: 'Painting',
   GARDENING: 'Gardening',
+  ENGINEERING: 'Engineering',
+  CARPENTRY: 'Carpentry',
+  SECURITY: 'Security',
+  DRIVING: 'Driving',
+  TUTORING: 'Tutoring',
+  HAIRSTYLING: 'Hairstyling',
+  BARBING: 'Barbing',
+  HVAC: 'HVAC',
+  MOVING: 'Moving',
+  PEST_CONTROL: 'Pest Control',
   OTHER: 'Other'
 };
 
@@ -91,6 +111,16 @@ export const SERVICE_ICONS: Record<string, string> = {
   ELECTRICAL: '⚡',
   PAINTING: '🎨',
   GARDENING: '🌿',
+  ENGINEERING: '⚙️',
+  CARPENTRY: '🪚',
+  SECURITY: '🛡️',
+  DRIVING: '🚗',
+  TUTORING: '📚',
+  HAIRSTYLING: '💇',
+  BARBING: '💈',
+  HVAC: '❄️',
+  MOVING: '📦',
+  PEST_CONTROL: '🪳',
   OTHER: '📋'
 };
 
@@ -105,6 +135,16 @@ export const SERVICE_KEYWORDS: Record<string, string[]> = {
   ELECTRICAL: ['electric', 'wiring', 'wire', 'light', 'power', 'switch', 'outlet', 'socket', 'circuit', 'generator', 'fan', 'ac', 'air condition', 'appliance', 'bulb', 'fuse'],
   PAINTING: ['paint', 'painter', 'decorate', 'wall', 'interior', 'exterior', 'coat', 'primer', 'finish', 'color', 'varnish', 'stain', 'spray paint'],
   GARDENING: ['garden', 'lawn', 'mow', 'landscape', 'plant', 'flower', 'grass', 'weed', 'trim', 'hedge', 'tree', 'prune', 'outdoor', 'yard', 'fertilizer'],
+  ENGINEERING: ['engineer', 'engineering', 'structural', 'civil', 'mechanical', 'construction', 'building', 'site engineer', 'project engineer', 'consultant', 'design', 'blueprint', 'surveyor'],
+  CARPENTRY: ['carpenter', 'carpentry', 'wood', 'woodwork', 'furniture', 'cabinet', 'shelf', 'table', 'door', 'window frame', 'joinery', 'wooden'],
+  SECURITY: ['security', 'guard', 'security guard', 'watchman', 'bouncer', 'protection', 'safety', 'surveillance', 'cctv', 'alarm', 'patrol', 'bodyguard'],
+  DRIVING: ['driver', 'driving', 'chauffeur', 'uber', 'taxi', 'delivery', 'transport', 'ride', 'logistics', 'courier', 'truck'],
+  TUTORING: ['tutor', 'tutoring', 'teacher', 'lesson', 'learn', 'study', 'academic', 'math', 'english', 'science', 'music', 'training', 'instructor', 'coach'],
+  HAIRSTYLING: ['hair', 'hairstyle', 'stylist', 'styling', 'braids', 'weave', 'wig', 'salon', 'cornrow', 'dreadlock', 'twist', 'relaxer', 'hair treatment'],
+  BARBING: ['barber', 'barbing', 'haircut', 'trim', 'shave', 'grooming', 'beard', 'fade', 'clippers', 'hair cut', 'barbershop'],
+  HVAC: ['hvac', 'air conditioning', 'ac', 'refrigeration', 'cooling', 'heating', 'ventilation', 'compressor', 'thermostat', 'duct'],
+  MOVING: ['moving', 'mover', 'pack', 'packing', 'relocate', 'relocation', 'furniture moving', 'loading', 'haul', 'transport'],
+  PEST_CONTROL: ['pest', 'pest control', 'fumigation', 'insect', 'rodent', 'rat', 'cockroach', 'termite', 'exterminator', 'bug', 'spray'],
   OTHER: ['other', 'custom', 'special', 'miscellaneous', 'general'],
 };
 

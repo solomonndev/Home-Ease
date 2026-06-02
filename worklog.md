@@ -135,3 +135,29 @@ Stage Summary:
 - All verified providers show immediately when client opens Find Artisans page
 - Search is case-insensitive (e.g., "engineer" matches "Engineer")
 - Committed as 51630de, pushed to main
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix preview panel cross-origin issue + expand service types for client discovery
+
+Work Log:
+- Fixed preview panel not showing: Added `allowedDevOrigins: ['space-z.ai']` to next.config.ts to allow cross-origin requests from the preview panel domain
+- Expanded SERVICE_TYPES in src/lib/auth.ts from 10 to 20 types: added ENGINEERING, CARPENTRY, SECURITY, DRIVING, TUTORING, HAIRSTYLING, BARBING, HVAC, MOVING, PEST_CONTROL
+- Added keywords for each new service type (e.g., ENGINEERING: engineer, engineering, structural, civil, mechanical, construction)
+- Updated frontend serviceData in page.tsx to match all 20 service types with proper keywords
+- Updated landing page services section: 19 service cards displayed in 4-column grid
+- Made /api/services/search dynamic: now also fetches actual provider skills from DB and returns them alongside predefined types
+- Made /api/artisans/search show ALL providers (not just VERIFIED): removed `verificationStatus: 'VERIFIED'` filter, added `verificationStatus` field to response
+- Made /api/providers show ALL providers with `mode: 'insensitive'` text matching
+- Added verification status badges on artisan cards: green "✓ Verified", yellow "⏳ Pending Verification", red "⚠️ Declined"
+- Updated sorting: Verified providers rank first, then by rating/score
+- Verified with agent browser: searching "engineer" shows "Engineering" suggestion, 2 Solomon providers found with appropriate badges
+
+Stage Summary:
+- Preview panel: Fixed cross-origin restriction via next.config.ts
+- Service discovery: 20 service types now available (was 10), all with search keywords
+- Dynamic: /api/services/search returns both predefined + custom provider skills from DB
+- Visibility: All registered providers visible to clients (not just verified), with status badges
+- All lint checks pass, dev server compiles cleanly
+- Browser verified: Engineering search works, 2 artisans found with correct badges
