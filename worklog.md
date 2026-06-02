@@ -66,3 +66,22 @@ Stage Summary:
 - 3 commits pushed to main branch
 - Login details: admin@homeease.com / password123, solomon@gmail.com / password123, solomon1@gmail.com / password123
 - Note: Preview panel cannot fully test Supabase-connected features due to sandbox env override
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix page reload logout + support chat conversations not showing
+
+Work Log:
+- Diagnosed reload logout: useEffect in Home() called api.getMe() and unconditionally called logout() on ANY error (including network timeouts). On Vercel serverless cold starts, this would randomly log users out.
+- Fixed auth check: Changed to use useAuthStore.getState() for reliable token access after Zustand hydration. Only logout on 401/auth errors, not network errors.
+- Diagnosed support chat: The /api/support/messages GET handler had conflicting Prisma include + select on the provider relation (line 32-36). This caused Prisma validation errors returning 500.
+- Fixed Prisma query: Removed conflicting include, moved provider selection into the select clause properly.
+- Optimized conversation queries: Replaced N+1 loop (2 queries per user) with groupBy for unread counts and single findMany for last messages.
+- Improved AdminSupportChat: Added authToken dependency check so conversations only load when token is available.
+- Pushed to GitHub: 6b08ac8
+
+Stage Summary:
+- Key fix: Prisma include+select conflict was the root cause of "Failed to fetch messages" on Vercel
+- Key fix: Aggressive logout on any getMe() error was causing random logouts on reload
+- Both files modified: src/app/api/support/messages/route.ts, src/app/page.tsx
+- Committed and pushed to main branch on GitHub
