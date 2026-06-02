@@ -161,3 +161,22 @@ Stage Summary:
 - Visibility: All registered providers visible to clients (not just verified), with status badges
 - All lint checks pass, dev server compiles cleanly
 - Browser verified: Engineering search works, 2 artisans found with correct badges
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Fix re-approve provider button not working
+
+Work Log:
+- Investigated re-approve button: found TWO bugs preventing it from working
+- Bug 1: `/api/support/messages` GET endpoint returned `provider: { select: { verificationStatus: true } }` but was missing `id` field. The `handleReApprove` function checks `selectedConversation?.provider?.id` which was always `undefined`, causing the function to return early silently.
+  - Fix: Added `id: true` to the provider select: `provider: { select: { id: true, verificationStatus: true } }`
+- Bug 2: `page.tsx` imported `useToast` from `@/hooks/use-toast` but not the standalone `toast` function. The `handleReApprove` calls `toast({...})` which would fail because `toast` was undefined in scope.
+  - Fix: Changed import to `import { useToast, toast } from '@/hooks/use-toast'`
+- Browser verified: re-approve button now appears for declined providers, clicking it calls POST /api/admin with correct provider ID, DB updates from REJECTED → VERIFIED, conversation list refreshes to show VERIFIED badge, re-approve button disappears after success.
+- Pushed as commit 7ad2be3 to main
+
+Stage Summary:
+- Root cause: Missing `provider.id` in conversation API response + missing `toast` import
+- Files modified: src/app/api/support/messages/route.ts (1 line), src/app/page.tsx (1 line)
+- Provider re-approve flow now works end-to-end: button appears → click → API call → DB update → UI refresh
