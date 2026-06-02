@@ -2,6 +2,7 @@
 
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
+import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import {
@@ -2342,6 +2343,7 @@ function AdminSupportChat({ user }: { user: any }) {
   const [reApproving, setReApproving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const headers = (): Record<string, string> => {
     const h: Record<string, string> = {};
@@ -2477,10 +2479,19 @@ function AdminSupportChat({ user }: { user: any }) {
     setReApproving(true);
     try {
       await api.adminAction('verify-provider', selectedConversation.provider.id, 'Re-approved via support chat');
+      toast({
+        title: 'Provider Approved',
+        description: `${selectedConversation.name} has been re-approved and will have full access.`,
+      });
       await loadConversations();
       setChatError('');
     } catch (err: any) {
       setChatError(err.message || 'Failed to re-approve provider');
+      toast({
+        title: 'Approval Failed',
+        description: err.message || 'Could not re-approve provider.',
+        variant: 'destructive',
+      });
     }
     setReApproving(false);
   }
