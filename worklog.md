@@ -210,3 +210,26 @@ Stage Summary:
 - Files modified: prisma/schema.prisma (full rewrite of relation names), src/app/api/artisans/search/route.ts (3 include renames)
 - No db migration needed — only TypeScript-level property names changed
 - Booking creation, stats, payments, messages, admin, and all other API routes should now work correctly
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix artisan search failing with 500 error - Provider.Feedback schema mismatch
+
+Work Log:
+- Analyzed screenshot showing "Search failed" toasts and "0 artisans found for Engineering"
+- Read artisans/search/route.ts, auth.ts, and prisma/schema.prisma
+- Discovered root cause: Provider model in schema has `Feedback Feedback[]` (capital F) but API routes use `feedback` (lowercase)
+- Also found `/api/providers/route.ts` used `feedbackReceived` (another mismatch)
+- Fixed schema: `Feedback Feedback[]` → `feedback Feedback[]` in Provider model
+- Fixed providers route: `feedbackReceived` → `feedback` (include + map access)
+- Ran `npx prisma generate` to regenerate Prisma client
+- Fixed syntax error in providers route (extra closing paren)
+- Lint passed cleanly
+- Pushed to GitHub for Vercel deployment
+
+Stage Summary:
+- Root cause: Prisma schema field name case mismatch (`Feedback` vs `feedback`) causing 500 validation error on all Provider queries that include feedback relations
+- The keyword-based fuzzy matching logic was already correctly implemented - it uses SERVICE_KEYWORDS to find matching providers
+- Fix deployed to: github.com/solomonndev/Home-Ease (commit cb63df0)
+- Vercel will auto-deploy from this push
