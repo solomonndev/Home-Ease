@@ -36,14 +36,18 @@ export default function Home() {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
 
-  // Check if user is authenticated on mount
+  // Check if user is authenticated on mount (use getState for reliable hydration)
   useEffect(() => {
-    if (token && isAuthenticated) {
+    const { token: storedToken, isAuthenticated: isAuth } = useAuthStore.getState();
+    if (storedToken && isAuth) {
       setView('dashboard');
-      // Verify token is still valid
-      api.getMe().catch(() => {
-        logout();
-        setView('landing');
+      // Verify token is still valid — only logout on auth errors, not network errors
+      api.getMe().catch((err: any) => {
+        const msg = err?.message || '';
+        if (msg.includes('Unauthorized') || msg.includes('401') || msg.includes('Token')) {
+          logout();
+          setView('landing');
+        }
       });
     }
   }, []);
@@ -2300,10 +2304,13 @@ function AdminSupportChat({ user }: { user: any }) {
     }
   }, [authToken]);
 
-  // Initial load
+  // Initial load — only when token is available
   useEffect(() => {
+    if (!authToken) return;
+    setChatLoading(true);
+    setChatError('');
     loadConversations().finally(() => setChatLoading(false));
-  }, [loadConversations]);
+  }, [authToken]);
 
   // When a user is selected, load their chat + polling
   useEffect(() => {

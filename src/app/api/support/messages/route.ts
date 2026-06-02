@@ -17,44 +17,75 @@ export async function GET(request: NextRequest) {
 
     if (user.role === 'ADMIN' && !userId) {
       // Admin without userId — return list of conversations
-      // Get all messages involving admin, extract unique partner IDs
       const allMessages = await db.supportMessage.findMany({
         where: { OR: [{ senderId: user.id }, { receiverId: user.id }] },
         select: { senderId: true, receiverId: true },
       });
 
-      const userIds = new Set<string>();
+      console.log(`[SupportMessages GET] Found ${allMessages.length} total messages for admin`);
+
+      const partnerIds = new Set<string>();
       for (const msg of allMessages) {
-        if (msg.senderId !== user.id) userIds.add(msg.senderId);
-        if (msg.receiverId !== user.id) userIds.add(msg.receiverId);
+        if (msg.senderId !== user.id) partnerIds.add(msg.senderId);
+        if (msg.receiverId !== user.id) partnerIds.add(msg.receiverId);
       }
 
+      if (partnerIds.size === 0) {
+        console.log('[SupportMessages GET] No conversation partners found');
+        return NextResponse.json({ conversations: [], lastMessages: {}, unreadCounts: {} });
+      }
+
+      const partnerIdList = Array.from(partnerIds);
+
+      // Fetch partner users with their provider verification status
       const users = await db.user.findMany({
-        where: { id: { in: Array.from(userIds) } },
-        include: { provider: { select: { verificationStatus: true } } },
-        select: { id: true, name: true, email: true, role: true, avatarUrl: true, provider: true },
+        where: { id: { in: partnerIdList } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          avatarUrl: true,
+          provider: { select: { verificationStatus: true } },
+        },
       });
 
+      console.log(`[SupportMessages GET] Found ${users.length} conversation partners`);
+
+      // Build last message and unread count for each partner (optimized single queries)
       const lastMessages: Record<string, any> = {};
       const unreadCounts: Record<string, number> = {};
 
-      for (const uid of Array.from(userIds)) {
-        const lastMsg = await db.supportMessage.findFirst({
-          where: {
-            OR: [
-              { senderId: uid, receiverId: user.id },
-              { senderId: user.id, receiverId: uid },
-            ]
-          },
-          orderBy: { createdAt: 'desc' },
-          include: { sender: { select: { name: true } } },
-        });
-        if (lastMsg) lastMessages[uid] = lastMsg;
+      // Get all messages ordered by createdAt desc, grouped by conversation partner
+      const allDetailed = await db.supportMessage.findMany({
+        where: { OR: [{ senderId: user.id }, { receiverId: user.id }] },
+        orderBy: { createdAt: 'desc' },
+        include: { sender: { select: { name: true } } },
+      });
 
-        const count = await db.supportMessage.count({
-          where: { senderId: uid, receiverId: user.id, read: false },
-        });
-        unreadCounts[uid] = count;
+      // Get all unread counts in one query
+      const unreadAgg = await db.supportMessage.groupBy({
+        by: ['senderId'],
+        where: { receiverId: user.id, read: false },
+        _count: { id: true },
+      });
+      const unreadMap: Record<string, number> = {};
+      for (const row of unreadAgg) {
+        unreadMap[row.senderId] = row._count.id;
+      }
+
+      // Build per-partner last message
+      const seen = new Set<string>();
+      for (const msg of allDetailed) {
+        const partnerId = msg.senderId === user.id ? msg.receiverId : msg.senderId;
+        if (!seen.has(partnerId)) {
+          seen.add(partnerId);
+          lastMessages[partnerId] = msg;
+        }
+      }
+
+      for (const uid of partnerIdList) {
+        unreadCounts[uid] = unreadMap[uid] || 0;
       }
 
       console.log(`[SupportMessages GET] Returning ${users.length} conversations for admin`);
@@ -101,7 +132,7 @@ export async function GET(request: NextRequest) {
     console.log(`[SupportMessages GET] Returning ${messages.length} messages for ${user.role}`);
     return NextResponse.json({ messages });
   } catch (error) {
-    console.error('Support messages GET error:', error);
+    console.error('[SupportMessages GET] Error:', error);
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });
   }
 }
@@ -163,7 +194,7 @@ export async function POST(request: NextRequest) {
     console.log(`[SupportMessages POST] Message created id=${message.id}`);
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
-    console.error('Support messages POST error:', error);
+    console.error('[SupportMessages POST] Error:', error);
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
   }
 }
