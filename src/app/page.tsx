@@ -3257,12 +3257,40 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     setBookingAmount(String(Math.round(artisan.hourlyRate)));
     setBookingError('');
     setBookingSuccess(false);
+
+    // Auto-detect service type from artisan's skills so user doesn't need to select one
+    if (artisan.skills && artisan.skills.length > 0 && !selectedService) {
+      const firstSkill = artisan.skills[0].toLowerCase();
+      // Try to find a matching service type using keywords
+      let matched = false;
+      for (const service of serviceData) {
+        const labelLower = service.label.toLowerCase();
+        const valueLower = service.value.toLowerCase();
+        if (labelLower === firstSkill || valueLower === firstSkill || labelLower.startsWith(firstSkill) || firstSkill.startsWith(labelLower)) {
+          setSelectedService(service.value);
+          matched = true;
+          break;
+        }
+        for (const kw of service.keywords) {
+          if (kw === firstSkill || firstSkill.startsWith(kw) || kw.startsWith(firstSkill)) {
+            setSelectedService(service.value);
+            matched = true;
+            break;
+          }
+        }
+        if (matched) break;
+      }
+      // If no exact match, set the first skill as the service type
+      if (!matched) {
+        setSelectedService(firstSkill.toUpperCase());
+      }
+    }
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedService) {
-      setBookingError('Please select a service first');
+      setBookingError('Unable to determine service type. Please select a service from the search bar first.');
       return;
     }
     setBookingLoading(true);
