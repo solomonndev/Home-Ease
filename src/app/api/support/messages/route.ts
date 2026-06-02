@@ -146,10 +146,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { receiverId, content } = body;
+    const { receiverId, content, attachmentUrl, attachmentName, attachmentType } = body;
 
-    if (!content || !content.trim()) {
-      return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
+    if ((!content || !content.trim()) && !attachmentUrl) {
+      return NextResponse.json({ error: 'Message content or attachment is required' }, { status: 400 });
     }
 
     let targetReceiverId = receiverId;
@@ -168,13 +168,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Receiver is required' }, { status: 400 });
     }
 
-    console.log(`[SupportMessages POST] user=${user.id} → receiver=${targetReceiverId} content="${content.substring(0, 50)}"`);
+    console.log(`[SupportMessages POST] user=${user.id} → receiver=${targetReceiverId} content="${(content || '').substring(0, 50)}" attachment=${attachmentName || 'none'}`);
 
     const message = await db.supportMessage.create({
       data: {
         senderId: user.id,
         receiverId: targetReceiverId,
-        content: content.trim(),
+        content: content?.trim() || '',
+        attachmentUrl: attachmentUrl || null,
+        attachmentName: attachmentName || null,
+        attachmentType: attachmentType || null,
       },
       include: {
         sender: { select: { id: true, name: true, avatarUrl: true, role: true } },
@@ -182,12 +185,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Notify the receiver
+    const notifContent = content?.trim() || `📎 ${attachmentName || 'File'}`;
     await db.notification.create({
       data: {
         userId: targetReceiverId,
         type: 'MESSAGE',
         title: 'Support Message',
-        message: `${user.name}: ${content.trim().substring(0, 100)}`,
+        message: `${user.name}: ${notifContent.substring(0, 100)}`,
       },
     });
 

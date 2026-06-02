@@ -12,7 +12,7 @@ import {
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
   Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, XCircle, ArrowLeft, Download,
-  Trash2
+  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2
 } from 'lucide-react';
 
 import {
@@ -674,8 +674,11 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   const [sending, setSending] = useState(false);
   const [chatError, setChatError] = useState('');
   const [chatLoading, setChatLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [attachment, setAttachment] = useState<{ url: string; name: string; type: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatSectionRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isRejected = verificationStatus === 'REJECTED';
 
   const headers = (): Record<string, string> => {
@@ -712,21 +715,54 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setChatError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Upload failed');
+      }
+      const data = await res.json();
+      setAttachment({ url: data.url, name: data.name, type: data.type });
+    } catch (err: any) {
+      setChatError(err.message || 'Failed to upload file');
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   async function sendMessage() {
-    if (!newMessage.trim() || sending) return;
+    if ((!newMessage.trim() && !attachment) || sending) return;
     setSending(true);
     setChatError('');
     try {
+      const body: any = { content: newMessage };
+      if (attachment) {
+        body.attachmentUrl = attachment.url;
+        body.attachmentName = attachment.name;
+        body.attachmentType = attachment.type;
+      }
       const res = await fetch('/api/support/messages', {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newMessage }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `Send failed (${res.status})`);
       }
       setNewMessage('');
+      setAttachment(null);
       await fetchMessages();
     } catch (err: any) {
       console.error('[SupportChat] Send error:', err);
@@ -734,6 +770,8 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
     }
     setSending(false);
   }
+
+  const isImage = (type?: string) => type?.startsWith('image/');
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -825,7 +863,28 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
                         ? 'bg-orange-500 text-white rounded-br-sm'
                         : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                     }`}>
-                      {msg.content}
+                      {msg.content && <p>{msg.content}</p>}
+                      {msg.attachmentUrl && (
+                        <div className="mt-1">
+                          {isImage(msg.attachmentType) ? (
+                            <img
+                              src={msg.attachmentUrl}
+                              alt={msg.attachmentName || 'Attachment'}
+                              className="max-w-full max-h-48 rounded-md cursor-pointer hover:opacity-90"
+                              onClick={() => window.open(msg.attachmentUrl, '_blank')}
+                            />
+                          ) : (
+                            <a
+                              href={msg.attachmentUrl}
+                              download={msg.attachmentName || 'file'}
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span className="underline">{msg.attachmentName || 'File'}</span>
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <p className={`text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -837,9 +896,31 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Attachment preview */}
+          {attachment && (
+            <div className="px-4 py-2 bg-orange-50 border-t border-orange-100 flex items-center gap-2">
+              {isImage(attachment.type) ? (
+                <img src={attachment.url} alt={attachment.name} className="w-10 h-10 object-cover rounded" />
+              ) : (
+                <FileText className="w-5 h-5 text-orange-600" />
+              )}
+              <span className="text-xs text-orange-800 truncate flex-1">{attachment.name}</span>
+              <button onClick={() => setAttachment(null)} className="text-orange-400 hover:text-orange-600"><X className="w-3.5 h-3.5" /></button>
+            </div>
+          )}
+
           {/* Input */}
           <div className="p-3 border-t border-gray-100">
+            <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={handleFileSelect} />
             <div className="flex gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || sending}
+                className="px-2 py-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
+                title="Attach file (max 5MB)"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+              </button>
               <input
                 type="text"
                 value={newMessage}
@@ -850,10 +931,10 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
               />
               <button
                 onClick={sendMessage}
-                disabled={sending || !newMessage.trim()}
+                disabled={sending || (!newMessage.trim() && !attachment)}
                 className="px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {sending ? '...' : <Send className="w-4 h-4" />}
+                {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </button>
             </div>
           </div>
@@ -2256,13 +2337,20 @@ function AdminSupportChat({ user }: { user: any }) {
   const [sending, setSending] = useState(false);
   const [chatLoading, setChatLoading] = useState(true);
   const [chatError, setChatError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [attachment, setAttachment] = useState<{ url: string; name: string; type: string } | null>(null);
+  const [reApproving, setReApproving] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const headers = (): Record<string, string> => {
     const h: Record<string, string> = {};
     if (authToken) h['Authorization'] = `Bearer ${authToken}`;
     return h;
   };
+
+  const selectedConversation = conversations.find((c: any) => c.id === selectedUser);
+  const isDeclinedProvider = selectedConversation?.role === 'PROVIDER' && selectedConversation?.provider?.verificationStatus === 'REJECTED';
 
   const loadConversations = useCallback(async () => {
     if (!authToken) return;
@@ -2296,7 +2384,6 @@ function AdminSupportChat({ user }: { user: any }) {
         throw new Error(errData.error || `HTTP ${res.status}`);
       }
       const data = await res.json();
-      console.log('[AdminChat] Messages loaded:', data.messages?.length || 0, 'messages for user', userId);
       if (data.messages) setMessages(data.messages);
     } catch (err: any) {
       console.error('[AdminChat] Load chat failed:', err);
@@ -2304,7 +2391,7 @@ function AdminSupportChat({ user }: { user: any }) {
     }
   }, [authToken]);
 
-  // Initial load — only when token is available
+  // Initial load
   useEffect(() => {
     if (!authToken) return;
     setChatLoading(true);
@@ -2317,35 +2404,65 @@ function AdminSupportChat({ user }: { user: any }) {
     if (!selectedUser) return;
     let mounted = true;
     setMessages([]);
-    (async () => {
-      await loadChat(selectedUser);
-    })();
+    (async () => { if (mounted) await loadChat(selectedUser); })();
     const interval = setInterval(() => {
-      if (mounted) {
-        loadConversations();
-        loadChat(selectedUser);
-      }
+      if (mounted) { loadConversations(); loadChat(selectedUser); }
     }, 5000);
     return () => { mounted = false; clearInterval(interval); };
   }, [selectedUser, loadChat, loadConversations]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setChatError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${authToken}` },
+        body: formData,
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Upload failed');
+      }
+      const data = await res.json();
+      setAttachment({ url: data.url, name: data.name, type: data.type });
+    } catch (err: any) {
+      setChatError(err.message || 'Failed to upload file');
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeAttachment = () => setAttachment(null);
+
   async function sendMessage() {
-    if (!newMessage.trim() || !selectedUser || sending) return;
+    if ((!newMessage.trim() && !attachment) || !selectedUser || sending) return;
     setSending(true);
     setChatError('');
     try {
+      const body: any = { receiverId: selectedUser, content: newMessage };
+      if (attachment) {
+        body.attachmentUrl = attachment.url;
+        body.attachmentName = attachment.name;
+        body.attachmentType = attachment.type;
+      }
       const res = await fetch('/api/support/messages', {
         method: 'POST',
         headers: { ...headers(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: selectedUser, content: newMessage }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || `Send failed (${res.status})`);
       }
       setNewMessage('');
+      setAttachment(null);
       await loadChat(selectedUser);
       await loadConversations();
     } catch (err: any) {
@@ -2355,6 +2472,21 @@ function AdminSupportChat({ user }: { user: any }) {
     setSending(false);
   }
 
+  async function handleReApprove() {
+    if (!selectedUser || !selectedConversation?.provider?.id || reApproving) return;
+    setReApproving(true);
+    try {
+      await api.adminAction('verify-provider', selectedConversation.provider.id, 'Re-approved via support chat');
+      await loadConversations();
+      setChatError('');
+    } catch (err: any) {
+      setChatError(err.message || 'Failed to re-approve provider');
+    }
+    setReApproving(false);
+  }
+
+  const isImage = (type?: string) => type?.startsWith('image/');
+
   return (
     <div className="max-w-5xl mx-auto flex bg-white rounded-xl border border-gray-100 overflow-hidden" style={{ height: 'calc(100vh - 8rem)' }}>
       {/* Conversations list */}
@@ -2363,7 +2495,6 @@ function AdminSupportChat({ user }: { user: any }) {
           <h3 className="text-sm font-semibold text-gray-900">Support Chats</h3>
           <p className="text-[11px] text-gray-500 mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
         </div>
-        {/* Error banner */}
         {chatError && (
           <div className="px-2 py-1.5 bg-red-50 border-b border-red-100 text-red-600 text-[10px] flex items-center justify-between">
             <span className="truncate mr-1">{chatError}</span>
@@ -2382,7 +2513,7 @@ function AdminSupportChat({ user }: { user: any }) {
               return (
                 <button
                   key={c.id}
-                  onClick={() => setSelectedUser(c.id)}
+                  onClick={() => { setSelectedUser(c.id); setAttachment(null); }}
                   className={`w-full text-left px-3 py-2 border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedUser === c.id ? 'bg-orange-50' : ''}`}
                 >
                   <div className="flex items-center gap-2">
@@ -2393,11 +2524,13 @@ function AdminSupportChat({ user }: { user: any }) {
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-medium text-gray-900 truncate">{c.name}</p>
                         {unread > 0 && (
-                          <span className="ml-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center flex-shrink-0">{unread}</span>
+                          <span className="ml-1 w-4 h-4 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center flex-shrink-0">{unread > 9 ? '9+' : unread}</span>
                         )}
                       </div>
                       {lastMsg && (
-                        <p className="text-[11px] text-gray-500 truncate mt-0.5">{lastMsg.content}</p>
+                        <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                          {lastMsg.attachmentName ? `📎 ${lastMsg.attachmentName}` : lastMsg.content}
+                        </p>
                       )}
                       <p className="text-[10px] text-gray-400 mt-0.5">
                         {c.role === 'PROVIDER' ? `Provider • ${c.provider?.verificationStatus || 'PENDING'}` : c.role}
@@ -2415,19 +2548,33 @@ function AdminSupportChat({ user }: { user: any }) {
       <div className="flex-1 flex flex-col">
         {selectedUser ? (
           <>
-            <div className="px-3 py-2 border-b border-gray-100 flex items-center gap-2">
-              <button onClick={() => setSelectedUser(null)} className="lg:hidden text-gray-500 hover:text-gray-700">
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-xs">
-                {conversations.find((c: any) => c.id === selectedUser)?.name?.charAt(0) || '?'}
+            {/* Chat header with re-approve button */}
+            <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button onClick={() => setSelectedUser(null)} className="lg:hidden text-gray-500 hover:text-gray-700">
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-semibold text-xs">
+                  {selectedConversation?.name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-900">{selectedConversation?.name}</p>
+                  <p className="text-[11px] text-gray-500">{selectedConversation?.role}{isDeclinedProvider ? ' • Declined' : ''}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-medium text-gray-900">{conversations.find((c: any) => c.id === selectedUser)?.name}</p>
-                <p className="text-[11px] text-gray-500">{conversations.find((c: any) => c.id === selectedUser)?.role}</p>
-              </div>
+              {isDeclinedProvider && (
+                <button
+                  onClick={handleReApprove}
+                  disabled={reApproving}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-[11px] font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+                >
+                  {reApproving ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {reApproving ? 'Approving...' : 'Re-approve Provider'}
+                </button>
+              )}
             </div>
 
+            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {messages.length === 0 && (
                 <p className="text-center text-sm text-gray-400 py-8">No messages in this conversation</p>
@@ -2443,7 +2590,28 @@ function AdminSupportChat({ user }: { user: any }) {
                       <div className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-pre-wrap ${
                         isMe ? 'bg-orange-500 text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                       }`}>
-                        {msg.content}
+                        {msg.content && <p>{msg.content}</p>}
+                        {msg.attachmentUrl && (
+                          <div className="mt-1">
+                            {isImage(msg.attachmentType) ? (
+                              <img
+                                src={msg.attachmentUrl}
+                                alt={msg.attachmentName || 'Attachment'}
+                                className="max-w-full max-h-48 rounded-md cursor-pointer hover:opacity-90"
+                                onClick={() => window.open(msg.attachmentUrl, '_blank')}
+                              />
+                            ) : (
+                              <a
+                                href={msg.attachmentUrl}
+                                download={msg.attachmentName || 'file'}
+                                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span className="underline">{msg.attachmentName || 'File'}</span>
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <p className={`text-[9px] text-gray-400 mt-0.5 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -2463,8 +2631,31 @@ function AdminSupportChat({ user }: { user: any }) {
               </div>
             )}
 
+            {/* Attachment preview */}
+            {attachment && (
+              <div className="px-3 py-1.5 bg-orange-50 border-t border-orange-100 flex items-center gap-2">
+                {isImage(attachment.type) ? (
+                  <img src={attachment.url} alt={attachment.name} className="w-10 h-10 object-cover rounded" />
+                ) : (
+                  <FileText className="w-5 h-5 text-orange-600" />
+                )}
+                <span className="text-[11px] text-orange-800 truncate flex-1">{attachment.name}</span>
+                <button onClick={removeAttachment} className="text-orange-400 hover:text-orange-600"><X className="w-3.5 h-3.5" /></button>
+              </div>
+            )}
+
+            {/* Input area */}
             <div className="px-3 py-2 border-t border-gray-100">
               <div className="flex gap-2">
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={handleFileSelect} />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || sending}
+                  className="px-2 py-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50"
+                  title="Attach file (max 5MB)"
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Paperclip className="w-4 h-4" />}
+                </button>
                 <input
                   type="text"
                   value={newMessage}
@@ -2475,10 +2666,10 @@ function AdminSupportChat({ user }: { user: any }) {
                 />
                 <button
                   onClick={sendMessage}
-                  disabled={sending || !newMessage.trim()}
+                  disabled={sending || (!newMessage.trim() && !attachment)}
                   className="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {sending ? '...' : <Send className="w-3.5 h-3.5" />}
+                  {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>

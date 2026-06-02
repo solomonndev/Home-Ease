@@ -99,14 +99,19 @@ model ServiceRequest {
 }
 
 model SupportMessage {
-  id         String   @id @default(cuid())
-  senderId   String
-  sender     User     @relation("SupportSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String
-  receiver   User     @relation("SupportReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  content    String   @db.Text
-  read       Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  senderId       String
+  sender         User     @relation("SupportSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId     String
+  receiver       User     @relation("SupportReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  content        String   @db.Text
+  attachmentUrl  String?  @db.Text
+  attachmentName String?
+  attachmentType String?
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([senderId, receiverId])
 }
 
 model Transaction {
