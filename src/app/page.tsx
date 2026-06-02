@@ -3170,21 +3170,25 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
       setArtisans(result.artisans);
       setFilterMeta(result.filters);
       setHasSearched(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Search error:', err);
+      setHasSearched(true);
+      toast({ title: 'Search failed', description: err.message || 'Could not load artisans. Please try again.', variant: 'destructive' });
     } finally {
       setSearchLoading(false);
     }
   }, [selectedService, searchQuery, filterLocation, filterMinRate, filterMaxRate, filterMinRating, filterAvailability, sortBy]);
 
-  // Auto-search when filters change or service is selected
+  // Debounce auto-search when query or filters change
   useEffect(() => {
-    if (selectedService || searchQuery.trim()) {
+    if (!selectedService && !searchQuery.trim() && !filterLocation && !filterMinRate && !filterMaxRate && !filterMinRating && !filterAvailability) return;
+    const timer = setTimeout(() => {
       doSearch();
-    }
-  }, [selectedService, filterLocation, filterMinRate, filterMaxRate, filterMinRating, filterAvailability, sortBy]);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [selectedService, searchQuery, filterLocation, filterMinRate, filterMaxRate, filterMinRating, filterAvailability, sortBy]);
 
-  // Load all verified providers on mount (show artisans even without search)
+  // Load all providers on mount (show artisans even without search)
   useEffect(() => {
     (async () => {
       try {
@@ -3192,8 +3196,10 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
         setArtisans(result.artisans);
         setFilterMeta(result.filters);
         setHasSearched(true);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Initial artisans load error:', err);
+        setHasSearched(true);
+        toast({ title: 'Could not load artisans', description: err.message || 'Please refresh and try again.', variant: 'destructive' });
       }
     })();
   }, []);
@@ -3214,6 +3220,27 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // If a suggestion is highlighted, select it; otherwise search the typed text
+      if (showSuggestions && highlightedIndex >= 0) {
+        const visibleItems = hasQuery ? suggestions : serviceData;
+        if (highlightedIndex < visibleItems.length) {
+          handleSelectService(visibleItems[highlightedIndex].value);
+          return;
+        }
+      }
+      if (searchQuery.trim()) {
+        setShowSuggestions(false);
+        doSearch();
+      }
+      return;
+    }
+    if (e.key === 'Escape') {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+      return;
+    }
     if (!showSuggestions) return;
     const visibleItems = hasQuery ? suggestions : serviceData;
     if (e.key === 'ArrowDown') {
@@ -3222,16 +3249,6 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightedIndex(prev => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (highlightedIndex >= 0 && highlightedIndex < visibleItems.length) {
-        handleSelectService(visibleItems[highlightedIndex].value);
-      } else if (searchQuery.trim()) {
-        doSearch();
-      }
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
     }
   };
 
