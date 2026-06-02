@@ -68,7 +68,7 @@ model Provider {
   bankName           String?
   accountNumber      String?
   accountName        String?
-  Feedback           Feedback[]
+  feedback            Feedback[]
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   serviceRequests    ServiceRequest[]
   transactions       Transaction[]

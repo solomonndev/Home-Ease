@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         user: { select: { id: true, name: true, avatarUrl: true, phone: true } },
-        feedbackReceived: {
+        feedback: {
           take: 5,
           orderBy: { createdAt: 'desc' },
           include: {
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       completedJobs: p.completedJobs,
       bio: p.bio,
       verificationStatus: p.verificationStatus,
-      recentReviews: p.feedbackReceived.map(f => ({
+      recentReviews: p.feedback.map(f => ({
         rating: f.rating,
         comment: f.comment,
         clientName: f.client.name,
