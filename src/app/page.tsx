@@ -2820,7 +2820,6 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
         // Load Paystack SDK if not already loaded
         if (!(window as any).PaystackPop) {
           await new Promise<void>((resolve, reject) => {
-            // Check if script already being loaded
             if (document.querySelector('script[src*="paystack"]')) {
               const check = setInterval(() => {
                 if ((window as any).PaystackPop) { clearInterval(check); resolve(); }
@@ -2831,12 +2830,12 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
             const script = document.createElement('script');
             script.src = 'https://js.paystack.co/v2/inline.js';
             script.onload = () => resolve();
-            script.onerror = () => reject(new Error('Failed to load Paystack SDK. Please check your internet connection.'));
+            script.onerror = () => reject(new Error('Failed to load Paystack payment form. Please check your internet connection.'));
             document.head.appendChild(script);
           });
         }
 
-        // Open Paystack payment overlay — single session, no duplicates
+        // Open Paystack payment overlay — stays on the page as a popup
         await new Promise<void>((resolve, reject) => {
           const handler = (window as any).PaystackPop.setup({
             key: paystackKey,
@@ -2852,12 +2851,20 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
             },
             onClose: () => {
               setPayingNow(false);
-              reject(new Error('Payment window was closed'));
+              reject(new Error('closed'));
             },
-            callback: () => {
-              // Payment successful! Navigate to verify endpoint to record in DB
-              window.location.href = `/api/payments/paystack/verify?reference=${payResult.reference}`;
-              // Keep the promise pending — the page will navigate away
+            callback: async () => {
+              // Payment successful! Confirm in background (no page redirect)
+              try {
+                await api.confirmPaystackPayment(payResult.reference);
+              } catch (confirmErr) {
+                console.error('Payment confirmed by Paystack but DB confirmation failed:', confirmErr);
+              }
+              // Refresh the page data to show updated payment status
+              setPayingNow(false);
+              if (onRefresh) onRefresh();
+              else window.location.reload();
+              resolve();
             },
           });
           handler.openIframe();
@@ -2871,7 +2878,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
       }
     } catch (err: any) {
       const msg = err.message || 'Please try again';
-      // Don't alert on close — user intentionally closed
+      // Don't alert on close — user intentionally closed the popup
       if (!msg.includes('closed')) {
         alert('Payment failed: ' + msg);
       }

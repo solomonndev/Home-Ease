@@ -166,6 +166,21 @@ class ApiClient {
     });
   }
 
+  // Paystack: Confirm payment after inline popup success (no redirect)
+  async confirmPaystackPayment(reference: string) {
+    return this.request<{
+      success: boolean;
+      message: string;
+      requestId?: string;
+      amount?: number;
+      providerPayout?: number;
+      platformFee?: number;
+    }>('/payments/paystack/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ reference }),
+    });
+  }
+
   async paymentAction(transactionId: string, action: 'release' | 'refund') {
     return this.request<any>('/payments', {
       method: 'PUT',
