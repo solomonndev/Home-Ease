@@ -2806,81 +2806,75 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
       const paystackKey = typeof window !== 'undefined' ? process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY : '';
 
       if (paystackKey && request.amount > 0) {
-        // Check if payment was already made (from a previous attempt)
-        try {
-          const payResult: any = await api.initializePaystackPayment(request.id);
-          if (payResult.alreadyPaid) {
-            setPayingNow(false);
-            if (onRefresh) onRefresh();
-            else window.location.reload();
-            return;
-          }
-        } catch (checkErr: any) {
-          // Ignore check errors, proceed to payment
+        // Single call to initialize Paystack (creates ONE checkout session)
+        const payResult: any = await api.initializePaystackPayment(request.id);
+
+        // If payment was already recorded in DB, just refresh
+        if (payResult.alreadyPaid) {
+          setPayingNow(false);
+          if (onRefresh) onRefresh();
+          else window.location.reload();
+          return;
         }
 
-        // Try Paystack popup first
-        let paystackSuccess = false;
-        try {
-          const payResult: any = await api.initializePaystackPayment(request.id);
-
-          // Ensure Paystack SDK is loaded
-          if (!(window as any).PaystackPop) {
-            await new Promise<void>((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src = 'https://js.paystack.co/v2/inline.js';
-              script.onload = () => resolve();
-              script.onerror = () => reject(new Error('SDK load failed'));
-              document.head.appendChild(script);
-            });
-          }
-
+        // Load Paystack SDK if not already loaded
+        if (!(window as any).PaystackPop) {
           await new Promise<void>((resolve, reject) => {
-            const handler = (window as any).PaystackPop.setup({
-              key: paystackKey,
-              email: payResult.email,
-              access_code: payResult.accessCode,
-              onClose: () => {
-                setPayingNow(false);
-                reject(new Error('closed'));
-              },
-              callback: async () => {
-                try {
-                  await fetch(`/api/payments/paystack/verify?reference=${payResult.reference}`);
-                  setPayingNow(false);
-                  if (onRefresh) onRefresh();
-                  else window.location.reload();
-                  resolve();
-                } catch {
-                  setPayingNow(false);
-                  reject(new Error('verification failed'));
-                }
-              },
-            });
-            handler.openIframe();
+            // Check if script already being loaded
+            if (document.querySelector('script[src*="paystack"]')) {
+              const check = setInterval(() => {
+                if ((window as any).PaystackPop) { clearInterval(check); resolve(); }
+              }, 100);
+              setTimeout(() => { clearInterval(check); reject(new Error('SDK load timeout')); }, 15000);
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = 'https://js.paystack.co/v2/inline.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load Paystack SDK. Please check your internet connection.'));
+            document.head.appendChild(script);
           });
-          paystackSuccess = true;
-        } catch {
-          // Paystack popup failed (sandbox inactive, SDK error, user closed, etc.)
-          // Silently fall back to mock payment — no console errors
-          paystackSuccess = false;
         }
 
-        if (paystackSuccess) return;
-
-        // Fallback to mock payment
-        await api.createPayment(request.id, 'CARD');
-        setPayingNow(false);
-        if (onRefresh) onRefresh();
-        else window.location.reload();
+        // Open Paystack payment overlay — single session, no duplicates
+        await new Promise<void>((resolve, reject) => {
+          const handler = (window as any).PaystackPop.setup({
+            key: paystackKey,
+            email: payResult.email,
+            amount: request.amount * 100, // amount in kobo
+            reference: payResult.reference,
+            access_code: payResult.accessCode,
+            metadata: {
+              custom_fields: [
+                { display_name: 'Service', variable_name: 'service_type', value: request.serviceType },
+                { display_name: 'Request ID', variable_name: 'request_id', value: request.id },
+              ]
+            },
+            onClose: () => {
+              setPayingNow(false);
+              reject(new Error('Payment window was closed'));
+            },
+            callback: () => {
+              // Payment successful! Navigate to verify endpoint to record in DB
+              window.location.href = `/api/payments/paystack/verify?reference=${payResult.reference}`;
+              // Keep the promise pending — the page will navigate away
+            },
+          });
+          handler.openIframe();
+        });
       } else {
+        // No Paystack key configured — use direct mock payment
         await api.createPayment(request.id, 'CARD');
         setPayingNow(false);
         if (onRefresh) onRefresh();
         else window.location.reload();
       }
     } catch (err: any) {
-      alert('Payment failed: ' + (err.message || 'Please try again'));
+      const msg = err.message || 'Please try again';
+      // Don't alert on close — user intentionally closed
+      if (!msg.includes('closed')) {
+        alert('Payment failed: ' + msg);
+      }
       setPayingNow(false);
     }
   };
