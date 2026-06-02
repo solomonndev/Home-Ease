@@ -233,3 +233,30 @@ Stage Summary:
 - The keyword-based fuzzy matching logic was already correctly implemented - it uses SERVICE_KEYWORDS to find matching providers
 - Fix deployed to: github.com/solomonndev/Home-Ease (commit cb63df0)
 - Vercel will auto-deploy from this push
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Integrate Paystack Transfer API for real bank payouts to artisans
+
+Work Log:
+- Analyzed the entire payment flow and identified the root cause: payments only update database records, no actual bank transfer via Paystack Transfer API
+- Created `/src/lib/paystack-transfer.ts` utility with:
+  - `getBankCode()` - resolves bank name to Paystack bank code
+  - `createTransferRecipient()` - creates transfer recipient from provider's bank details
+  - `initiateTransfer()` - initiates actual bank transfer
+  - `sendToBank()` - main orchestrator function
+  - `checkTransferStatus()` - verify transfer status
+- Updated `/api/payments/route.ts`:
+  - POST handler: now triggers real bank transfer on payment, falls back to ESCROW on failure
+  - PUT handler (release): now calls Paystack Transfer API with actual bank details
+- Updated `/api/services/match/route.ts`:
+  - Complete action: now uses real Paystack transfers for escrow release
+- All transfer failures handled gracefully: payment stays in ESCROW for manual retry
+- Transfer ref and status tracked in Transaction model fields (already existed but unused)
+- Notifications updated with transfer reference and arrival timeframe
+
+Stage Summary:
+- Real bank transfers now happen via Paystack Transfer API on all payment release paths
+- Transfer failures are safe: money stays in escrow, provider is notified to verify bank details
+- Committed as 359ffc2 and pushed to GitHub
