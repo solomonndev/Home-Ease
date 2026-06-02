@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { searchServices, SERVICE_TYPES } from '@/lib/auth';
+import { searchServices, SERVICE_TYPES, SERVICE_KEYWORDS } from '@/lib/auth';
 
 // GET /api/artisans/search - Search and filter artisans
-// Shows all registered providers (VERIFIED, PENDING, DECLINED) with status badge
+// Shows all registered providers with status badge
 export async function GET(request: NextRequest) {
   try {
     const user = await (await import('@/lib/auth')).getAuthUser(request.headers);
@@ -21,41 +21,41 @@ export async function GET(request: NextRequest) {
     const availabilityFilter = searchParams.get('availability') || '';
     const sortBy = searchParams.get('sort') || 'rating';
 
-    // Build where clause - show all registered providers (no verification filter)
-    const andConditions: any[] = [];
-
-    // Determine which service types to search for
-    let targetServices: string[] = [];
+    // Collect all search terms for skill matching (predefined + keywords + free-text)
+    const skillSearchTerms = new Set<string>();
 
     if (serviceFilter) {
-      // Exact service type specified
-      targetServices = [serviceFilter];
+      // When a specific service type is selected (e.g. "ENGINEERING"),
+      // add the service type itself PLUS all its keywords AND stem variations
+      skillSearchTerms.add(serviceFilter);
+      const keywords = SERVICE_KEYWORDS[serviceFilter] || [];
+      for (const kw of keywords) {
+        skillSearchTerms.add(kw);
+      }
     } else if (query) {
-      // Use keyword search to find matching predefined service types
+      // Free-text search: add predefined matching types + their keywords + the raw query
       const searchResults = searchServices(query);
-      targetServices = searchResults
-        .filter(r => r.matchScore > 0)
-        .map(r => r.value);
+      for (const r of searchResults) {
+        if (r.matchScore > 0) {
+          skillSearchTerms.add(r.value);
+          const keywords = SERVICE_KEYWORDS[r.value] || [];
+          for (const kw of keywords) {
+            skillSearchTerms.add(kw);
+          }
+        }
+      }
+      skillSearchTerms.add(query);
     }
 
-    // Service type filter: provider skills must contain at least one target service (case-insensitive)
-    if (targetServices.length > 0) {
-      andConditions.push({
-        OR: targetServices.map(service => ({
-          skills: { contains: service, mode: 'insensitive' }
-        }))
-      });
-    }
+    // Build Prisma where clause
+    const andConditions: any[] = [];
 
-    // Free-text query: match directly against provider skills (case-insensitive)
-    if (query) {
-      andConditions.push({
-        OR: [
-          { skills: { contains: query, mode: 'insensitive' } },
-          { bio: { contains: query, mode: 'insensitive' } },
-          { location: { contains: query, mode: 'insensitive' } },
-        ]
-      });
+    // Skill matching: provider skills must contain at least one search term (case-insensitive)
+    if (skillSearchTerms.size > 0) {
+      const orSkills = [...skillSearchTerms].map(term => ({
+        skills: { contains: term, mode: 'insensitive' }
+      }));
+      andConditions.push({ OR: orSkills });
     }
 
     // Location filter
@@ -83,51 +83,10 @@ export async function GET(request: NextRequest) {
       andConditions.push({ availability: availabilityFilter });
     }
 
-    // Combine conditions: use AND with OR for skill matching
-    let where: any;
-    if (andConditions.length === 0) {
-      where = {};
-    } else if (andConditions.length === 1) {
-      where = andConditions[0];
-    } else {
-      // For service/skill matching, wrap the relevant conditions in an OR
-      // so either predefined service type OR free-text query matches
-      const nonSkillConditions = andConditions.filter((_, i) => {
-        // Skip the service type filter (index 1) and the free-text query filter
-        if (targetServices.length > 0 && i === 0) return false;
-        if (query && i === (targetServices.length > 0 ? 1 : 0)) return false;
-        return true;
-      });
-
-      const skillConditions = [];
-      if (targetServices.length > 0) {
-        skillConditions.push({
-          OR: targetServices.map(service => ({
-            skills: { contains: service, mode: 'insensitive' }
-          }))
-        });
-      }
-      if (query) {
-        skillConditions.push({
-          OR: [
-            { skills: { contains: query, mode: 'insensitive' } },
-            { bio: { contains: query, mode: 'insensitive' } },
-            { location: { contains: query, mode: 'insensitive' } },
-          ]
-        });
-      }
-
-      if (skillConditions.length > 0) {
-        where = {
-          AND: [
-            ...nonSkillConditions,
-            { OR: skillConditions },
-          ]
-        };
-      } else {
-        where = { AND: nonSkillConditions };
-      }
-    }
+    // Combine all conditions with AND
+    const where = andConditions.length > 0
+      ? { AND: andConditions }
+      : {};
 
     // Fetch matching providers
     const providers = await db.provider.findMany({
@@ -144,25 +103,17 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Format provider data
+    // Format provider data with relevance scoring
+    const allSearchTerms = [...skillSearchTerms].map(t => t.toLowerCase());
     let formatted = providers.map(p => {
       const skills = p.skills.split(',').map(s => s.trim()).filter(Boolean);
       let matchScore = 0;
-      if (targetServices.length > 0) {
-        for (const ts of targetServices) {
-          for (const skill of skills) {
-            const skillLower = skill.toLowerCase();
-            const tsLower = ts.toLowerCase();
-            if (skillLower === tsLower) matchScore += 10;
-            else if (skillLower.includes(tsLower) || tsLower.includes(skillLower)) matchScore += 5;
-          }
-        }
-      } else if (query) {
-        const queryLower = query.toLowerCase();
-        for (const skill of skills) {
-          const skillLower = skill.toLowerCase();
-          if (skillLower === queryLower) matchScore += 10;
-          else if (skillLower.includes(queryLower) || queryLower.includes(skillLower)) matchScore += 5;
+      for (const skill of skills) {
+        const skillLower = skill.toLowerCase();
+        for (const term of allSearchTerms) {
+          if (skillLower === term) matchScore += 10;
+          else if (skillLower.startsWith(term) || term.startsWith(skillLower)) matchScore += 5;
+          else if (skillLower.includes(term) || term.includes(skillLower)) matchScore += 3;
         }
       }
 
@@ -210,8 +161,8 @@ export async function GET(request: NextRequest) {
           // Verified providers first
           if (a.verificationStatus === 'VERIFIED' && b.verificationStatus !== 'VERIFIED') return -1;
           if (b.verificationStatus === 'VERIFIED' && a.verificationStatus !== 'VERIFIED') return 1;
-          if (b.rating !== a.rating) return b.rating - a.rating;
           if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
+          if (b.rating !== a.rating) return b.rating - a.rating;
           return b.completedJobs - a.completedJobs;
         });
         break;

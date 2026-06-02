@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, SERVICE_KEYWORDS } from '@/lib/auth';
 
 // GET /api/providers - Fetch available providers by service type
+// Uses keyword-based matching so "ENGINEERING" finds providers with skill "Engineer"
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -17,10 +18,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Service type is required' }, { status: 400 });
     }
 
-    // Find all registered providers (not just verified) whose skills include the requested service type
+    // Build matching terms: the service type itself + all its keywords
+    const keywords = SERVICE_KEYWORDS[serviceType] || [];
+    const searchTerms = [serviceType, ...keywords];
+
+    // Find all registered providers whose skills match any search term
     const providers = await db.provider.findMany({
       where: {
-        skills: { contains: serviceType, mode: 'insensitive' },
+        OR: searchTerms.map(term => ({
+          skills: { contains: term, mode: 'insensitive' },
+        })),
       },
       include: {
         user: { select: { id: true, name: true, avatarUrl: true, phone: true } },
