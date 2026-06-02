@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           email: true,
           role: true,
           avatarUrl: true,
-          provider: { select: { verificationStatus: true } },
+          provider: { select: { id: true, verificationStatus: true } },
         },
       });
 

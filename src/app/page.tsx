@@ -2,7 +2,7 @@
 
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast, toast } from '@/hooks/use-toast';
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
 import {
