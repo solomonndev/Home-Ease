@@ -92,12 +92,12 @@ export async function GET(request: NextRequest) {
     const providers = await db.provider.findMany({
       where,
       include: {
-        User: { select: { id: true, name: true, avatarUrl: true, phone: true } },
-        Feedback: {
+        user: { select: { id: true, name: true, avatarUrl: true, phone: true } },
+        feedback: {
           take: 5,
           orderBy: { createdAt: 'desc' },
           include: {
-            User: { select: { id: true, name: true } },
+            client: { select: { id: true, name: true } },
           },
         },
       },
@@ -119,9 +119,9 @@ export async function GET(request: NextRequest) {
 
       return {
         id: p.id,
-        name: p.User.name,
-        avatarUrl: p.User.avatarUrl,
-        phone: p.User.phone,
+        name: p.user.name,
+        avatarUrl: p.user.avatarUrl,
+        phone: p.user.phone,
         skills,
         hourlyRate: p.hourlyRate,
         location: p.location,
@@ -132,10 +132,10 @@ export async function GET(request: NextRequest) {
         bio: p.bio,
         verificationStatus: p.verificationStatus,
         matchScore,
-        recentReviews: p.Feedback.map(f => ({
+        recentReviews: p.feedback.map(f => ({
           rating: f.rating,
           comment: f.comment,
-          clientName: f.User.name,
+          clientName: f.client.name,
           date: f.createdAt,
         })),
       };

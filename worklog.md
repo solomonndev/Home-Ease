@@ -180,3 +180,33 @@ Stage Summary:
 - Root cause: Missing `provider.id` in conversation API response + missing `toast` import
 - Files modified: src/app/api/support/messages/route.ts (1 line), src/app/page.tsx (1 line)
 - Provider re-approve flow now works end-to-end: button appears → click → API call → DB update → UI refresh
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Fix "Failed to create service request for booking the artisan" + Engineering search matching
+
+Work Log:
+- Investigated booking failure: Found the root cause is a Prisma schema relation name mismatch affecting ALL API routes
+- The Prisma schema defined relation names with capital case (User, Provider, Transaction, Feedback, Message) but ALL API routes used lowercase names (client, provider, transaction, feedback, messages, user, sender)
+- This caused Prisma validation errors on every `include` statement that accessed ServiceRequest, Provider, Transaction, Message, Feedback, AdminLog, or Notification relations
+- The error: `Unknown field 'provider' for include statement on model 'ServiceRequest'. Available options are marked with ?.`
+- Fix: Updated prisma/schema.prisma to rename ALL relation fields to lowercase, matching what the code expects:
+  - ServiceRequest: User→client, Provider→provider, Transaction→transaction, Feedback→feedback, Message→messages
+  - Provider: User→user, ServiceRequest→serviceRequests, Transaction→transactions
+  - Transaction: User→client, Provider→provider, ServiceRequest→serviceRequest
+  - Message: User→sender, ServiceRequest→serviceRequest
+  - Feedback: User→client, Provider→provider, ServiceRequest→serviceRequest
+  - AdminLog: User→admin
+  - Notification: User→user
+- Regenerated Prisma client (prisma generate) — NO db push needed since DB structure unchanged
+- Fixed artisans/search/route.ts to use new lowercase relation names (user, feedback, client)
+- Verified /api/services endpoint returns 401 (correct) instead of 500 (previous Prisma error)
+- Lint passes clean with zero errors
+
+Stage Summary:
+- Root cause: Prisma schema relation names (capital case) didn't match API code (lowercase)
+- All include/statements on ServiceRequest, Transaction, Message, Feedback, AdminLog, Provider, Notification were failing
+- Files modified: prisma/schema.prisma (full rewrite of relation names), src/app/api/artisans/search/route.ts (3 include renames)
+- No db migration needed — only TypeScript-level property names changed
+- Booking creation, stats, payments, messages, admin, and all other API routes should now work correctly

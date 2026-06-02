@@ -14,7 +14,7 @@ model AdminLog {
   action    String   @db.VarChar(100)
   details   String?  @db.Text
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [adminId], references: [id])
+  admin     User     @relation(fields: [adminId], references: [id])
 }
 
 model Feedback {
@@ -25,9 +25,9 @@ model Feedback {
   rating         Int
   comment        String?        @db.Text
   createdAt      DateTime       @default(now())
-  User           User           @relation(fields: [clientId], references: [id])
-  Provider       Provider       @relation(fields: [providerId], references: [id])
-  ServiceRequest ServiceRequest @relation(fields: [requestId], references: [id])
+  client         User           @relation(fields: [clientId], references: [id])
+  provider       Provider       @relation(fields: [providerId], references: [id])
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id])
 }
 
 model Message {
@@ -36,8 +36,8 @@ model Message {
   senderId       String
   content        String         @db.Text
   createdAt      DateTime       @default(now())
-  ServiceRequest ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  User           User           @relation(fields: [senderId], references: [id])
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  sender         User           @relation(fields: [senderId], references: [id])
 }
 
 model Notification {
@@ -48,7 +48,7 @@ model Notification {
   message   String   @db.Text
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Provider {
@@ -69,9 +69,9 @@ model Provider {
   accountNumber      String?
   accountName        String?
   Feedback           Feedback[]
-  User               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ServiceRequest     ServiceRequest[]
-  Transaction        Transaction[]
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceRequests    ServiceRequest[]
+  transactions       Transaction[]
 }
 
 model ServiceRequest {
@@ -91,11 +91,11 @@ model ServiceRequest {
   totalHours    Float?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  Feedback      Feedback?
-  Message       Message[]
-  User          User         @relation(fields: [clientId], references: [id])
-  Provider      Provider?    @relation(fields: [providerId], references: [id])
-  Transaction   Transaction?
+  feedback      Feedback?
+  messages      Message[]
+  client        User         @relation(fields: [clientId], references: [id])
+  provider      Provider?    @relation(fields: [providerId], references: [id])
+  transaction   Transaction?
 }
 
 model SupportMessage {
@@ -129,9 +129,9 @@ model Transaction {
   transferStatus String?        @db.VarChar(20)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  User           User           @relation(fields: [clientId], references: [id])
-  Provider       Provider       @relation(fields: [providerId], references: [id])
-  ServiceRequest ServiceRequest @relation(fields: [requestId], references: [id])
+  client         User           @relation(fields: [clientId], references: [id])
+  provider       Provider       @relation(fields: [providerId], references: [id])
+  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id])
 }
 
 model User {
