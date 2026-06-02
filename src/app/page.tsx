@@ -3164,6 +3164,20 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     }
   }, [selectedService, filterLocation, filterMinRate, filterMaxRate, filterMinRating, filterAvailability, sortBy]);
 
+  // Load all verified providers on mount (show artisans even without search)
+  useEffect(() => {
+    (async () => {
+      try {
+        const result = await api.searchArtisans({});
+        setArtisans(result.artisans);
+        setFilterMeta(result.filters);
+        setHasSearched(true);
+      } catch (err) {
+        console.error('Initial artisans load error:', err);
+      }
+    })();
+  }, []);
+
   const handleSelectService = (value: string) => {
     setSelectedService(value);
     setSearchQuery('');

@@ -3,15 +3,6 @@ import { db } from '@/lib/db';
 import { searchServices, SERVICE_TYPES } from '@/lib/auth';
 
 // GET /api/artisans/search - Search and filter artisans
-// Query params:
-//   q       - search query (keyword matching against service types)
-//   service - exact service type filter (CLEANING, PLUMBING, etc.)
-//   location - location filter (partial match, case-insensitive)
-//   minRate  - minimum hourly rate (number)
-//   maxRate  - maximum hourly rate (number)
-//   minRating - minimum rating (number, 0-5)
-//   availability - availability filter (WEEKDAYS, WEEKENDS, ALL_WEEK, CUSTOM)
-//   sort     - sort by: rating (default), price_low, price_high, jobs, reviews
 export async function GET(request: NextRequest) {
   try {
     const user = await (await import('@/lib/auth')).getAuthUser(request.headers);
@@ -29,6 +20,11 @@ export async function GET(request: NextRequest) {
     const availabilityFilter = searchParams.get('availability') || '';
     const sortBy = searchParams.get('sort') || 'rating';
 
+    // Build where clause - only show verified providers
+    const andConditions: any[] = [
+      { verificationStatus: 'VERIFIED' },
+    ];
+
     // Determine which service types to search for
     let targetServices: string[] = [];
 
@@ -36,41 +32,37 @@ export async function GET(request: NextRequest) {
       // Exact service type specified
       targetServices = [serviceFilter];
     } else if (query) {
-      // Use keyword search to find matching service types
+      // Use keyword search to find matching predefined service types
       const searchResults = searchServices(query);
       targetServices = searchResults
         .filter(r => r.matchScore > 0)
         .map(r => r.value);
     }
 
-    // Build where clause
-    // We use AND to combine all conditions, with OR for service type matching
-    const andConditions: any[] = [
-      { verificationStatus: 'VERIFIED' },
-    ];
-
-    // Service type filter: provider skills must contain at least one target service
-    // Use flexible matching to support free-text skills
+    // Service type filter: provider skills must contain at least one target service (case-insensitive)
     if (targetServices.length > 0) {
       andConditions.push({
         OR: targetServices.map(service => ({
-          skills: { contains: service }
+          skills: { contains: service, mode: 'insensitive' }
         }))
       });
     }
 
-    // Also support free-text query matching against provider skills directly
-    if (query && targetServices.length === 0) {
-      // If keyword search didn't match predefined types, try matching against free-text skills
+    // Free-text query: match directly against provider skills (case-insensitive)
+    if (query) {
       andConditions.push({
-        skills: { contains: query }
+        OR: [
+          { skills: { contains: query, mode: 'insensitive' } },
+          { bio: { contains: query, mode: 'insensitive' } },
+          { location: { contains: query, mode: 'insensitive' } },
+        ]
       });
     }
 
-    // Location filter (partial match - SQLite is case-insensitive by default for ASCII)
+    // Location filter
     if (locationFilter) {
       andConditions.push({
-        location: { contains: locationFilter }
+        location: { contains: locationFilter, mode: 'insensitive' }
       });
     }
 
@@ -92,18 +84,60 @@ export async function GET(request: NextRequest) {
       andConditions.push({ availability: availabilityFilter });
     }
 
-    const where = andConditions.length === 1 ? andConditions[0] : { AND: andConditions };
+    // Combine conditions: use AND with OR for skill matching
+    let where: any;
+    if (andConditions.length === 1) {
+      where = andConditions[0];
+    } else {
+      // For service/skill matching, wrap the relevant conditions in an OR
+      // so either predefined service type OR free-text query matches
+      const nonSkillConditions = andConditions.filter((_, i) => {
+        // Skip the service type filter (index 1) and the free-text query filter
+        if (targetServices.length > 0 && i === 1) return false;
+        if (query && i === (targetServices.length > 0 ? 2 : 1)) return false;
+        return true;
+      });
+
+      const skillConditions = [];
+      if (targetServices.length > 0) {
+        skillConditions.push({
+          OR: targetServices.map(service => ({
+            skills: { contains: service, mode: 'insensitive' }
+          }))
+        });
+      }
+      if (query) {
+        skillConditions.push({
+          OR: [
+            { skills: { contains: query, mode: 'insensitive' } },
+            { bio: { contains: query, mode: 'insensitive' } },
+            { location: { contains: query, mode: 'insensitive' } },
+          ]
+        });
+      }
+
+      if (skillConditions.length > 0) {
+        where = {
+          AND: [
+            ...nonSkillConditions,
+            { OR: skillConditions },
+          ]
+        };
+      } else {
+        where = { AND: nonSkillConditions };
+      }
+    }
 
     // Fetch matching providers
     const providers = await db.provider.findMany({
       where,
       include: {
-        user: { select: { id: true, name: true, avatarUrl: true, phone: true } },
-        feedbackReceived: {
+        User: { select: { id: true, name: true, avatarUrl: true, phone: true } },
+        Feedback: {
           take: 5,
           orderBy: { createdAt: 'desc' },
           include: {
-            client: { select: { id: true, name: true } },
+            User: { select: { id: true, name: true } },
           },
         },
       },
@@ -112,7 +146,6 @@ export async function GET(request: NextRequest) {
     // Format provider data
     let formatted = providers.map(p => {
       const skills = p.skills.split(',').map(s => s.trim()).filter(Boolean);
-      // Calculate match score - supports both predefined and free-text skills
       let matchScore = 0;
       if (targetServices.length > 0) {
         for (const ts of targetServices) {
@@ -124,7 +157,6 @@ export async function GET(request: NextRequest) {
           }
         }
       } else if (query) {
-        // Free-text query matching
         const queryLower = query.toLowerCase();
         for (const skill of skills) {
           const skillLower = skill.toLowerCase();
@@ -135,9 +167,9 @@ export async function GET(request: NextRequest) {
 
       return {
         id: p.id,
-        name: p.user.name,
-        avatarUrl: p.user.avatarUrl,
-        phone: p.user.phone,
+        name: p.User.name,
+        avatarUrl: p.User.avatarUrl,
+        phone: p.User.phone,
         skills,
         hourlyRate: p.hourlyRate,
         location: p.location,
@@ -147,10 +179,10 @@ export async function GET(request: NextRequest) {
         completedJobs: p.completedJobs,
         bio: p.bio,
         matchScore,
-        recentReviews: p.feedbackReceived.map(f => ({
+        recentReviews: p.Feedback.map(f => ({
           rating: f.rating,
           comment: f.comment,
-          clientName: f.client.name,
+          clientName: f.User.name,
           date: f.createdAt,
         })),
       };
@@ -180,11 +212,19 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Get unique locations and rate ranges for filter metadata
+    // Get filter metadata from all verified providers
     const allProviders = await db.provider.findMany({
       where: { verificationStatus: 'VERIFIED' },
-      select: { location: true, hourlyRate: true, availability: true },
+      select: { location: true, hourlyRate: true, availability: true, skills: true },
     });
+
+    // Extract all unique skills across all providers
+    const allSkills = new Set<string>();
+    for (const p of allProviders) {
+      for (const skill of (p.skills || '').split(',').map(s => s.trim()).filter(Boolean)) {
+        allSkills.add(skill);
+      }
+    }
 
     const uniqueLocations = [...new Set(allProviders.map(p => p.location).filter(Boolean))].sort() as string[];
     const rates = allProviders.map(p => p.hourlyRate).filter(r => r > 0);
@@ -199,14 +239,20 @@ export async function GET(request: NextRequest) {
         locations: uniqueLocations,
         rateRange: { min: minAvailableRate, max: maxAvailableRate },
         availabilities: uniqueAvailabilities,
-        serviceTypes: SERVICE_TYPES.map(type => ({
-          value: type,
-          label: type.charAt(0) + type.slice(1).toLowerCase(),
-        })),
+        serviceTypes: [
+          ...SERVICE_TYPES.map(type => ({
+            value: type,
+            label: type.charAt(0) + type.slice(1).toLowerCase(),
+          })),
+          // Also include custom skills that aren't in predefined types
+          ...[...allSkills]
+            .filter(s => !SERVICE_TYPES.includes(s.toUpperCase()))
+            .map(s => ({ value: s.toUpperCase(), label: s })),
+        ],
       },
     });
   } catch (error) {
-    console.error('Artisans search error:', error);
+    console.error('[Artisans Search] Error:', error);
     return NextResponse.json({ error: 'Failed to search artisans' }, { status: 500 });
   }
 }
