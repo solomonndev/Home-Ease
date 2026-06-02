@@ -85,3 +85,28 @@ Stage Summary:
 - Key fix: Aggressive logout on any getMe() error was causing random logouts on reload
 - Both files modified: src/app/api/support/messages/route.ts, src/app/page.tsx
 - Committed and pushed to main branch on GitHub
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Add file upload to support chat + re-approve provider button
+
+Work Log:
+- Added attachmentUrl, attachmentName, attachmentType fields to SupportMessage model in Prisma
+- Pushed schema to Supabase with `bun run db:push`
+- Created `/api/upload` POST endpoint: accepts multipart form data, validates file type/size (5MB max), converts to base64 data URL
+- Supported file types: images (JPEG, PNG, GIF, WebP, SVG), PDF, Word, Excel, text/CSV
+- Updated `/api/support/messages` POST handler to accept attachment fields alongside content
+- Updated AdminSupportChat component: added Paperclip button, file input ref, upload handler, attachment preview bar, image/file rendering in messages
+- Updated ProviderRestrictedView component: same file upload + attachment display features
+- Added "Re-approve Provider" button in admin chat header (green, with CheckCircle2 icon) that appears only for declined providers
+- Used existing api.adminAction('verify-provider') endpoint for re-approval
+- Conversation list now shows 📎 attachment name instead of text when last message has attachment
+- All lint checks pass
+
+Stage Summary:
+- New endpoint: /api/upload (POST, auth required, 5MB limit)
+- Schema: 3 new nullable columns on SupportMessage
+- Admin chat: file upload + re-approve declined providers
+- Provider chat: file upload for sending documents/images to admin
+- Pushed as commit b317ad9 to main
