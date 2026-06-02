@@ -17,19 +17,17 @@ export async function GET(request: NextRequest) {
 
     if (user.role === 'ADMIN' && !userId) {
       // Admin without userId — return list of conversations
-      const conversations = await db.supportMessage.findMany({
+      // Get all messages involving admin, extract unique partner IDs
+      const allMessages = await db.supportMessage.findMany({
         where: { OR: [{ senderId: user.id }, { receiverId: user.id }] },
         select: { senderId: true, receiverId: true },
-        distinct: ['senderId', 'receiverId'],
-        orderBy: { createdAt: 'desc' },
       });
 
       const userIds = new Set<string>();
-      conversations.forEach(c => {
-        userIds.add(c.senderId);
-        userIds.add(c.receiverId);
-      });
-      userIds.delete(user.id);
+      for (const msg of allMessages) {
+        if (msg.senderId !== user.id) userIds.add(msg.senderId);
+        if (msg.receiverId !== user.id) userIds.add(msg.receiverId);
+      }
 
       const users = await db.user.findMany({
         where: { id: { in: Array.from(userIds) } },
@@ -59,8 +57,8 @@ export async function GET(request: NextRequest) {
         unreadCounts[uid] = count;
       }
 
-      console.log(`[SupportMessages GET] Returning ${users.length} conversations`);
-    return NextResponse.json({ conversations: users, lastMessages, unreadCounts });
+      console.log(`[SupportMessages GET] Returning ${users.length} conversations for admin`);
+      return NextResponse.json({ conversations: users, lastMessages, unreadCounts });
     }
 
     // Get messages for a specific conversation
