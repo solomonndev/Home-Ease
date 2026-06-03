@@ -4038,6 +4038,7 @@ function MessagesView({ user }: { user: any }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -4137,10 +4138,18 @@ function MessagesView({ user }: { user: any }) {
     const interval = setInterval(() => {
       api.getMessages(selectedRequest).then((fetched) => {
         setMessages((prev) => {
-          // Merge: keep local messages not yet in server, add server messages
-          const localIds = new Set(prev.map(m => m.id));
+          // Merge: keep local messages not yet in server, add server messages, deduplicate by ID
           const serverIds = new Set(fetched.map((m: any) => m.id));
-          const merged = [...prev.filter(m => !serverIds.has(m.id)), ...fetched];
+          // Keep local-only messages (not yet on server)
+          const localOnly = prev.filter(m => !serverIds.has(m.id));
+          // Deduplicate fetched array by ID (in case of DB duplicates)
+          const seenIds = new Set<string>();
+          const dedupedFetched = fetched.filter((m: any) => {
+            if (seenIds.has(m.id)) return false;
+            seenIds.add(m.id);
+            return true;
+          });
+          const merged = [...localOnly, ...dedupedFetched];
           return merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         });
       }).catch(() => {});
@@ -4154,7 +4163,8 @@ function MessagesView({ user }: { user: any }) {
   }, [messages, typingUser]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedRequest) return;
+    if (!newMessage.trim() || !selectedRequest || sending) return;
+    setSending(true);
     try {
       const msg = await api.sendMessage(selectedRequest, newMessage);
       // The WebSocket 'new-message' event will also add this, but we add locally first for instant feedback
@@ -4176,6 +4186,8 @@ function MessagesView({ user }: { user: any }) {
       setNewMessage('');
     } catch (err) {
       console.error('Send message error:', err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -4327,16 +4339,17 @@ function MessagesView({ user }: { user: any }) {
                     type="text"
                     value={newMessage}
                     onChange={(e) => handleInputChange(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !sending) sendMessage(); }}
                     placeholder="Type a message..."
-                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+                    disabled={sending}
+                    className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm disabled:opacity-50"
                   />
                   <button
                     onClick={sendMessage}
-                    disabled={!newMessage.trim()}
+                    disabled={!newMessage.trim() || sending}
                     className="px-4 py-2.5 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Send className="w-4 h-4" />
+                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
