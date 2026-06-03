@@ -2872,8 +2872,9 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
                   });
                 } else if (confirmResult.transferStatus === 'FAILED') {
                   toast({
-                    title: 'Payment Confirmed — Processing Payout',
-                    description: 'Your payment was received successfully! The payout to the artisan\'s bank is being processed and will complete shortly.',
+                    title: 'Payment Successfully Received! ✅',
+                    description: 'Payment received, but cannot process real payment to artisan because we are on test mode.',
+                    variant: 'success',
                   });
                 } else {
                   toast({

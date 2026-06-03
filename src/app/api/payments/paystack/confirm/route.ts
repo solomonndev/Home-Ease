@@ -227,8 +227,8 @@ export async function POST(request: NextRequest) {
           data: {
             userId: client.id,
             type: 'PAYMENT',
-            title: 'Payment Confirmed via Paystack',
-            message: `Your payment of ₦${amount.toLocaleString()} for ${serviceRequest.serviceType.toLowerCase()} has been confirmed. ${transferStatus === 'FAILED' ? 'The bank transfer to the artisan encountered an issue and will be retried.' : provider?.bankName ? 'The funds are being transferred to the artisan\'s bank account.' : 'The artisan needs to add bank details to receive payment.'}`,
+            title: 'Payment Successfully Received ✅',
+            message: `Your payment of ₦${amount.toLocaleString()} for ${serviceRequest.serviceType.toLowerCase()} was received successfully. Cannot process real payment to artisan because we are currently on test mode.`,
           },
         });
       }
