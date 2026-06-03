@@ -2775,13 +2775,13 @@ function StatusBadge({ status }: { status: string }) {
     AWAITING_PAYMENT: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Awaiting Payment' },
     COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
     CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
-    ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
+    ESCROW: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'In Escrow' },
     ACTIVE: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Active' },
     SUSPENDED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Suspended' },
     INACTIVE: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Inactive' },
     VERIFIED: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Verified' },
     REJECTED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Rejected' },
-    HELD_IN_ESCROW: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pending' },
+    HELD_IN_ESCROW: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Secured' },
     RELEASED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Paid' },
     REFUNDED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Refunded' },
     FAILED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
@@ -2799,6 +2799,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
   const [feedbackRating, setFeedbackRating] = useState(5);
   const [feedbackComment, setFeedbackComment] = useState('');
   const [payingNow, setPayingNow] = useState(false);
+  const { toast } = useToast();
 
   const handlePayNow = async () => {
     setPayingNow(true);
@@ -2856,14 +2857,35 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
             callback: async () => {
               // Payment successful! Confirm in background (no page redirect)
               try {
-                await api.confirmPaystackPayment(payResult.reference);
-              } catch (confirmErr) {
+                const confirmResult: any = await api.confirmPaystackPayment(payResult.reference);
+                if (confirmResult.txStatus === 'COMPLETED') {
+                  toast({
+                    title: 'Payment Confirmed & Artisan Paid! ✅',
+                    description: `₦${request.amount.toLocaleString()} paid successfully. ₦${confirmResult.providerPayout.toLocaleString()} has been sent to the artisan's bank account.`,
+                  });
+                } else if (confirmResult.transferStatus === 'FAILED') {
+                  toast({
+                    title: 'Payment Confirmed',
+                    description: 'Your payment was received but the bank transfer to the artisan encountered an issue. An admin will retry it.',
+                    variant: 'destructive',
+                  });
+                } else {
+                  toast({
+                    title: 'Payment Confirmed! ✅',
+                    description: `₦${request.amount.toLocaleString()} secured in escrow. The artisan will receive ₦${confirmResult.providerPayout?.toLocaleString()} once bank details are verified.`,
+                  });
+                }
+              } catch (confirmErr: any) {
                 console.error('Payment confirmed by Paystack but DB confirmation failed:', confirmErr);
+                toast({
+                  title: 'Payment Received — Please Refresh',
+                  description: 'Paystack confirmed your payment but we had trouble updating our records. Try refreshing the page.',
+                  variant: 'destructive',
+                });
               }
               // Refresh the page data to show updated payment status
               setPayingNow(false);
               if (onRefresh) onRefresh();
-              else window.location.reload();
               resolve();
             },
           });

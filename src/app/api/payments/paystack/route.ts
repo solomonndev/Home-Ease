@@ -58,7 +58,8 @@ export async function POST(request: NextRequest) {
     // Initialize Paystack transaction
     const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!paystackSecretKey) {
-      return NextResponse.json({ error: 'Paystack is not configured. Please add PAYSTACK_SECRET_KEY to your .env file.' }, { status: 500 });
+      console.error('[Paystack Init] PAYSTACK_SECRET_KEY not configured');
+      return NextResponse.json({ error: 'Paystack is not configured. Please add PAYSTACK_SECRET_KEY to your Vercel environment variables (Settings → Environment Variables).' }, { status: 500 });
     }
 
     // Paystack amount is in kobo (multiply by 100)

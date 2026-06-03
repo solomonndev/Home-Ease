@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { sendToBank } from '@/lib/paystack-transfer';
 
 const PLATFORM_FEE_PERCENT = 0.05;
 
-// POST /api/payments/paystack/confirm - Verify Paystack payment and record in DB (returns JSON, no redirect)
+// POST /api/payments/paystack/confirm - Verify Paystack payment, record in DB, and transfer to artisan
 // Called from the Paystack inline popup callback after successful payment
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,8 @@ export async function POST(request: NextRequest) {
 
     const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
     if (!paystackSecretKey) {
-      return NextResponse.json({ error: 'Paystack not configured' }, { status: 500 });
+      console.error('[Paystack Confirm] PAYSTACK_SECRET_KEY not configured');
+      return NextResponse.json({ error: 'Paystack is not configured on the server. Please add PAYSTACK_SECRET_KEY to your Vercel environment variables.' }, { status: 500 });
     }
 
     // Step 1: Verify the transaction with Paystack
@@ -64,76 +66,170 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Step 3: Get the service request
+    // Step 3: Get the service request with provider details
     const serviceRequest = await db.serviceRequest.findUnique({
       where: { id: requestId },
-      include: { provider: true },
+      include: { provider: { include: { user: true } } },
     });
 
     if (!serviceRequest) {
       return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
     }
 
-    // Step 4: Record the transaction in escrow
+    // Step 4: Calculate amounts
     const amount = paymentData.amount / 100; // Convert from kobo to naira
     const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT);
     const providerPayout = amount - platformFee;
+    const provider = serviceRequest.provider;
+
+    // Step 5: Initiate bank transfer to artisan immediately
+    let transferRef: string | null = null;
+    let transferStatus: string | null = null;
+    let transferError: string | null = null;
+
+    if (provider?.bankName && provider?.accountNumber) {
+      const transferResult = await sendToBank({
+        bankName: provider.bankName,
+        accountNumber: provider.accountNumber,
+        accountName: provider.accountName || provider.user.name,
+        amountInNaira: providerPayout,
+        requestId,
+        serviceType: serviceRequest.serviceType,
+      });
+
+      if (transferResult.success) {
+        transferRef = transferResult.reference || null;
+        transferStatus = transferResult.transferStatus || 'PENDING';
+      } else {
+        transferError = transferResult.error || 'Transfer failed';
+        transferStatus = 'FAILED';
+        console.error('[Paystack Confirm] Bank transfer failed:', transferError);
+      }
+    } else {
+      console.log('[Paystack Confirm] Provider has no bank details set — payment held in escrow');
+    }
+
+    // Step 6: Create the transaction record
+    const txStatus = (!provider?.bankName || !provider?.accountNumber) ? 'ESCROW'
+      : (transferStatus === 'FAILED' ? 'ESCROW' : 'COMPLETED');
 
     await db.transaction.create({
       data: {
         requestId,
         clientId: serviceRequest.clientId,
-        providerId: serviceRequest.providerId || providerId,
+        providerId: provider?.id || providerId,
         amount,
         platformFee,
         providerPayout,
         paymentMethod: 'CARD',
-        status: 'ESCROW',
+        status: txStatus,
+        paidOutAt: txStatus === 'COMPLETED' ? new Date() : null,
+        transferRef,
+        transferStatus: transferStatus || null,
       },
     });
 
-    // Step 5: Update service request payment status
-    await db.serviceRequest.update({
-      where: { id: requestId },
-      data: { paymentStatus: 'HELD_IN_ESCROW' },
-    });
-
-    // Step 6: Send notifications
-    const provider = await db.provider.findUnique({
-      where: { id: serviceRequest.providerId || providerId },
-      include: { user: true },
-    });
-    const client = await db.user.findUnique({ where: { id: serviceRequest.clientId } });
-
-    if (provider) {
-      await db.notification.create({
+    // Step 7: Update service request status
+    if (txStatus === 'COMPLETED') {
+      // Payment successful and transfer initiated — mark job as completed
+      await db.serviceRequest.update({
+        where: { id: requestId },
         data: {
-          userId: provider.userId,
-          type: 'PAYMENT',
-          title: 'Payment Secured in Escrow',
-          message: `₦${amount.toLocaleString()} has been received from ${client?.name || 'a client'} and held in escrow for the ${serviceRequest.serviceType.toLowerCase()} service. You will receive ₦${providerPayout.toLocaleString()} in your bank account after the work is completed.`,
+          status: 'COMPLETED',
+          paymentStatus: 'RELEASED',
         },
+      });
+      // Increment provider's completed jobs
+      if (provider) {
+        await db.provider.update({
+          where: { id: provider.id },
+          data: { completedJobs: { increment: 1 } },
+        });
+      }
+    } else if (transferStatus === 'FAILED') {
+      // Payment received but transfer failed — keep in escrow
+      await db.serviceRequest.update({
+        where: { id: requestId },
+        data: { paymentStatus: 'HELD_IN_ESCROW' },
+      });
+    } else {
+      // No bank details — hold in escrow
+      await db.serviceRequest.update({
+        where: { id: requestId },
+        data: { paymentStatus: 'HELD_IN_ESCROW' },
       });
     }
 
+    // Step 8: Send notifications
+    const client = await db.user.findUnique({ where: { id: serviceRequest.clientId } });
+
+    if (provider) {
+      if (txStatus === 'COMPLETED') {
+        // Transfer successful
+        await db.notification.create({
+          data: {
+            userId: provider.userId,
+            type: 'PAYMENT',
+            title: 'Payment Transferred to Your Bank! 💰',
+            message: `₦${providerPayout.toLocaleString()} has been transferred to your ${provider.bankName} account (${provider.accountNumber}). Transfer ref: ${transferRef || 'N/A'}. Status: ${transferStatus || 'processing'}. Money should arrive within 1-24 hours. Platform fee: ₦${platformFee.toLocaleString()}.`,
+          },
+        });
+      } else if (transferStatus === 'FAILED') {
+        // Transfer failed
+        await db.notification.create({
+          data: {
+            userId: provider.userId,
+            type: 'PAYMENT',
+            title: 'Payment Received (Transfer Pending)',
+            message: `${client?.name || 'A client'} paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service. Your payout: ₦${providerPayout.toLocaleString()}. The automatic bank transfer failed — please verify your bank details in your Profile.`,
+          },
+        });
+      } else {
+        // No bank details
+        await db.notification.create({
+          data: {
+            userId: provider.userId,
+            type: 'PAYMENT',
+            title: 'Payment Received — Add Bank Details',
+            message: `${client?.name || 'A client'} paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service. Your payout: ₦${providerPayout.toLocaleString()}. Please add your bank details in Profile to receive payment.`,
+          },
+        });
+      }
+    }
+
     if (client) {
-      await db.notification.create({
-        data: {
-          userId: client.id,
-          type: 'PAYMENT',
-          title: 'Payment Secured via Paystack',
-          message: `Your payment of ₦${amount.toLocaleString()} for ${serviceRequest.serviceType.toLowerCase()} has been confirmed and held in escrow. The funds will be released to the artisan's bank account once the service is completed.`,
-        },
-      });
+      if (txStatus === 'COMPLETED') {
+        await db.notification.create({
+          data: {
+            userId: client.id,
+            type: 'PAYMENT',
+            title: 'Payment Confirmed — Artisan Paid ✅',
+            message: `₦${providerPayout.toLocaleString()} has been transferred to ${provider?.user.name || 'the artisan'}'s bank account for the ${serviceRequest.serviceType.toLowerCase()} service. Platform fee: ₦${platformFee.toLocaleString()}. Please leave a review!`,
+          },
+        });
+      } else {
+        await db.notification.create({
+          data: {
+            userId: client.id,
+            type: 'PAYMENT',
+            title: 'Payment Confirmed via Paystack',
+            message: `Your payment of ₦${amount.toLocaleString()} for ${serviceRequest.serviceType.toLowerCase()} has been confirmed. ${transferStatus === 'FAILED' ? 'The bank transfer to the artisan encountered an issue and will be retried.' : provider?.bankName ? 'The funds are being transferred to the artisan\'s bank account.' : 'The artisan needs to add bank details to receive payment.'}`,
+          },
+        });
+      }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Payment confirmed and held in escrow',
+      message: txStatus === 'COMPLETED'
+        ? 'Payment confirmed and transferred to artisan\'s bank account'
+        : 'Payment confirmed and held in escrow',
       requestId,
       amount,
       providerPayout,
       platformFee,
+      transferStatus: transferStatus || null,
+      txStatus,
     });
   } catch (error) {
     console.error('[Paystack Confirm] Error:', error);
