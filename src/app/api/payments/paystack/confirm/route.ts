@@ -57,6 +57,17 @@ export async function POST(request: NextRequest) {
     // Step 2: Check if transaction already recorded (idempotent)
     const existingTx = await db.transaction.findUnique({ where: { requestId } });
     if (existingTx) {
+      // Fix legacy bug: if status is still AWAITING_PAYMENT but payment exists, update it
+      const serviceRequestStale = await db.serviceRequest.findUnique({ where: { id: requestId } });
+      if (serviceRequestStale && serviceRequestStale.status === 'AWAITING_PAYMENT') {
+        await db.serviceRequest.update({
+          where: { id: requestId },
+          data: {
+            status: 'COMPLETED',
+            paymentStatus: existingTx.status === 'COMPLETED' ? 'RELEASED' : 'HELD_IN_ESCROW',
+          },
+        });
+      }
       return NextResponse.json({
         success: true,
         message: 'Payment already recorded',
@@ -130,8 +141,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 7: Update service request status
+    // Work was already done (artisan checked out), and payment has been received.
+    // Always mark as COMPLETED — the only question is whether the money reached the artisan.
     if (txStatus === 'COMPLETED') {
-      // Payment successful and transfer initiated — mark job as completed
+      // Transfer initiated successfully
       await db.serviceRequest.update({
         where: { id: requestId },
         data: {
@@ -139,25 +152,27 @@ export async function POST(request: NextRequest) {
           paymentStatus: 'RELEASED',
         },
       });
-      // Increment provider's completed jobs
       if (provider) {
         await db.provider.update({
           where: { id: provider.id },
           data: { completedJobs: { increment: 1 } },
         });
       }
-    } else if (transferStatus === 'FAILED') {
-      // Payment received but transfer failed — keep in escrow
-      await db.serviceRequest.update({
-        where: { id: requestId },
-        data: { paymentStatus: 'HELD_IN_ESCROW' },
-      });
     } else {
-      // No bank details — hold in escrow
+      // Payment received but transfer failed or no bank details
       await db.serviceRequest.update({
         where: { id: requestId },
-        data: { paymentStatus: 'HELD_IN_ESCROW' },
+        data: {
+          status: 'COMPLETED',
+          paymentStatus: 'HELD_IN_ESCROW',
+        },
       });
+      if (provider) {
+        await db.provider.update({
+          where: { id: provider.id },
+          data: { completedJobs: { increment: 1 } },
+        });
+      }
     }
 
     // Step 8: Send notifications

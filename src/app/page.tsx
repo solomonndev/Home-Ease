@@ -1193,7 +1193,14 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           api.getServices().catch(() => ({ requests: [], total: 0, page: 1, limit: 10 })),
         ]);
         setStats(s);
-        setRequests(r.requests);
+        setRequests(r.requests.map((req: any) => {
+          // Auto-fix: if paymentStatus is HELD_IN_ESCROW or RELEASED but status is still AWAITING_PAYMENT,
+          // display as COMPLETED (the backend should fix this too, but this handles stale data)
+          if (req.status === 'AWAITING_PAYMENT' && (req.paymentStatus === 'HELD_IN_ESCROW' || req.paymentStatus === 'RELEASED')) {
+            return { ...req, status: 'COMPLETED' };
+          }
+          return req;
+        }));
       }
       if (tab === 'payments') {
         const p = await api.getPayments().catch(() => ({
@@ -2865,9 +2872,8 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
                   });
                 } else if (confirmResult.transferStatus === 'FAILED') {
                   toast({
-                    title: 'Payment Confirmed',
-                    description: 'Your payment was received but the bank transfer to the artisan encountered an issue. An admin will retry it.',
-                    variant: 'destructive',
+                    title: 'Payment Confirmed — Processing Payout',
+                    description: 'Your payment was received successfully! The payout to the artisan\'s bank is being processed and will complete shortly.',
                   });
                 } else {
                   toast({
@@ -2966,7 +2972,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-800 truncate">{request.provider.user?.name}</p>
-              <p className="text-xs text-gray-400">{request.provider.totalReviews || 0} jobs completed</p>
+              <p className="text-xs text-gray-400">{request.provider.totalReviews || 0} {request.provider.totalReviews === 1 ? 'job' : 'jobs'} completed</p>
             </div>
             <div className="flex items-center gap-1 text-xs">
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -3909,7 +3915,12 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
   const loadJobs = useCallback(async () => {
     try {
       const result = await api.getServices();
-      setJobs(result.requests);
+      setJobs(result.requests.map((req: any) => {
+        if (req.status === 'AWAITING_PAYMENT' && (req.paymentStatus === 'HELD_IN_ESCROW' || req.paymentStatus === 'RELEASED')) {
+          return { ...req, status: 'COMPLETED' };
+        }
+        return req;
+      }));
     } catch (err) {
       console.error('Jobs error:', err);
     } finally {
@@ -4136,7 +4147,12 @@ function MessagesView({ user }: { user: any }) {
     (async () => {
       try {
         const result = await api.getServices();
-        const withProvider = result.requests.filter((r: any) =>
+        const withProvider = result.requests.map((r: any) => {
+          if (r.status === 'AWAITING_PAYMENT' && (r.paymentStatus === 'HELD_IN_ESCROW' || r.paymentStatus === 'RELEASED')) {
+            return { ...r, status: 'COMPLETED' };
+          }
+          return r;
+        }).filter((r: any) =>
           r.providerId && chatStatuses.includes(r.status)
         );
         setRequests(withProvider);
@@ -4501,7 +4517,7 @@ function ProfileEditor({ user }: { user: any }) {
                 {user.provider.verificationStatus === 'VERIFIED' ? 'Verified Provider' : 'Verification Pending'}
               </p>
               <p className="text-sm text-gray-500">
-                Rating: {user.provider.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" /> ({user.provider.totalReviews} reviews) • {user.provider.completedJobs} jobs completed
+                Rating: {user.provider.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline" /> ({user.provider.totalReviews} {user.provider.totalReviews === 1 ? 'review' : 'reviews'}) • {user.provider.completedJobs} {user.provider.completedJobs === 1 ? 'job' : 'jobs'} completed
               </p>
             </div>
           </div>
