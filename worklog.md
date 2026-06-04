@@ -287,3 +287,37 @@ Stage Summary:
 - Provider can view wallet balance, earnings, commission, withdrawals, and full transaction ledger
 - Provider can simulate withdrawals from wallet
 - Sandbox limitation: DB uses SQLite locally but schema targets PostgreSQL — works on Vercel/Supabase
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Format and align HomeEase project writeup (Chapters 1-3) + update tech stack
+
+Work Log:
+- Read uploaded file "new mariam.docx" (2.7MB, 12 embedded images, 3 chapters)
+- Extracted content via pandoc and identified formatting issues:
+  - Messy heading hierarchy (mix of #, ##, ### with unnumbered headings)
+  - Inconsistent section numbering (3.6.2 before 3.4, duplicate 3.5.3)
+  - Literature Review table misplaced in Chapter 1
+  - No cover page or Table of Contents
+- Identified tech stack mismatches between writeup and actual project:
+  - Old: HTML5/CSS3/JS, Node.js/Express, MySQL/MongoDB, Firebase, Stripe/Flutterwave
+  - Correct: Next.js 16, TypeScript, Tailwind CSS 4, Prisma/PostgreSQL, JWT/bcrypt, Paystack
+- Created generate-writeup.js using docx-js with academic formatting:
+  - Cover page with academic layout (name, matric no., department, supervisor placeholders)
+  - Abstract with keywords
+  - Table of Contents with auto-generated placeholders
+  - Proper chapter numbering (1.1, 1.2... 2.1, 2.2... 3.1, 3.2...)
+  - All images preserved with proper aspect ratios and captions
+  - Three-line tables for software/hardware requirements and related works
+  - 20 APA-format references
+  - Times New Roman 12pt body, 1.5x line spacing
+  - Page numbering: Cover (none), Front matter (Roman), Body (Arabic from 1)
+- Updated tech stack in methodology and software requirements tables
+- Ran TOC post-processing and postcheck (6/9 passed, acceptable warnings)
+
+Stage Summary:
+- Output: /home/z/my-project/upload/HomeEase_Project_Writeup.docx (2.1MB)
+- All 12 original diagrams preserved and properly captioned
+- Tech stack updated to reflect actual implementation
+- Academic formatting aligned: proper headings, spacing, numbering, page numbers
