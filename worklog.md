@@ -321,3 +321,24 @@ Stage Summary:
 - All 12 original diagrams preserved and properly captioned
 - Tech stack updated to reflect actual implementation
 - Academic formatting aligned: proper headings, spacing, numbering, page numbers
+
+---
+Task ID: 1
+Agent: Main
+Task: Update HomeEase project writeup - tech stack + inline references
+
+Work Log:
+- Read uploaded 62-page DOCX file (new mariam.docx) and extracted full text content
+- Identified tech stack mismatches in Chapter 1.E (Methodology) and Chapter 3.4.1 (Software Requirements table)
+- Old stack: HTML5/CSS3/JS, Node.js+Express, MySQL, Firebase, Stripe/Paystack, Google Cloud/Hostinger
+- New stack: Next.js 16, TypeScript, Tailwind CSS 4, Bun Runtime, SQLite+Prisma ORM, JWT auth, Socket.io, Paystack, Vercel
+- Applied 50 text replacements using python-docx with multi-run paragraph handling
+- Added 40 inline academic references [1]-[53] across Chapters 1, 2, and 3
+- Generated updated HomeEase_Project_Writeup.docx
+
+Stage Summary:
+- Output file: /home/z/my-project/upload/HomeEase_Project_Writeup.docx
+- All old tech references replaced with actual project stack
+- 40 inline citations added throughout the document
+- 53 unique reference numbers used
+- Document preserves original ~62-page structure and all images/diagrams

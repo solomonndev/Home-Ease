@@ -1,0 +1,3027 @@
+CHAPTER ONE
+
+Introduction / Background 
+
+Domestic services have existed for as long as human societies have
+formed households and social hierarchies. In early civilizations,
+domestic work was closely linked to systems of slavery and servitude. In
+ancient societies such as those of Egypt, Greece, and Rome, household
+tasks like cooking, cleaning, and childcare were typically performed by
+enslaved people or servants, and the presence of domestic workers was a
+clear sign of wealth and social status.
+
+During the medieval period, domestic service became a common feature of
+everyday life, especially in feudal societies. Servants often lived with
+their employers and were considered part of the household rather than
+separate workers. Many young people entered domestic service temporarily
+as a way to gain food, shelter, skills, and social connections. At this
+time, domestic work was not viewed as a permanent occupation but as a
+stage in life before marriage or independent work. The early modern
+period saw domestic service expand further with urban growth and
+economic change. As towns and cities developed, more households employed
+servants, and domestic service became one of the largest forms of
+employment, particularly for women. Although servants increasingly
+received wages, relationships between employers and workers remained
+deeply unequal and shaped by rigid social hierarchies.
+
+The Industrial Revolution brought major changes to labor and household
+life. While many workers moved into factories, domestic service
+continued to thrive, especially among the growing middle classes. Hiring
+domestic workers became a symbol of respectability, and domestic labor
+was more clearly defined as paid work. However, it remained poorly
+regulated, with long hours, low wages, and limited rights, and it
+continued to be dominated by women.
+
+In the twentieth century, the demand for live-in domestic workers
+declined in many parts of the world due to labor reforms, expanded
+education, and the introduction of household technologies that reduced
+the need for manual labor. Nevertheless, domestic services did not
+disappear. Instead, they adapted, increasingly relying on part-time,
+informal, and migrant labor, often without adequate legal protection.
+
+Today, domestic services remain essential to households across the
+globe, particularly in areas such as childcare, elder care, and
+housekeeping. Although there is growing recognition of domestic work as
+valuable and legitimate labor, it continues to reflect long-standing
+issues of inequality related to gender, class, and migration. The
+history of domestic services therefore reveals both continuity and
+change, showing how essential household labor has evolved while
+remaining deeply connected to broader social and economic structures.
+
+The rapid advancement of digital technologies has transformed how
+services are delivered across various industries. Domestic
+services—including cleaning, laundry, childcare, cooking, home repairs,
+and caregiving—remain essential to households but are still
+predominantly managed through informal, unstructured channels. This
+often results in inefficiencies such as unreliable service provision,
+lack of transparency, pricing inconsistencies, and challenges in
+matching service providers with clients who need specific skills.
+
+Domestic services refer to a range of household-related activities
+carried out to support the daily functioning, comfort, and well-being of
+individuals or families within a home. These services include tasks such
+as cleaning, cooking, laundry, childcare, elder care, gardening, and
+basic household maintenance. Domestic services may be performed by paid
+domestic workers, either on a full-time, part-time, or casual basis, or
+by unpaid household members. Historically associated with servitude and
+gendered labor, domestic services remain essential in modern societies,
+particularly as families balance work and caregiving responsibilities.
+They play a crucial role in maintaining healthy, organized, and
+functional household environments.
+
+The concept of a virtual space for domestic service involves creating an
+online platform or digital environment where domestic service providers
+and users can interact seamlessly. Such a system can offer features like
+service listings, provider profiles, real-time bookings, secure payment
+systems, and customer reviews. A well-developed virtual environment can
+also promote trust, increase accessibility, and formalize the domestic
+service sector.
+
+Given the growing reliance on digital platforms and the increasing need
+for organized access to domestic assistance, developing a virtual space
+for domestic services is timely and relevant.
+
+Literature Review 
+
++----------------+----------------+------------------+----------------+
+|   AUTHOR &     |   TITLE        | CONTRBUTION      | GAP            |
+|                |                |                  |                |
+|   YEAR         |                |                  |                |
++================+================+==================+================+
+|   Khatri &     |   Digital      | Highlighted how  | Did not        |
+|   Gupta (2020) |   Platforms    | to online        | explain        |
+|                |   for          | platforms        | interactive or |
+|                |                | connect          | immersive      |
+|                |   Household    | households with  | virtual space; |
+|                |   Services     | service for      | focused mainly |
+|                |                | cleaning         | on mobile      |
+|                |                | providers for    | booking.       |
+|                |                | cleaning and     |                |
+|                |                | repairs.         |                |
++----------------+----------------+------------------+----------------+
+|   Adeyemi &    |   Technology   | Examined factors | Lacked a       |
+|   Fatile       |   Adoption     | influencing      | framework for  |
+|                |                | digital adoption | a unified,     |
+|   (2021)       |   in Domestic  | among domestic   | userfriendly   |
+|                |   Work         | workers.         | virtual        |
+|                |                |                  | platform.      |
+|                |   Management   |                  |                |
++----------------+----------------+------------------+----------------+
+|   Rana et al.  |   User         | Identified       | Did not        |
+|   (2019)       |   Experience   | interface design | consider       |
+|                |   in           | elements that    | domestic       |
+|                |                | improve service  | services       |
+|                |   Service      | booking          | specifically   |
+|                |   Delivery     | experiences      | or virtual     |
+|                |   Apps         |                  | environments.  |
++----------------+----------------+------------------+----------------+
+|   Indravasan   |   An online    | Proposed a web   | Limited        |
+|   et al.       |   System For   | -based system to | scalablity;    |
+|                |                | manage household | lacked         |
+|   (2018)       |   Household    | tasks and        | integration of |
+|                |   Services     | service          | real-time      |
+|                |                | requests.        | tracking and   |
+|                |                |                  | user feedback. |
++----------------+----------------+------------------+----------------+
+| Chen et al.    | Digital        | Examines digital | Identifies     |
+| (2021)         | platforms and  | adoption in      | challenges but |
+|                | household      | household        | does not       |
+|                | services:      | services.        | propose a      |
+|                | opportunities  |                  | virtual space  |
+|                | and            |                  | framework.     |
+|                | challenges.    |                  |                |
++----------------+----------------+------------------+----------------+
+
+Problem Statement
+
+The provision of domestic services is largely managed through informal and manual processes, resulting in inefficiencies, lack of scalability, and limited use of digital technologies. Here are some existing problems:
+
+1.  Existing domestic service platforms often suffer from:
+
+    -   Poor system integration of service discovery, booking,
+        communication, and payment modules.
+
+    -   Limited scalability and performance under increasing user loads.
+
+    -   Inadequate security mechanisms for user authentication, data
+        protection, and transactions.
+
+    -   Insufficient trust and verification models for service
+        providers.
+
+2.  Users experience technical challenges such as:
+
+    -   Inefficient search and matching algorithms.
+
+    -   Lack of real-time scheduling and notification systems.
+
+    -   Poorly designed user interfaces and limited accessibility.
+
+3.  Domestic service providers lack access to:
+
+    -   Digital systems for profile management and service availability.
+
+    -   Automated job matching and scheduling tools.
+
+    -   Transparent and traceable payment processing systems.
+
+4.  From a system perspective, there is no unified, robust software
+    solution that:
+
+    -   Integrates frontend, backend, and database systems effectively.
+
+    -   Supports secure, real-time interactions between users and
+        service providers.
+
+    -   Ensures data privacy, reliability, and fault tolerance.
+
+    -   Allows for future extensibility and maintenance.
+
+The problem addressed in this project is the design and implementation
+of a scalable, secure, and user-centered virtual platform for domestic
+services that applies appropriate software engineering principles,
+algorithms, and system architectures to improve
+
+D. Aim and Objectives 
+
+Aim
+
+To develop a virtual space that facilitates efficient, transparent, and
+user-friendly access to domestic services through a digital platform.
+
+Objectives
+
+The objectives for achieving these aims are to:
+
+1.  Analyze the existing challenges in current domestic service delivery
+    systems.
+
+2.  Design and implement a user-oriented virtual platform for domestic
+    service providers and clients.
+
+3.  Evaluate the developed platform in comparison with existing ones
+    using user satisfaction, usability and speed of access as matrix.
+
+4.  Evaluate user satisfaction and identify potential improvements.
+
+E. Methodology
+
+The development of a virtual space for domestic services adopts a
+user-centered, iterative methodology that integrates empirical research
+with structured software development practices. The process begins with
+a needs assessment phase aimed at understanding the expectations,
+challenges, and interactions of both service users and domestic service
+providers. Data is gathered through surveys, interviews, and focus group
+discussions, complemented by a review of existing digital domestic
+service platforms. The insights obtained are translated into functional
+and non-functional system requirements, including service discovery and
+booking, real-time communication, secure payment processing, user
+verification, privacy protection, accessibility, and system reliability.
+
+The system implementation follows an agile development methodology,
+enabling incremental development and continuous feedback. The front end
+of the virtual space is developed using HTML5, CSS3, and JavaScript,for
+responsive and dynamic user interfaces. The backend system is
+implemented using Node.js with Express which manage business logic,
+service scheduling, user authentication, and communication between
+system components. Data is stored and managed using a relational
+database such as MySQL for scalability and data structure requirements.
+
+Additional software components are integrated to enhance platform
+functionality and trust. Firebase is used for secure user authentication
+and role-based access control, while Stripe or Paystack APIs are
+employed for secure payment processing. Cloud services such as Google
+Cloud, or Hostinger support hosting, storage, and scalability of the
+virtual space. Version control and collaboration are managed using Git
+and GitHub, and continuous integration tools are used to ensure stable
+system updates.
+
+Testing and evaluation are conducted throughout development using
+software testing tools such as Jest, Selenium, or Postman to verify
+functionality, performance, and security. Usability testing is carried
+out with end users to evaluate system efficiency, effectiveness, and
+satisfaction. Feedback from this stage informs iterative refinements
+prior to deployment.
+
+Throughout the development lifecycle, ethical and regulatory
+considerations are addressed through secure data handling practices,
+compliance with data protection regulations, and transparent
+representation of domestic service providers. This methodology ensures
+that the virtual space is not only technically robust but also socially
+responsible, scalable, and responsive to the evolving needs of domestic
+service users and providers.
+
+F. Justification 
+
+  Developing a virtual space for domestic service is justified by
+  several factors:
+
+-   High demand for reliable domestic help: Many households require
+    daily or periodic support but lack a structured way to access vetted
+    providers.
+
+-   Need for formalization: The domestic service industry often operates
+    informally, resulting in inconsistent quality and lack of worker
+    protection.
+
+-   Increased digital adoption: More users now rely on online platforms
+    for daily needs, making the virtual environment ideal for service
+    delivery.
+
+-   Efficiency and transparency: A virtual space ensures accurate
+    information, secure payments, and improved accountability.
+
+-   Improved livelihoods: Providers gain more visibility, stable income
+    opportunities, and professional recognition.
+
+G. Expected Outcomes 
+
+  At the end of this project a functional and user-friendly virtual
+  platform for booking domestic services with Improved accessibility and
+  convenience for households seeking domestic support would have been
+  developed.
+
+CHAPTER TWO
+
+LITERATURE REVIEW
+
+Introduction 
+
+This chapter provides a review of relevant literature that forms the
+foundation for this study. The purpose of the review is to situate the
+research within the border academic and practical context, while also
+identifying gaps that justify the need for the proposed system. The
+discussion includes definitions, theoretical framework and also proceeds
+to a review of related works, focusing on existing systems, and
+platforms that address similar issues of domestic services that are
+web-based. Each reviewed work is analyzed with attention to its
+methodology, strengths, weaknesses, in order to highlight their
+contribution as well as their limitations.
+
+The review helps to identify gaps in existing systems and justifies the
+need for a robust, secure, and integrated platform that supports
+domestic services platform.
+
+2.1 Theoretical Framework 
+
+A theoretical framework provides the conceptual basis upon which the
+system is designed and implemented. This project is guided by a
+combination of the Systems Theory, Information Systems Theory, and the
+Technology Acceptance Model (TAM).
+
+The development of a virtual space for domestic services is grounded in
+theories from information systems, service management, and technology
+adoption. This study is anchored primarily on the Technology Acceptance
+Model (TAM), Platform Economy Theory, and Service Quality Theory, which
+together explain how digital platforms are designed, adopted, and
+utilized in service-based contexts.
+
+The Technology Acceptance Model (TAM) posits that users’ acceptance and
+use of a technological system are determined by perceived usefulness and
+perceived ease of use (Davis, 1989). In the context of a virtual space
+for domestic services, perceived usefulness refers to the extent to
+which users believe the platform enhances efficiency in finding,
+booking, and managing domestic services, while perceived ease of use
+relates to how simple and intuitive the platform interface is. These
+factors influence users’ intention to adopt and continuously use the
+virtual space.
+
+The Platform Economy Theory provides a foundation for understanding
+virtual spaces as digital intermediaries that facilitate interactions
+between service providers (domestic workers) and service consumers
+(households). This theory emphasizes network effects, trust mechanisms,
+and value co-creation. As more users and service providers participate
+in the platform, the value of the virtual space increases, thereby
+improving accessibility, market efficiency, and service availability.
+The platform’s design features—such as user profiles, rating systems,
+and secure payment channels—play a critical role in enabling these
+interactions.
+
+Additionally, Service Quality Theory explains how users evaluate
+services delivered through digital platforms. Dimensions such as
+reliability, responsiveness, assurance, and empathy are adapted to the
+virtual environment through features like timely service matching,
+transparent communication, verified credentials, and feedback systems.
+High perceived service quality enhances user satisfaction and trust,
+which are essential for sustained platform usage.
+
+Integrating these theories, the framework proposes that the development
+of a virtual space for domestic services (independent variable),
+characterized by system functionality, usability, security, and service
+features, influences user acceptance, trust, and satisfaction (mediating
+variables). These, in turn, affect effective utilization and
+sustainability of the platform (dependent variable). External factors
+such as digital literacy, internet accessibility, and regulatory
+environment may further moderate these relationships.Overall, this
+theoretical framework provides a structured explanation of how
+technological design, platform dynamics, and service quality principles
+collectively shape the successful development and adoption of a virtual
+space for domestic services.
+
+2.2.1 Virtual Space For Domestic Services
+
+A Domestic Service Virtual Space is an integrated, software-driven
+system designed to support the coordination, administration, and
+financial management of domestic service transactions within a digitally
+mediated service ecosystem. Core functional modules of the platform
+include service discovery and matching, booking and scheduling, service
+provider profiling and verification, pricing and billing management,
+transaction processing, performance monitoring, and analytics-based
+reporting. When integrated with Paystack digital payment system, the
+platform facilitates secure, cashless financial transactions through
+online payments, bank transfers, and bank deposit tellers, ensuring
+end-to-end transaction traceability.
+
+Digital payment systems have achieved widespread adoption due to their
+high transaction speed, operational convenience, transparency, and
+enhanced security infrastructure. Within the domestic services context,
+digital payments significantly reduce risks associated with cash-based
+transactions, including theft, misappropriation, and payment disputes.
+The system enables households to execute remote payments upon service
+fulfillment, while service providers and platform administrators gain
+real-time visibility into transaction status, payment confirmation, and
+revenue flows.
+
+The integration of service management functionalities with digital
+payment infrastructure results in a centralized, interoperable platform
+in which service, financial, and user data are automatically
+synchronized upon transaction completion. This real-time data
+integration enhances accountability among platform participants,
+supports auditability, and improves operational efficiency through
+automated reconciliation and reporting processes. Furthermore, the
+availability of structured transactional data enables platform operators
+to implement data-driven decision-making related to service
+optimization, pricing strategies, demand forecasting, and workforce
+management.
+
+The proposed system operationalizes these principles through a scalable,
+web-based architecture designed to accommodate increasing user demand,
+heterogeneous service types, and evolving regulatory requirements. By
+combining digital service coordination with secure financial processing,
+the platform establishes a robust technological foundation for
+efficiency, trust, and sustainability in the domestic services sector.
+
+2.2.2 Web 3.0 Technology
+
+Web 3.0 refers to the next stage in the evolution of the internet,
+designed to move control away from centralized platforms and return it
+to users. Unlike today’s web, where data, identity, and digital
+interactions are largely owned and managed by large corporations, Web
+3.0 is built on decentralized technologies that allow individuals to own
+their data, digital assets, and online identities directly. The heart of
+Web 3.0 is blockchain technology. A blockchain is a distributed ledger
+maintained by a network of computers rather than a single central
+authority. Every transaction recorded on a blockchain is transparent,
+verifiable, and extremely difficult to alter. This structure makes it
+possible for strangers to interact and exchange value over the internet
+without relying on intermediaries such as banks, payment processors, or
+platform operators.
+
+Evolution of 3.0 Technology
+
+To understand Web 3.0, it’s essential to first look at the previous
+phases of the internet’s evolution. While these phases overlap and
+influence one another, each is marked by distinct technological
+advancements and shifts in how we interact with the web.
+
+Web 1.0: The Static Web
+
+Web 1.0, often referred to as the “static web,” was the internet in its
+infancy, from roughly the early 1990s to the early 2000s. During this
+time, websites were static pages that contained simple text and images.
+Interaction was limited to reading content, and websites were often
+designed by developers and businesses to present information in a
+one-way manner.Think back to those early days of the internet:
+GeoCities, AOL, or early versions of Yahoo and MSN. The web was a
+static, information-driven experience. The user could only consume
+content, not interact with it. Websites were like digital
+brochures—helpful but passive. This era of the internet was defined by
+limited interactivity, basic HTML pages, and centralized control by a
+few dominant companies.
+
+Web 2.0: The Social Web (The Interactive and Collaborative Web)
+
+In the early 2000s, the internet began to evolve into what we now call
+Web 2.0. This era is marked by the rise of social media platforms,
+user-generated content, and interactive web applications. The web became
+more dynamic, and users began to actively contribute content, making it
+far more interactive. Web 2.0 introduced the concept of the “social
+web,” where platforms like Facebook, Twitter, YouTube, and later
+Instagram and TikTok, allowed users to share their thoughts, images, and
+videos with others. This created a highly collaborative environment,
+where the boundaries between producers and consumers of content became
+increasingly blurred. E-commerce also flourished during the Web 2.0 era.
+Companies like Amazon, eBay, and Shopify revolutionized how goods and
+services were bought and sold online, creating massive online
+marketplaces. Google and other search engines became central to
+discovering information, and cloud computing allowed for a more
+distributed and scalable internet infrastructure. However,despite all
+these advancements, Web 2.0 still had its limitations. The internet
+remained largely centralized, controlled by large corporations like
+Google, Facebook, and Amazon, which dominated the online experience.
+These companies collected vast amounts of user data, which often raised
+concerns about privacy and control. Additionally, users were not truly
+in control of their data—companies owned the platforms and the
+information users shared.
+
+Web 3.0: The Decentralized Web (The Future of the Internet)
+
+Unlike its predecessors, Web 3.0 is not just an iteration of the
+internet; it is a complete rethinking of how the internet operates. Web
+3.0 promises to move away from the centralized, corporate-controlled
+model of Web 2.0 and instead emphasize decentralization, user
+empowerment, and enhanced privacy. Web 3.0 leverages a range of
+cutting-edge technologies—blockchain, artificial intelligence, machine
+learning, and decentralized networks—to create an internet that is more
+open, secure, and user-centric. It envisions a world where users have
+control over their own data, where online identities are decentralized,
+and where interactions are more seamless and personalized. Web 3.0 is
+about decentralization, ownership, and privacy. This new version of the
+internet is designed to empower users rather than corporations, shifting
+the balance of power and enabling a more equitable online environment.
+
+Key Features of Web 3.0
+
+Web 3.0 is built on a few core principles and technologies that
+differentiate it from Web 2.0. Let’s explore some of these key features.
+
+1. Decentralization
+
+One of the most significant changes in Web 3.0 is the move toward
+decentralization. In Web 2.0, a small number of centralized entities
+control the majority of online services. Companies like Google,
+Facebook, and Amazon control vast amounts of user data and shape the
+online experience. Web 3.0 seeks to change this by decentralizing
+control over data, applications, and online experiences. Blockchain
+technology is at the heart of this transformation. By using distributed
+ledgers, blockchain allows for decentralized applications (dApps) to
+operate without the need for a central authority. These dApps can run on
+peer-to-peer networks, where users can directly interact with each
+other, without relying on intermediaries.The shift to decentralization
+also means that users will have more control over their own data.
+Instead of corporations owning and monetizing user information, users
+will be able to store and manage their own data, giving them greater
+privacy and autonomy.
+
+2. Ownership of Data
+
+In Web 3.0, the concept of data ownership is redefined. In Web 2.0, most
+of our personal data is owned by corporations. Social media platforms,
+e-commerce sites, and search engines collect data about us to target ads
+and improve services. However, this data is often used in ways that
+benefit companies, not the users.Web 3.0 introduces the concept of
+personal data sovereignty, where users have full control over their
+data. By leveraging blockchain technology, individuals can securely
+store their data and share it only with those they trust. This allows
+for greater privacy, transparency, and security. Users can also
+potentially monetize their data, creating new economic opportunities.
+
+3. Smart Contracts and Automation
+
+Another key feature of Web 3.0 is the use of smart contracts. Smart
+contracts are self-executing contracts with the terms of the agreement
+directly written into code. These contracts automatically execute when
+predefined conditions are met, eliminating the need for intermediaries
+such as lawyers or brokers. Smart contracts are powered by blockchain
+technology and are crucial to the development of decentralized
+applications (dApps). They can be used in a variety of industries, from
+finance and real estate to supply chain management and gaming. By
+automating processes and removing middlemen, smart contracts can reduce
+costs, increase efficiency, and create new business models.
+
+4. Artificial Intelligence and Machine Learning
+
+Web 3.0 will also see the integration of artificial intelligence (AI)
+and machine learning (ML) to create smarter, more personalized online
+experiences. These technologies allow for the analysis of vast amounts
+of data in real time, enabling the internet to understand user
+preferences, behaviors, and needs more accurately.With AI and ML, Web
+3.0 applications can anticipate user actions and deliver personalized
+content, recommendations, and services. Whether it’s personalized
+newsfeeds, tailored product recommendations, or automated customer
+service, AI-powered systems will create a more intuitive and engaging
+internet experience.
+
+5. Semantic Web and Better Search
+
+Web 3.0 will also feature an evolution of search engines, enabled by the
+“semantic web.” In Web 2.0, search engines like Google rely on
+keyword-based algorithms to index and rank content. While these
+algorithms are effective, they often struggle to understand the true
+meaning behind a search query.The semantic web aims to improve this by
+allowing machines to understand the context and relationships between
+data. This would enable more accurate search results and richer
+interactions with digital content. Instead of simply matching keywords,
+the semantic web will enable more meaningful connections between
+information, making it easier for users to find exactly what they are
+looking for.
+
+The Impact of Web 3.0 Across Industries
+
+Web 3.0 has the potential to transform virtually every sector of
+society, from finance and healthcare to entertainment and governance.
+Below, we explore some of the industries that will be most impacted by
+this next generation of the internet.
+
+1. Finance: Decentralized Finance (DeFi)
+
+The rise of Web 3.0 coincides with the rise of decentralized finance
+(DeFi). DeFi refers to financial services that are built on blockchain
+technology, offering users access to lending, borrowing, trading, and
+other financial services without the need for traditional banks or
+financial intermediaries.By using smart contracts and decentralized
+platforms, DeFi allows users to have full control over their financial
+transactions and assets. This opens up new opportunities for individuals
+who may not have access to traditional banking services, particularly in
+developing countries.
+
+2. Healthcare: Secure and Decentralized Health Data
+
+In healthcare, Web 3.0 promises to revolutionize how patient data is
+managed. Instead of relying on centralized healthcare institutions to
+store sensitive medical records, blockchain technology could enable
+patients to control their health data securely. This would ensure that
+medical records are tamper-proof, while also giving patients more
+ownership over their health information.Furthermore, decentralized
+healthcare platforms could allow for more efficient and transparent
+clinical trials, better supply chain management for pharmaceuticals, and
+improved accessibility to medical services globally.
+
+3. Entertainment: Tokenized Content and NFTs
+
+The entertainment industry is also being transformed by Web 3.0,
+particularly through the rise of non-fungible tokens (NFTs) and
+tokenized content. Web 3.0 offers creators new ways to monetize their
+work through NFTs, allowing them to sell digital art, music, videos, and
+other forms of content directly to consumers, without intermediaries.
+This shift could change the power dynamics of the entertainment
+industry, enabling smaller creators to reach audiences directly and
+retain more control over their intellectual property. The proliferation
+of decentralized platforms could also enable new forms of content
+distribution, changing the way we consume media.
+
+4. Governance: Decentralized Governance and DAOs
+
+Web 3.0 introduces the possibility of decentralized governance through
+decentralized autonomous organizations (DAOs). DAOs are organizations
+run by smart contracts, where decisions are made collectively by
+stakeholders rather than a centralized leadership. In the context of Web
+3.0, DAOs could enable more democratic, transparent, and inclusive forms
+of governance. Whether in the corporate world, political systems, or
+community organizations, DAOs could empower individuals to have a more
+direct say in how decisions are made, creating a more participatory and
+open system.
+
+2.2.3 Database 
+
+A database is an organized collection of data that is stored
+electronically and designed to be easily accessed, managed, and updated.
+Databases are used to store large amounts of information in a structured
+way so that data can be efficiently retrieved, inserted, modified, and
+deleted. They form the backbone of most modern software systems,
+including websites, mobile applications, banking systems, and enterprise
+platforms.
+
+Components of a Database
+
+A database is not merely a collection of stored data; it is a structured
+system composed of multiple interdependent components that work together
+to ensure efficient storage, retrieval, manipulation, and protection of
+information. These components collectively enable databases to support
+modern information systems across various domains. At the core of every
+database is data, which represents the raw facts and figures stored
+within the system. Data may include textual information such as names
+and descriptions, numerical values such as prices and scores, multimedia
+content such as images, audio, and videos, or even complex data such as
+documents and sensor readings. This data typically represents real-world
+entities like users, products, transactions, or events. The value of a
+database lies in how well this data is structured and managed to produce
+meaningful information.
+
+Closely related to data is the database schema, which serves as the
+logical blueprint of the database. The schema defines how data is
+organized, specifying tables, attributes, data types, constraints, and
+relationships between different entities. By enforcing a predefined
+structure, the schema ensures data consistency and integrity. It also
+allows developers and database administrators to understand the
+organization of data without needing to inspect individual records.
+Changes to the schema are carefully managed because they affect how
+applications interact with the database.
+
+The Database Management System (DBMS) is the software layer that
+controls and manages the database. It acts as an interface between the
+database and its users or applications. The DBMS is responsible for
+storing data on physical storage devices, processing queries, managing
+transactions, enforcing security rules, and maintaining data integrity.
+It also provides mechanisms for backup, recovery, and concurrency
+control. Examples of widely used DBMSs include MySQL, PostgreSQL, Oracle
+Database, Microsoft SQL Server, and MongoDB. Without a DBMS, managing
+large volumes of data efficiently and securely would be impractical.
+
+Another critical component is queries, which are formal instructions
+used to interact with the database. Queries allow users to retrieve
+specific data, insert new records, update existing information, or
+delete unwanted data. In relational databases, queries are typically
+written in Structured Query Language (SQL), a standardized language
+designed for database operations. Queries are central to transforming
+stored data into useful information for decision-making and application
+functionality.
+
+Finally, users represent the human or system entities that interact with
+the database. Users may include database administrators who manage and
+maintain the system, developers who build applications on top of the
+database, and end users who access data through applications or
+reporting tools. Each user is assigned specific roles and access
+privileges to ensure security and prevent unauthorized data
+manipulation.
+
+ Types of Databases
+
+Databases can be classified based on how data is structured, stored, and
+accessed. The two primary categories are Relational (SQL) databases and
+NoSQL databases, each designed to meet different application
+requirements.
+
+Relational databases, organize data into tables consisting of rows and
+columns. Each row represents a record, while each column represents an
+attribute of the entity. Relationships between tables are established
+using keys, such as primary keys and foreign keys. Relational databases
+rely on a strict, predefined schema, which ensures data accuracy and
+consistency. One of the defining characteristics of relational databases
+is their strong support for ACID properties, which guarantee reliable
+transaction processing. Due to their structured nature and reliability,
+relational databases are widely used in systems that require accuracy,
+consistency, and integrity, such as banking, payroll, and inventory
+management systems. Common examples include MySQL, PostgreSQL, Oracle
+Database, and Microsoft SQL Server.
+
+NoSQL databases are designed to handle large volumes of unstructured or
+semi-structured data. The term “NoSQL” means “Not Only SQL,” indicating
+that these databases may support query languages other than SQL and do
+not follow the rigid table-based structure of relational databases.
+NoSQL databases emphasize flexibility, scalability, and performance,
+especially in distributed and cloud environments. NoSQL databases are
+further divided into several subtypes:
+
+Document-oriented databases store data as documents in formats such as
+JSON or BSON, making them suitable for web applications and content
+management systems. Key-value stores store data as simple key–value
+pairs and are optimized for fast data retrieval. Wide-column databases
+organize data by databases columns rather than rows, making them
+efficient for large-scale analytical workloads. Graph store data as
+nodes and relationships, enabling efficient handling of interconnected
+data such as social networks and recommendation systems.
+
+ACID Properties of Databases
+
+ACID properties are fundamental principles that ensure the reliability
+and correctness of database transactions. A transaction refers to a
+sequence of operations performed as a single logical unit of work.
+
+Atomicity ensures that a transaction is executed completely or not at
+all. If any part of a transaction fails, the entire transaction is
+rolled back, leaving the database unchanged. This prevents partial
+updates that could lead to data inconsistency.
+
+Consistency guarantees that a transaction brings the database from one
+valid state to another valid state. All integrity constraints, such as
+primary keys and foreign keys, must be satisfied after the transaction
+is completed.
+
+Isolation ensures that concurrent transactions do not interfere with
+each other. Even when multiple transactions are executed simultaneously,
+each transaction behaves as if it is executed independently.
+
+Durability ensures that once a transaction is committed, its effects are
+permanently stored in the database, even in the event of system crashes
+or power failures.
+
+4. Real-World Applications of Databases
+
+Databases are an integral part of modern life, supporting countless
+applications across different sectors. In the banking sector, databases
+manage customer accounts, transaction records, loan information, and
+financial audits. In transportation systems, databases are used for
+ticket reservations, route planning, and schedule management.
+
+In education, databases store student records, academic performance,
+course registrations, and examination results. Retail and e-commerce
+platforms rely on databases to manage inventory, customer orders,
+payments, and delivery tracking. Social media platforms use databases to
+store user profiles, posts, messages, and multimedia content.
+
+Databases are also crucial in multimedia systems, where they manage
+large collections of images, audio, and video files. In business and
+data science, databases enable trend analysis, forecasting, and
+strategic decision-making by providing structured access to large
+datasets.
+
+5. Importance of Databases Across Technologies
+
+Databases serve as the backbone of various modern technologies, enabling
+data-driven applications and systems.
+
+In web development, databases store dynamic content, user authentication
+data, and transaction records. In mobile application development,
+lightweight databases support offline data storage and synchronization.
+In DevOps, databases are used for configuration management, logging, and
+system monitoring.
+
+Data engineering relies on scalable databases for processing massive
+data pipelines and real-time streaming. Data science requires databases
+that support analytical queries and integration with statistical tools.
+Artificial intelligence systems depend on databases to store training
+datasets, model outputs, and feedback loops.
+
+In cloud computing, databases must support auto-scaling, high
+availability, and distributed access. Finally, in blockchain and Web 3.0
+environments, databases and decentralized ledgers enable immutable
+records, smart contracts, and trustless transactions.
+
+In a domestic services platform, when a user registers on the platform,
+their personal details such as name, contact information, address, and
+login credentials are stored in the database. Similarly, service
+providers (like cleaners or technicians) have their own records,
+including skills, availability, service areas, ratings, and verification
+details. The database keeps these records separate but connected so the
+system can match the right service provider to the right customer.
+
+When a customer searches for a service, the platform queries the
+database to find available service providers based on criteria such as
+location, service type, price, and availability. Once a booking is made,
+the database stores the booking details, including date, time, assigned
+provider, service status, and payment information. As the service
+progresses from booking to completion—the database updates the status in
+real time.
+
+The database also manages payments, invoices, reviews, and ratings.
+After a service is completed, customer feedback is stored and later used
+to rank service providers and improve recommendations. Admins use
+database data to monitor platform activity, resolve disputes, and
+generate reports.
+
+2.2.4 Database Management System (DBMS) 
+
+A Database Management System (DBMS) is software that allows users to
+create, store, manage, and retrieve data efficiently and securely. It
+acts as an interface between the database and users, ensuring that data
+is organized, consistent, and protected from unauthorized access. A DBMS
+provides several key functions. It supports data definition, allowing
+the structure of the database such as tables, fields, and
+relationships—to be defined. It handles data manipulation, enabling
+users to insert, update, delete, and query data easily. The system also
+enforces data integrity by applying rules and constraints that prevent
+invalid or duplicate data. It controls user access through
+authentication and authorization and often includes encryption to
+protect sensitive data.
+
+The components of Database Management System (DBMS)
+
+A DBMS is a system software consisting of multiple integrated components
+that deliver a consistent, managed environment for creating, accessing
+and modifying data in databases. These components include the following:
+
+Storage engine: This basic element of a DBMS is used to store data. The
+DBMS must interface with a file system at the operating system (OS)
+level to store data. It can use additional components to store data or
+interface with the actual data at the file system level.
+
+Database access language: The DBMS must also provide an API to access
+the data, typically in the form of a database access language that can
+be used to modify data but also create database objects and secure and
+authorize access to the data. SQL is an example of a database access
+language and encompasses several sets of commands, including data
+control language for authorizing data access, data definition language
+for defining database structures and data manipulation language for
+reading and modifying data.
+
+Optimization engine: A DBMS can also provide an optimization engine
+that's used to parse database access language requests and turn them
+into actionable commands for accessing and modifying data.
+
+Query processor: After a query is optimized, the DBMS must provide a way
+to run the query and return results.
+
+Lock manager: This crucial component of the DBMS manages concurrent
+access to the same data. Locks are required to ensure multiple users
+aren't trying to modify the same data simultaneously.
+
+Log manager: The DBMS records all changes made to data managed by the
+DBMS. The record of changes is known as the log, and the log manager
+component of the DBMS is used to ensure that log records are made
+efficiently and accurately. The DBMS uses the log manager during
+shutdown and startup to ensure data integrity, and it interfaces with
+database utilities to create backups and run recoveries.
+
+Data utilities A DBMS also provides a set of utilities for managing and
+controlling database activities. Examples of database utilities include
+reorganization, RUNSTATS, backup and copy, recover, integrity check,
+load data, unload data and repair database.
+
+Reporting and monitoring tools: Most DBMS is integrated with reporting
+and monitoring tools to offer enhanced functionality for managing and
+analyzing data. Reporting tools generate reports, whereas monitoring
+tools track various database metrics, such as resource consumption and
+user activity.
+
+Types of Database Management System
+
+Database Management Systems can be classified based on the data model
+they use, the way data is stored, and the environment in which they
+operate. Each type of DBMS is designed to address specific data
+management needs and application requirements.
+
+1. Hierarchical Database Management System
+
+The Hierarchical DBMS organizes data in a tree-like structure where
+records are arranged in parent–child relationships. Each parent record
+can have multiple child records, but each child has only one parent.
+This structure resembles an inverted tree. In a hierarchical DBMS, data
+access follows a predefined path, making data retrieval fast when the
+access pattern is known in advance. However, this model lacks
+flexibility because changes in the data structure can require
+significant modifications to applications. It is best suited for systems
+with one-to-many relationships. Hierarchical DBMSs were widely used in
+early database systems and are still applied in some legacy and
+specialized systems. Example is the IBM Information Management System
+(IMS).
+
+2. Network Database Management System
+
+The Network DBMS is an extension of the hierarchical model. It allows a
+record to have multiple parent and child records, forming a graph-like
+structure rather than a strict tree. This enables the representation of
+many-to-many relationships. Network DBMSs provide greater flexibility
+than hierarchical systems and reduce data redundancy. However, they are
+complex to design, implement, and maintain. Users must have a deep
+understanding of the database structure to retrieve data efficiently.
+Network DBMSs are less commonly used today but were important in the
+evolution of database technology. Examples are Integrated Data Store
+(IDS), IDMS.
+
+3. Relational Database Management System (RDBMS)
+
+The Relational DBMS (RDBMS) is the most widely used type of DBMS today.
+It organizes data into tables consisting of rows and columns. Each table
+represents an entity, and relationships between tables are established
+using primary keys and foreign keys. RDBMS use Structured Query Language
+(SQL) for data definition, manipulation, and querying. They strictly
+enforce data integrity through constraints and support ACID properties,
+ensuring reliable transaction processing. Relational DBMS are highly
+flexible, scalable, and suitable for applications requiring high
+consistency and accuracy, such as banking, payroll, and inventory
+systems. Examples are MySQL, PostgreSQL, Oracle Database, Microsoft SQL
+Server.
+
+4. Object-Oriented Database Management System (OODBMS)
+
+An Object-Oriented DBMS stores data as objects, similar to
+object-oriented programming concepts. Each object contains both data and
+the methods that operate on the data. This model supports features such
+as encapsulation, inheritance, and polymorphism. OODBMS are particularly
+useful for applications involving complex data types, such as multimedia
+systems, computer-aided design (CAD), and scientific simulations.
+However, they are less popular than RDBMSs due to limited
+standardization and tool support. Example is ObjectDB.
+
+5. Object-Relational Database Management System (ORDBMS)
+
+The Object-Relational DBMS combines features of both relational and
+object-oriented databases. It extends the relational model by supporting
+complex data types, user-defined types, and object-oriented features.
+ORDBMS maintain the benefits of SQL and relational structures while
+offering greater flexibility in handling complex data. They are commonly
+used in enterprise systems that require both structured data management
+and object-oriented capabilities. Examples are PostgreSQL, Oracle
+Database.
+
+6. NoSQL Database Management System
+
+NoSQL DBMSs are designed to handle large volumes of unstructured or
+semi-structured data. Unlike relational databases, they do not rely on
+fixed schemas and are optimized for horizontal scalability and high
+performance in distributed environments. NoSQL DBMSs are widely used in
+big data applications, real-time analytics, cloud computing, and social
+media platforms.NoSQL databases are further classified into four main
+types:
+
+-   Document-oriented DBMS: Store data as JSON-like documents (e.g.,
+    MongoDB)
+
+-   Key-Value DBMS: Store data as key–value pairs for fast access (e.g.,
+    Redis)
+
+-   Column-Family DBMS: Store data in columns for large-scale analytics
+    (e.g., Cassandra)
+
+-   Graph DBMS: Store nodes and relationships for connected data (e.g.,
+    Neo4j)
+
+7. Distributed Database Management System
+
+A Distributed DBMS manages databases that are distributed across
+multiple physical locations connected through a network. It provides a
+unified view of data, making it appear as a single database to users.
+Distributed DBMS improve data availability, fault tolerance, and
+performance. However, they are complex to design and manage due to
+issues such as network latency and data synchronization. Examples:
+Google Spanner, Apache Cassandra.
+
+8. Centralized Database Management System
+
+In a Centralized DBMS, all data is stored and managed at a single
+central location. While this simplifies management and security, it may
+lead to performance bottlenecks and a single point of failure
+.Centralized DBMSs are suitable for small-scale systems with limited
+users.
+
+9. Cloud Database Management System
+
+A Cloud DBMS is hosted on cloud infrastructure and offers scalability,
+high availability, and reduced maintenance costs. Cloud DBMSs support
+modern applications such as SaaS platforms and serverless architectures.
+Examples: Amazon Aurora, Google Cloud Spanner, Microsoft Azure Cosmos
+DB.
+
+What does a Database management system do?
+
+A Database Management System manages the data. The database engine
+enables data to be accessed, locked and modified and the
+database schema defines the database's logical structure. These three
+foundational data elements help provide concurrency, security, data
+integrity and uniform data administration procedures.
+
+The following are common functions that a DBMS performs:
+
+Administration tasks: A DBMS supports many typical database
+administration tasks, including change management, performance
+monitoring and tuning, security, and backup and recovery. Most database
+management systems are also responsible for automated rollbacks and
+restarts as well as logging and auditing of activity in databases and
+the applications that access them.
+
+Storage: A DBMS provides efficient data storage and retrieval by
+ensuring that data is stored in tables, rows and columns.
+
+Concurrency control: In environments where multiple users access and
+modify the database simultaneously, a DBMS guarantees controlled
+transaction execution to prevent data corruption or inconsistency.
+
+Centralized view: A DBMS provides a centralized view of data that
+multiple users can access from multiple locations in a controlled
+manner. A DBMS can limit what data end users see and how they view the
+data, providing many views of a single database schema. End users and
+software programs are free from having to understand where the data is
+physically located or on what type of storage medium it resides because
+the DBMS handles all requests.
+
+Data manipulation: A DBMS ensures data integrity and consistency by
+letting users insert, update, delete and modify data inside a database.
+
+Data independence: A DBMS offers both logical and physical data
+independence to protect users and applications from having to know where
+data is stored or from being concerned about changes to the physical
+structure of data. As long as programs use the application programming
+interface (API) for the database that the DBMS provides, developers
+won't have to modify programs just because changes have been made to the
+database.
+
+Backup and recovery: A DBMS facilitate backup and recovery options by
+creating backup copies so that data can be restored to a consistent
+state. This protects against data loss due to hardware failures,
+software errors or other unforeseen events. In a relational database
+management system (RDMS) -- the most widely used type of DBMS -- the API
+is structured query language (SQL), a standard programming language for
+defining, protecting and accessing data.
+
+2.2.5 Models 
+
+A data model refers to an abstract representation of data structures
+that are used to organize and manage data in a database or information
+system. It defines the relationship between the data elements
+(representing real-world objects) and how they are organized, stored,
+and retrieved. It can be helpful to imagine a building plan beneath the
+data model, upon which the entire system will be built. Data models are
+used to create databases and data warehouses, manage data for analytical
+processing, and implement applications that enable users to access
+information in meaningful ways.
+
+Components of Data Models
+
+A data model consists of several essential components that collectively
+describe how data is organized and related:
+
+Entities are the objects we want to represent in our data model and are
+usually represented by a table. Examples of entities include customers,
+orders, products, or categories.
+
+Attributes appear as columns in specific tables. Examples include
+product identifier and product name (for the Product) category
+identifier and category name (for the Category).
+
+Records are shown in rows in each table. A good example of a record is
+the data of a specific product (identifier, product name, category)
+stored in a table called Products.
+
+Relationships define the associations between entities. This may be 1:1,
+1:N or M:N. For example, one product could be related to another by a
+specific product category.
+
+Cardinality refers to the numerical relationship (1:1, 1:N and N:M)
+between two entities in a database. For example, the relationship
+between a specific product and category can be described with a 1:N
+relationship — one category can be relevant for multiple products, but
+one specific product is related by a specific category.
+
+Primary key is a unique identifier of each record in a current table. It
+refers to a column or a combination of columns that has a unique value
+for each row. For the Product table the primary key is product_id, and
+for the Category table it is category_id.
+
+Foreign key is a column or a group of columns that points towards a
+primary key in a different table — product_id and category_id. It
+creates an association between two tables (Product and Category) that
+enables information from one table (Product) to be linked and related to
+information from another (Category).
+
+Types of Data Models
+
+There are three main types of data models: conceptual, logical, and
+physical. Each has a different purpose and is used in a different stage
+of data modeling:
+
+A conceptual data model is usually created as a blueprint for a future
+database system. Developed by gathering input from business
+stakeholders, it provides a high-level overview of the entire system and
+defines its components and rules in business terms.
+
+A logical data model provides more detail about the entire system – its
+entities, attributes, and relationships. It is used to develop a
+database schema through the collaboration of data architects and
+business analysts.
+
+A physical data model is the most detailed representation of the system
+and contains all of the physical structures for the technical
+implementation of the database. This model is created by database
+developers and includes information about data types, indexing, and
+access methods.
+
+Levels of Data Models
+
+Data modeling is typically performed at three distinct levels:
+conceptual, logical, and physical. Each level serves a specific purpose
+in the database design process.
+
+Conceptual Data Model
+
+The conceptual data model represents data at a very high level and
+focuses on understanding business requirements rather than technical
+details. It identifies major entities and their relationships without
+specifying data types or storage details. This level is often
+represented using Entity–Relationship (ER) diagrams, which provide a
+visual representation of entities and relationships. The conceptual
+model is easily understood by non-technical stakeholders and is crucial
+during requirement analysis.
+
+Logical Data Model
+
+The logical data model provides a more detailed representation of data.
+It defines entities, attributes, primary keys, foreign keys, and
+relationships more precisely, but it remains independent of any specific
+DBMS. At this stage, normalization techniques are applied to reduce data
+redundancy and improve consistency. The logical model forms the basis
+for creating the actual database schema.
+
+Physical Data Model
+
+The physical data model describes how data is physically stored in the
+database. It includes details such as table structures, indexes,
+partitions, file storage methods, and access paths.This model is
+DBMS-specific and focuses on performance optimization, storage
+efficiency, and implementation details.
+
+Types of Data Models
+
+Hierarchical Data Model
+
+The hierarchical data model organizes data in a tree-like structure with
+parent–child relationships. Each child record has only one parent,
+making the model suitable for one-to-many relationships. However, it
+lacks flexibility and does not efficiently support complex
+relationships.
+
+Network Data Model
+
+The network data model extends the hierarchical model by allowing
+many-to-many relationships. Data is represented as records connected
+through links. Although more flexible, the model is complex and
+difficult to manage.
+
+ Relational Data Model
+
+The relational data model organizes data into tables with rows and
+columns. Relationships are established using keys, and SQL is used for
+querying and manipulation. This model is widely adopted due to its
+simplicity, flexibility, and strong theoretical foundation.
+
+Object-Oriented Data Model
+
+The obj ect-oriented data model represents data as objects that include
+both attributes and methods. It supports inheritance and encapsulation,
+making it suitable for complex data types such as multimedia and
+engineering applications.
+
+Relational Data Model
+
+The object-relational data model combines relational and object-oriented
+concepts, enabling support for complex data types while retaining SQL
+functionality.
+
+NoSQL Data Models
+
+NoSQL data models are designed for large-scale, distributed systems.
+They include document, key–value, column-family, and graph models, each
+optimized for specific use cases such as big data, social networks, and
+real-time analytics.
+
+Importance of Data Models in Database Design
+
+Data models play a critical role in database development. They ensure
+efficient database structure, reduce redundancy, and enhance data
+integrity. A well-designed data model improves system performance,
+scalability, and maintainability. In academics and industrial projects,
+data models serve as a reference throughout the system lifecycle, from
+requirement analysis to implementation and maintenance. They also help
+in troubleshooting, upgrading, and integrating systems.
+
+Data Models in Modern Technologies
+
+In modern computing environments, data models are essential for
+technologies such as cloud computing, big data analytics, artificial
+intelligence, and Web 3.0 systems. Distributed databases and blockchain
+systems rely on specialized data models to manage decentralized and
+immutable data structures. Data model also play a vital role in data
+science, where structured and semi-structured data must be organized
+efficiently for analysis and machine learning.
+
+2.2.6 Data Modelling
+
+Data modeling refers to the process of creating a visual and logical representation of data requirements and structures within an information system. It defines how data elements relate to one another and how they will be stored and accessed in a database. The process serves as a blueprint for database designers, developers, and stakeholders. Data modeling answers key questions such as:
+
+-   What data needs to be stored?
+
+-   How is the data related?
+
+-   What rules govern the data?
+
+1.  Clear Definition of Data Requirements
+    Data modeling helps in identifying and documenting all data elements
+    required by a system, ensuring no important data is omitted.
+
+2.  Reduction of Data Redundancy
+    By organizing data logically and applying normalization techniques,
+    duplication of data is minimized.
+
+3.  Improved Data Integrity and Consistency
+    Constraints and rules defined in the data model help maintain
+    accurate and reliable data.
+
+4.  Efficient Data Storage and Retrieval
+    A well-designed model supports optimized database performance and
+    faster query execution.
+
+5.  Ease of Maintenance and Scalability
+    Proper data modeling allows future system modifications and
+    expansions with minimal disruption.
+
+Components of Data Modeling
+
+Data modeling is built upon several core components, which together
+define the structure of a database.
+
+Entities: An entity represents a real-world object or concept about
+which data is stored. Examples include Student, Customer, Employee,
+ServiceProvider, and Order. Each entity corresponds to a table in a
+relational database.
+
+Attributes: Attributes are properties or characteristics that describe an entity. For example, a Student entity may have attributes such as StudentID, Name, DateOfBirth, and Department. Each attribute represents a column in a database table.
+
+ Relationships: Relationships define how entities are connected to one another. Common relationship types include one-to-one (1:1), one-to-many (1:M), and many-to-many (M:N). For instance, a Customer can place many Orders, but each Order belongs to one Customer.
+
+Keys: There are two types of Keys, 
+
+-   Primary Key: A unique identifier for each entity record.
+
+-   Foreign Key: A field that establishes a link between two entities.
+
+Constraints: Constraints are rules that ensure data validity and integrity. Examples include NOT NULL, UNIQUE, CHECK, and referential integrity constraints.
+
+6. Data Modeling Techniques
+
+Several techniques are used in data modeling, depending on the type of
+system and application.
+
+Entity–Relationship (ER) Modeling: ER modeling uses entities, attributes, and relationships to visually represent data structures. It is widely used in relational database design.
+
+Normalization: Normalization is the process of organizing data to eliminate redundancy and dependency. It involves dividing large tables into smaller ones and defining relationships among them.
+
+UML Class Diagrams: UML diagrams are used in object-oriented systems to represent classes, attributes, methods, and relationships.
+
+Dimensional Modeling: Dimensional modeling is commonly used in data warehouses and business intelligence systems. It uses fact tables and dimension tables to support analytical queries.
+
+Steps in Data Modeling
+
+The data modeling process follows a systematic sequence of steps:
+
+1.  Requirement analysis and data collection
+
+2.  Identification of entities and attributes
+
+3.  Definition of relationships and cardinalities
+
+4.  Assignment of primary and foreign keys
+
+5.  Application of normalization rules
+
+6.  Development of the physical database schema
+
+Importance of Data Modeling in System Development
+
+Data modeling is essential in system development for several reasons. It
+enhances communication between developers and stakeholders, reduces
+development time, minimizes errors, and ensures the database supports
+business objectives effectively. In final-year projects, a
+well-documented data model demonstrates a clear understanding of system
+design principles and database management concepts.
+
+2.2.7. Software process models
+
+A software process model is a structured framework that defines the
+sequence of activities involved in the development, deployment, and
+maintenance of software systems. It provides a systematic approach for
+organizing software development tasks, ensuring consistency, quality,
+and efficient project management. Software process models guide
+developers in planning, executing, and controlling software projects by
+clearly outlining phases, roles, deliverables, and workflows. A software
+process model is an abstraction of the software development process. The
+models specify the stages and order of a process.
+
+A model will defined the following:
+
+-   The tasks to be performed.
+
+-   The input and output of each task.
+
+-   The pre and post-conditions for each task.
+
+-   The flow and sequence of each task.
+
+-   The goal of a software process model is to provide guidance for
+    controlling and coordinating the tasks to achieve the end product
+    and objectives as effectively as possible.
+
+System Development Life Cycle (SDLC)
+
+System Development Life Cycle (SDLC) is a systematic framework used to
+develop information systems in an organized and efficient manner. It
+provides a step-by-step approach that guides system developers from the
+initial idea through implementation and long-term maintenance. The SDLC
+ensures that systems are developed on time, within budget, and in line
+with user requirements.
+
+Phases of System Development Life cycle (SDLC)
+
+The System Development Life Cycle (SDLC) consists of several
+interconnected phases that provide a structured framework for developing
+a system. These phases include Planning, Analysis, Design, Development,
+Testing, Implementation, and Maintenance. Each phase plays a vital role
+in ensuring the system is successfully developed, with System Design
+being especially critical in shaping the final product.
+
+-   Planning
+    The planning stage marks the beginning of the System Development
+    Life Cycle and focuses on defining the purpose and scope of the
+    proposed system. During this stage, organizations identify the
+    problems to be solved, set project objectives, and determine the
+    resources required for development. Feasibility studies are
+    conducted to evaluate whether the project is technically achievable,
+    economically viable, operationally practical, and feasible within
+    the available time frame. Effective planning provides a clear
+    direction for the project and reduces the risk of failure in later
+    stages.
+
+-   System Analysis
+    System analysis involves a detailed examination of the existing
+    system and the identification of user requirements for the new
+    system. At this stage, developers interact with stakeholders to
+    understand their needs, expectations, and challenges. Various data
+    collection techniques such as interviews, questionnaires, and
+    observations are used to gather accurate information. The goal of
+    system analysis is to define what the system should accomplish
+    without considering how it will be implemented. The findings are
+    documented in a Software Requirements Specification, which serves as
+    a foundation for system design.
+
+-   System Design
+    The system design stage translates the requirements identified
+    during analysis into a structured blueprint for system development.
+    It specifies the system architecture, database structure, user
+    interfaces, input and output designs, and security mechanisms.
+    Design decisions are made to ensure the system is efficient,
+    reliable, scalable, and user-friendly. This stage provides
+    developers with a clear guide on how the system components will be
+    constructed and integrated.
+
+-   System Development (Implementation)
+    System development is the phase where the actual construction of the
+    system takes place. Programmers write and compile source code based
+    on the design specifications using appropriate programming languages
+    and development tools. Individual modules are developed and
+    integrated to form a complete system. Proper documentation is
+    maintained to support debugging, future modifications, and system
+    maintenance.
+
+-   System Testing
+    System testing is carried out to ensure that the developed system
+    performs as expected and meets all specified requirements. This
+    stage involves detecting and correcting errors, bugs, and
+    inconsistencies in the system. Various testing techniques, including
+    unit testing, integration testing, system testing, and user
+    acceptance testing, are applied to verify functionality,
+    performance, and security. Testing ensures that the system is
+    reliable and ready for real-world use.
+
+-   System Deployment
+    System deployment involves installing the tested system and making
+    it available to end users. During this stage, data may be migrated
+    from the old system, and users are trained on how to operate the new
+    system effectively. Different changeover strategies such as direct,
+    parallel, or phased implementation may be used depending on
+    organizational needs. Deployment ensures a smooth transition from
+    the old system to the new one.
+
+-   System Maintenance
+    System maintenance is the final stage of the SDLC and focuses on
+    sustaining the system after deployment. It involves correcting
+    errors that arise during operation, adapting the system to changing
+    user requirements, enhancing performance, and improving security.
+    Maintenance ensures that the system remains efficient, reliable, and
+    relevant throughout its operational life.
+
+System Development Life cycle Models
+
+The most popular and important SDLC models are as follows:
+
+Waterfall model
+
+V model (Verification and Validation)
+
+Iterative model
+
+RAD model
+
+Spiral model
+
+Agile model
+
+Waterfall Model
+
+The waterfall model is a sequential, plan driven-process where you must
+plan and schedule all your activities before starting the project. Each
+activity in the waterfall model is represented as a separate phase
+arranged in linear order.
+
+It has the following phases:
+
+Requirements
+
+Design
+
+Implementation
+
+Testing
+
+Deployment
+
+Maintenance
+
+Each of these phases produces one or more documents that need to be
+approved before the next phase begins. However, in practice, these
+phases are very likely to overlap and may feed information to one
+another. The waterfall model is easy to understand and follow. It
+doesn’t require a lot of customer involvement after the specification is
+done. Since it’s inflexible, it can’t adapt to changes. There is no way
+to see or try the software until the last phase.
+
+The waterfall model has a rigid structure, so it should be used in cases
+where the requirements are understood completely and unlikely to
+radically change.
+
+[]
+
+V Model
+
+The V model (Verification and Validation model) is an extension of the
+waterfall model. All the requirements are gathered at the start and
+cannot be changed. You have a corresponding testing activity for each
+stage. For every phase in the development cycle, there is an associated
+testing phase.
+
+V-model[]
+
+Iterative Model
+
+The iterative development model develops a system by building small
+portions of all the features. This helps to meet the initial scope
+quickly and release it for feedback. In the iterative model, you start
+off by implementing a small set of software requirements. These are
+then enhanced iteratively in the evolving versions until the system is
+completed. This process model starts with part of the software, which is
+then implemented and reviewed to identify further requirements. Like the
+incremental model, the iterative model allows you to see the results at
+the early stages of development. This makes it easy to identify and fix
+any functional or design flaws. It also makes it easier to manage risk
+and change requirements. The deadline and budget may change throughout
+the development process, especially for large complex projects. The
+iterative model is a good choice for large software that can be easily
+broken down into modules.
+
+[]
+
+Rapid and Development and Model (RAD Model)
+
+The Rapid Application Development (RAD model) is based on iterative
+development and prototyping with little planning involved. You develop
+functional modules in parallel for faster product delivery. It involves
+the following phases:
+
+Business modeling
+
+Data modeling
+
+Process modeling
+
+Application generation
+
+Testing and turnover
+
+The RAD concept focuses on gathering requirements using focus groups and
+workshops, reusing software components, and informal communication. The
+RAD model accommodates changing requirements, reduces development time,
+and increases the reusability of components. But it can be complex to
+manage. Therefore, the RAD model is great for systems that need to be
+produced in a short time and have known requirements.
+
+[]
+
+Spiral Model
+
+The spiral model is a risk driven iterative software process model. The
+spiral model delivers projects in loops. Unlike other process models,
+its steps aren’t activities but phases for addressing whatever problem
+have the greatest risk of causing a failure.
+
+It was designed to include the best features from the waterfall and
+introduces risk-assessment.
+
+You have the following phases for each cycle:
+
+Address the highest-risk problem and determine the objective and
+alternate solutions
+
+Evaluate the alternatives and identify the risks involved and possible
+solutions
+
+Develop a solution and verify if it’s acceptable
+
+Plan for the next cycle
+
+[Spiral Model]
+
+You develop the concept in the first few cycles, and then it evolves
+into an implementation. Though this model is great for managing
+uncertainty, it can be difficult to have stable documentation. The
+spiral model can be used for projects with unclear needs or projects
+still in research and development.
+
+Agile model
+
+The agile process model encourages continuous iterations of
+development and testing. Each incremental part is developed over an
+iteration, and each iteration is designed to be small and manageable so
+it can be completed within a few weeks. Each iteration focuses on
+implementing a small set of features completely. It involves customers
+in the development process and minimizes documentation by using informal
+communication.
+
+Agile development considers the following:
+
+Requirements are assumed to change
+
+The system evolves over a series of short iterations
+
+Customers are involved during each iteration
+
+Documentation is done only when needed
+
+Though agile provides a very realistic approach to software development,
+it isn’t great for complex projects. It can also present challenges
+during transfers as there is very little documentation. Agile is great
+for projects with changing requirements.
+
+[]
+
+2.2.8 Software Hosting
+
+Software hosting is a fundamental concept in modern software engineering
+that refers to the deployment, execution, and management of software
+applications on remote computing infrastructure. These infrastructures
+are typically maintained by third-party service providers and accessed
+through the internet or private networks. Software hosting eliminates
+the dependency on local machines for application execution and enables
+centralized control, improved scalability, high availability, and
+efficient maintenance.In contemporary system development, software
+hosting is closely integrated into system design and the Software
+Development Life Cycle (SDLC). Hosting decisions influence system
+architecture, performance, security, scalability, and cost. As
+organizations increasingly adopt web-based, cloud-native, and
+distributed systems, software hosting has become a critical design
+consideration rather than a post-development activity.
+
+Software Hosting in the Software Development Life Cycle (SDLC)
+
+Software hosting plays a vital role across multiple stages of the SDLC,
+particularly from system design to deployment and maintenance.
+
+During the planning and requirement analysis phase, hosting requirements
+are identified based on system objectives, expected user base,
+performance needs, security requirements, and budget constraints.
+Decisions such as whether the system will be web-based, cloud-hosted, or
+on-premises are made at this stage. These choices directly affect system
+feasibility and cost estimation.
+
+In the system design phase, hosting considerations shape architectural
+decisions. Designers determine whether the system will use centralized
+servers, distributed cloud infrastructure, microservices, or
+container-based deployment. Hosting models influence database placement,
+load balancing strategies, backup mechanisms, and fault tolerance
+design. A poorly chosen hosting environment can lead to scalability and
+performance bottlenecks.
+
+During the implementation and testing phases, hosting platforms provide
+development, staging, and testing environments. Many hosting solutions
+support continuous integration and continuous deployment (CI/CD),
+allowing automated testing and rapid deployment. This ensures that the
+software behaves consistently across environments.
+
+In the deployment phase, the software is hosted on production servers,
+making it accessible to end users. Hosting platforms manage domain
+configuration, security certificates, performance optimization, and
+traffic handling.
+
+Finally, during the maintenance phase, hosting providers support system
+monitoring, updates, backups, and disaster recovery. Effective hosting
+ensures long-term system reliability, availability, and adaptability to
+changing requirements.
+
+Types of Software Hosting
+
+Web Hosting
+
+Web hosting is a hosting model designed specifically for websites and
+web applications. It enables software to be accessed through web
+browsers using standard internet protocols such as HTTP and HTTPS. Web
+hosting environments store application files, scripts, databases, and
+media resources while handling user requests efficiently.
+
+Shared hosting allows multiple applications to run on a single server
+while sharing resources such as memory and processing power. Although
+cost-effective, this model is limited in performance and scalability.
+Virtual Private Server (VPS) hosting uses virtualization technology to
+allocate dedicated resources within a shared physical server, offering
+better control and reliability. Dedicated hosting provides exclusive
+access to a physical server, ensuring maximum performance and security
+but at a higher cost. Cloud-based web hosting distributes applications
+across multiple servers, allowing dynamic resource allocation and
+improved fault tolerance. Web hosting is commonly used for informational
+websites, content management systems, and small-to-medium web
+applications.
+
+Cloud Hosting
+
+Cloud hosting is a scalable hosting model that uses virtual servers
+running on a cloud computing infrastructure. Unlike traditional hosting,
+cloud hosting does not depend on a single physical server. Instead, it
+draws resources from a network of servers across multiple data centers.
+
+This hosting model supports elasticity, allowing systems to
+automatically scale up or down based on demand. Cloud hosting enhances
+system availability, as failures in one server do not disrupt the entire
+application. It also enables geographic distribution, improving
+performance for users in different locations.
+
+Cloud hosting aligns strongly with modern system design principles such
+as distributed computing, high availability, and fault tolerance. It is
+widely adopted for enterprise systems, large-scale platforms, and
+applications with fluctuating workloads.
+
+ Platform as a Service (PaaS)
+
+Platform as a Service (PaaS) provides a complete hosting environment that includes operating systems, development frameworks, databases, and deployment tools. In this model, developers focus solely on application development while the hosting provider manages infrastructure-related tasks.PaaS enhances productivity by supporting rapid application development, automated deployment, and integrated testing tools. It reduces system complexity and ensures consistency across development and production environments. PaaS is especially suitable for agile development methodologies, where frequent updates and rapid iteration are required.
+
+Software as a Service (SaaS) Hosting
+
+Software as a Service (SaaS) hosting delivers complete software
+solutions over the internet. Users access the application via a web
+interface without installing or maintaining the software locally. The
+hosting provider manages infrastructure, security, data storage,
+updates, and availability.SaaS hosting supports multi-user access,
+centralized data management, and subscription-based usage models. It
+simplifies software distribution and reduces operational costs for
+users. SaaS systems are widely used in business management, education,
+finance, and collaboration platforms.From an SDLC perspective, SaaS
+hosting shifts much of the maintenance responsibility from users to
+service providers, ensuring continuous system improvement and security.
+
+Managed Hosting
+
+Managed hosting involves outsourcing server management responsibilities
+to a hosting provider. This includes system updates, security
+management, monitoring, backups, and performance optimization. Managed
+hosting reduces the technical burden on organizations and enhances
+system reliability.This model is particularly beneficial for
+mission-critical systems where uptime and security are essential. While
+managed hosting increases operational costs, it significantly reduces
+risk and administrative workload.
+
+Container and Application Hosting
+
+Container hosting uses containerization technologies to package
+applications and their dependencies into isolated units. Containers
+ensure consistency across development, testing, and production
+environments. Container orchestration platforms manage scalability, load
+balancing, and fault tolerance.
+
+Application Hosting
+
+Application hosting platforms provide optimized environments for
+specific software types, such as content management systems or
+e-commerce platforms. These platforms simplify deployment and improve
+performance by offering pre-configured settings and security features.
+
+Container and application hosting support modern system architectures
+such as microservices and distributed systems.
+
+Security Considerations in Software Hosting
+
+Security is a critical concern in software hosting due to constant exposure to cyber threats. Hosting environments implement security mechanisms such as encryption, firewalls, intrusion detection systems, and access control policies. Secure hosting ensures data confidentiality, integrity, and availability. Regular backups, disaster recovery planning, and compliance with data protection regulations are essential components of secure hosting. During system design, security requirements must be integrated into hosting decisions to prevent vulnerabilities.
+
+ Importance of Software Hosting in System Design
+
+Software hosting significantly influences system performance, scalability, reliability, and maintainability. A well-chosen hosting model supports efficient resource utilization, seamless updates, and global accessibility. Hosting decisions impact system cost, development speed, and long-term sustainability. In modern information systems, software hosting is not an afterthought but a core architectural element that determines system success. It enables organizations to deliver reliable digital services and adapt to technological advancements.
+
+2.3 Related Works 
+
+The development of a virtual space for domestic services has attracted
+increasing research attention as digital technologies continue to
+transform the way household services are accessed and delivered.
+Traditionally, domestic services such as cleaning, plumbing, electrical
+work, and caregiving were arranged through informal networks, personal
+referrals, or local agents. However, the rapid growth of the internet,
+mobile technologies, and cloud-based systems has led to the emergence of
+online platforms that digitally connect service providers and service
+seekers in a structured and efficient manner. These platforms aim to
+improve accessibility, transparency, and trust while reducing the time
+and effort required to manage domestic service requests.
+
+Related works in this area explore various aspects of virtual domestic
+service platforms, including system architecture, database management,
+user interface design, service matching algorithms, security mechanisms,
+and user experience. Researchers have also examined the socio-economic
+impact of such platforms, particularly in relation to labor
+organization, worker protection, and platform-based service delivery
+models. Together, these studies provide valuable insights into existing
+approaches, technologies, and challenges, forming a foundation for
+identifying gaps and guiding the development of more robust, scalable,
+and user-centric virtual spaces for domestic services.
+
+Aishwaryalakshmi et al. (2024), focuses on the design and development of
+a digital platform aimed at connecting households with domestic service
+providers through a centralized online system. Their study contributes
+to the development of a virtual space for domestic services by
+demonstrating the practical implementation of core system
+functionalities such as user registration, service selection, booking
+management, and basic communication between users and service providers.
+Their work highlights how web-based and mobile technologies can improve
+efficiency, accessibility, and organization in domestic service
+delivery, reducing dependence on informal and manual processes. With
+these contributions, the study primarily emphasizes functional
+implementation and lacks in-depth analysis of advanced system features.
+It does not sufficiently address scalability, performance optimization,
+data security, or privacy protection mechanisms. Additionally, the
+platform design does not incorporate intelligent service matching
+algorithms, real-time scheduling optimization, or comprehensive
+usability evaluation. These limitations indicate the need for more
+robust, secure, and scalable virtual space designs grounded in computer
+science principles and advanced software engineering techniques.
+
+Pais and Zanoni (2024), Their study adopted a socio-technical and
+labour-oriented perspective to analyze how virtual platforms act as
+intermediaries that coordinate domestic service provision through
+algorithmic management, digital matching mechanisms, and platform
+governance structures. The authors highlighted that these platforms
+create virtual spaces where domestic services such as cleaning,
+caregiving, and home assistance are commodified and standardized,
+enabling greater accessibility and flexibility for users.The study made
+a significant contribution by revealing how platform design influences
+work allocation, pricing mechanisms, and service visibility within
+domestic service platforms. Pais and Zanoni emphasized that digital
+platforms centralize control through rating systems, automated
+scheduling, and performance monitoring, which shape both user trust and
+worker behaviour. Their work also contributed to the understanding of
+how digital mediation transforms informal domestic labour into
+structured, market-oriented services, thereby improving service
+discoverability and operational efficiency. Pais and Zanoni primarily
+focused on labour relations, governance, and social implications rather
+than the technical construction of the virtual platforms themselves. The
+study did not examine system architecture, database design, or software
+components required to implement a functional and scalable virtual space
+for domestic services. Furthermore, there was limited discussion on user
+interface design, usability testing, or performance evaluation of the
+platforms studied. The absence of empirical assessment of system
+efficiency, security mechanisms, and user experience leaves a gap for
+technical research. This gap underscores the need for a system-oriented
+study that designs, implements, and evaluates a secure, user-centered
+virtual space tailored specifically to domestic service delivery.
+
+Meyanban et al. (2024), This study explored the role of online platforms
+in connecting households with skilled domestic workers, such as
+cleaners, caregivers, and home maintenance personnel. The authors
+emphasized that digital platforms serve as virtual spaces that simplify
+service discovery, booking, and communication between service providers
+and clients. Their work highlighted how platform-based solutions reduce
+geographical and informational barriers, enabling users to access
+domestic services more conveniently. A key contribution of the study
+lies in its discussion of digital inclusion and service accessibility.
+Meyanban et al. demonstrated that virtual platforms can enhance
+employment opportunities for domestic workers by expanding their
+customer reach and providing structured work schedules. The study also
+emphasized the importance of transparency in pricing and service
+descriptions, which helps build user trust and improves overall service
+quality. Additionally, the authors discussed the potential of
+integrating digital payment systems to support secure and cashless
+transactions within domestic service platforms. Meyanban et al.
+primarily adopted a conceptual approach and did not provide a detailed
+technical framework for developing or implementing a virtual domestic
+service platform. The research lacked system architecture diagrams,
+database design, and algorithmic details for service matching.
+Furthermore, the study did not include empirical testing or usability
+evaluation to assess system performance and user satisfaction. Security,
+privacy, and scalability issues were also minimally addressed. These
+limitations indicate a research gap that necessitates the design and
+implementation of a robust, secure, and user-centered virtual space for
+domestic services, supported by empirical evaluation.
+
+Orth and Baum (2024) investigated the methodological, ethical, and
+structural challenges associated with researching digital platforms that
+mediate domestic and care services. Their study focused on how virtual
+platforms function as intermediaries between households and domestic
+workers, shaping service interactions through digital interfaces,
+data-driven coordination, and platform governance. The authors
+emphasized that domestic service platforms operate as virtual spaces
+where service provision is organized, monitored, and evaluated through
+digital tools such as rating systems, task allocation mechanisms, and
+communication features.A major contribution of the study lies in its
+critical examination of how platform design influences visibility,
+control, and participation within domestic service ecosystems. Orth and
+Baum highlighted that algorithmic systems embedded in digital platforms
+affect which workers receive jobs, how services are priced, and how
+trust is established between users and service providers. Their work
+also contributed to the literature by identifying ethical concerns
+related to data collection, worker surveillance, and power asymmetries
+within platform-mediated domestic labour. By foregrounding these issues,
+the study provides an important conceptual foundation for understanding
+the social implications of virtual domestic service platforms. The study
+presents limitations in terms of system development and technical
+design. Orth and Baum did not propose or evaluate a concrete platform
+architecture for domestic services. The research lacked technical
+details on system components such as databases, service-matching
+algorithms, security frameworks, and user interface design. Furthermore,
+there was no empirical usability testing or performance evaluation of
+existing platforms to assess their efficiency, reliability, or user
+satisfaction. These limitations reveal a significant research gap,
+highlighting the need for system-oriented studies that focus on the
+practical design, implementation, and evaluation of a secure, scalable,
+and user-centered virtual space for domestic services.
+
+Rakhewar et al. (2023): In their work, they present the design and
+development of a web-based service-providing platform aimed at
+connecting customers with local service providers for domestic and
+labor-related services. The study demonstrates the practical
+implementation of a virtual platform that supports core functionalities
+such as user registration, service listings, booking requests, feedback
+mechanisms, and basic payment processing. Their work contributes to the
+field by showing how web technologies can be used to digitize and
+organize domestic service delivery, thereby improving accessibility and
+reducing reliance on informal service arrangements. However, the study
+focuses mainly on basic system functionality and prototype-level
+implementation. It lacks advanced features such as intelligent service
+matching algorithms, real-time scheduling, mobile platform integration,
+and comprehensive security and privacy mechanisms. In addition,
+scalability, performance evaluation, and user experience testing are not
+extensively addressed. These gaps highlight the need for more robust,
+scalable, and secure virtual spaces tailored specifically to domestic
+services.
+
+Yadav et al. (2023) ,their work focuses on digital platforms that
+connect households with service providers offering services such as
+cleaning, plumbing, electrical repairs, and caregiving. The authors
+highlighted how these platforms create virtual spaces that enable users
+to request, schedule, and manage domestic services conveniently through
+web and mobile applications. The research emphasized the importance of
+responsiveness, reliability, and ease of access in enhancing user
+satisfaction within domestic service platforms. A key contribution of
+the study lies in its analysis of user expectations and market dynamics
+in the on-demand home service industry. Yadav et al. identified core
+platform features such as service listings, real-time booking,
+notifications, and digital communication as critical to effective
+service delivery. The study also underscored the role of technology in
+improving service coordination, reducing service delays, and enhancing
+transparency between service providers and clients. By highlighting
+these functional requirements, the study provides useful insights into
+the operational aspects of virtual domestic service platforms.The study
+exhibited notable limitations from a system development perspective. The
+research was largely descriptive and did not present a detailed
+technical framework for designing or implementing a virtual platform for
+domestic services. There was no discussion of system architecture,
+database management, or service-matching algorithms. Additionally, the
+study lacked empirical evaluation of platform usability, performance,
+and security. Issues such as data privacy, trust mechanisms, and
+scalability were minimally addressed. These limitations reveal a
+research gap, emphasizing the need for a technically robust, secure, and
+user-centered virtual space for domestic services supported by practical
+implementation and evaluation.
+
+Sehgal & Yathrath (2022): In their work, they examine the design and
+functioning of digital platforms that mediate domestic work, using Urban
+Company as a case study. Their work contributes to the understanding of
+how virtual platform structure interactions between households and
+domestic service providers through features such as task allocation,
+ratings, and interface design. The study highlights the role of platform
+design in shaping trust, control, and efficiency in service delivery,
+and emphasizes how digital systems can formalize domestic services by
+improving visibility, coordination, and accountability.
+Despite these contributions, the study places limited emphasis on the
+technical development of the virtual space itself. It does not provide
+detailed insights into system architecture, software design choices,
+algorithms for service matching, or scalability and security mechanisms.
+Additionally, the findings are context-specific and do not generalize
+across different domestic service categories or technological
+implementations, indicating a need for further computer science–oriented
+research focused on system design and implementation.
+
+Adeyemi and Fatile (2021), examined the design and implementation of an
+online domestic services system, focusing on how web-based technology
+could facilitate connections between households and domestic workers.
+Their study highlighted the potential of digital platforms to streamline
+the booking process, manage user and provider profiles, and automate
+service requests in informal labor markets. By emphasizing digital
+accessibility and system organization, they demonstrated that online
+systems could reduce manual coordination burdens and improve service
+dispatch accuracy, particularly in contexts with limited traditional
+infrastructure. The study revealed several gaps that constrain
+real-world adoption: it offered limited analysis of scalability and
+high-traffic handling, did not address security and data privacy
+mechanisms in depth, and lacked evaluation of mobile access and
+real-time tracking features that modern user expect. Also, it did not
+sufficiently consider user experience feedback loops or long-term
+sustainability models, which are critical for platform viability and
+growth in dynamic markets.
+
+Khatri and Gupta (2020 ), contributed to the study of online systems for
+domestic services by exploring how digital platforms can be used to
+connect households with service providers such as cleaners,
+electricians, and plumbers in an organized and efficient manner. Their
+work emphasized the role of web-based systems in simplifying service
+discovery, booking, and management by centralizing user information,
+service categories, and provider profiles within a single platform. The
+study highlighted improvements in accessibility, transparency, and time
+efficiency compared to traditional, informal methods of arranging
+domestic services. By demonstrating the usefulness of structured
+databases and user-friendly interfaces, their work showed how technology
+can enhance coordination between customers and service providers and
+improve overall ser vice delivery. Despite these contributions, several
+gaps remain. The study paid limited attention to system scalability and
+performance under high user demand. Security, data privacy, and advanced
+authentication mechanisms were not extensively discussed. Additionally,
+features such as mobile application support, real-time service tracking,
+intelligent matching algorithms, and long-term system evaluation were
+insufficiently addressed, indicating opportunities for further research
+and development.
+
+Chatterjee et al. (2021) present a comprehensive review on the financial
+lives of platform workers, examining income stability, payment systems,
+financial inclusion, and economic risks associated with digital labor
+platforms. Their study contributes to the understanding of
+platform-mediated work by highlighting how digital platform structure
+earnings, payment flows, and financial security for workers, including
+those engaged in service-based and on-demand work. These insights are
+relevant to the development of virtual spaces for domestic services, as
+they emphasize the importance of transparent payment mechanisms, fair
+compensation models, and financial safeguards within digital platforms.
+With its important, the study does not focus on the technical or
+system-level development of digital platforms. It lacks discussion of
+software architecture, payment system implementation, data security, and
+user interface design. Additionally, domestic services are not examined
+as a distinct category, leaving a gap in applying financial insights to
+the design and implementation of virtual spaces specifically tailored to
+domestic service providers and households.
+
+Vallas and Schor (2020) provide a conceptual analysis of digital
+platforms within the gig economy, explaining how platforms function as
+intermediaries that organize, govern, and control interactions between
+service providers and consumers. Their work contributes to the
+development of virtual spaces for domestic services by offering a
+theoretical framework for understanding platform-mediated work,
+including issues of task allocation, reputation systems, and algorithmic
+management. These insights help inform the design of domestic service
+platforms by highlighting the importance of trust, coordination, and
+transparency in digital service ecosystems. Despite its relevance, the
+study does not focus on the technical development or implementation of
+virtual platforms. It lacks discussion of software architecture, system
+design, security mechanisms, and usability considerations specific to
+domestic services. Additionally, the analysis remains largely conceptual
+and does not address practical challenges such as real-time scheduling,
+service matching algorithms, or system scalability, indicating a need
+for computer science–oriented research in this area.
+
+Rana et al. (2019): In their work, they contributed to the understanding
+of digital and ICT-enabled service platforms by examining how
+technology-mediated systems improve service delivery, user engagement,
+and operational efficiency in service-oriented domains. Their study
+highlights the role of digital platforms in enhancing accessibility,
+coordination, and transparency between service providers and service
+consumers. The authors emphasize the importance of trust mechanisms,
+user adoption factors, and system usability in ensuring the success of
+online service platforms. These insights provide a valuable theoretical
+foundation for the development of virtual spaces that rely on digital
+interaction and service matching. However, a gap remains in the direct
+application of these findings to the domestic services sector. Rana et
+al. (2019) do not address the specific technical and social challenges
+associated with domestic services, such as worker verification, safety
+concerns within private households, real-time scheduling, and fair labor
+representation. Additionally, limited attention is given to concrete
+system architectures, algorithms, and implementation strategies required
+to build scalable and secure virtual platforms for domestic services.
+This gap underscores the need for domain-specific system design and
+implementation research.
+
+Indravasan et al. (2018) made a significant contribution to the study of
+online systems for domestic services by designing and analyzing a
+web-based platform that connects service seekers with domestic service
+providers such as plumbers, electricians, cleaners, and other household
+workers. Their work emphasized the importance of digitizing
+traditionally informal domestic services to improve efficiency,
+accessibility, and organization. The proposed system focused on core
+functionalities including user registration, service provider profiling,
+service selection, booking management, and administrative control. By
+using a centralized database, the system enabled systematic storage and
+retrieval of user data, service details, and booking records, thereby
+reducing manual coordination and improving transparency. The study
+demonstrated how online platforms can save time for users, provide
+better visibility for service providers, and streamline service delivery
+through automated processes. Despite, these contributions, the study
+presents several gaps that limit its applicability to large-scale,
+real-world platforms. The system primarily addressed basic web-based
+functionality and did not sufficiently consider scalability issues, such
+as handling high user traffic or large volumes of service providers.
+Security aspects, including advanced authentication, data encryption,
+and fraud prevention, were also not deeply explored. Additionally, the
+research did not incorporate mobile application support, real-time
+tracking, intelligent service matching, or user feedback analytics.
+These limitations highlight the need for further research to develop
+more robust, secure, and scalable domestic service platforms aligned
+with modern technological and user expectations
+
+Berg, E. Rani (2018),­­TaskRabbit Platform Study: Studies and documented
+analyses of the TaskRabbit platform demonstrate how a digital
+marketplace can successfully create a virtual space that connects users
+with service providers for household and domestic tasks. TaskRabbit
+contributes to the development of virtual domestic service platforms by
+showcasing effective features such as location-based service matching,
+task categorization, user profiles, rating and review systems, and
+in-app communication. The platform illustrates how algorithmic matching
+and reputation systems can enhance trust, efficiency, and convenience in
+domestic service delivery, serving as a practical reference model for
+on-demand service platforms. Despite its practical relevance, most
+TaskRabbit-related studies and platform documentation do not provide
+detailed academic or technical insights into the underlying system
+architecture, security frameworks, or algorithmic decision-making
+processes. There is limited discussion on data privacy, scalability
+challenges, and fairness in task allocation. Additionally, TaskRabbit’s
+model is not specifically tailored to the unique regulatory, cultural,
+and safety considerations of domestic services in diverse contexts,
+highlighting the need for more adaptable and transparent virtual space
+designs.
+
+Sundararajan (2016) examined the rise of the gig economy and digital
+platforms that connect service providers with consumers, including
+domestic service platforms such as home cleaning and repair services.
+His work highlighted how digital marketplaces create virtual spaces
+where trust, pricing, and service coordination are algorithmically
+managed. The study emphasized the role of technology in reducing
+transaction costs and enabling flexible work arrangements for domestic
+service providers. Sundararajan also discussed how platform-based
+systems improve accessibility and efficiency in service delivery by
+eliminating traditional intermediaries. The study focused primarily on
+economic and regulatory implications rather than system development. It
+did not provide technical insight into the architecture, user interface
+design, or system workflow required to implement a functional virtual
+space for domestic services. Additionally, the work lacked empirical
+evaluation of user interaction within such platforms. This gap creates
+room for research focused on designing and implementing a robust,
+user-centered virtual platform specifically tailored to domestic
+services.
+
+CHAPTER THREE
+
+METHODOLOGY
+
+Introduction
+
+This chapter presents the methodology which provides a structured and
+technical framework that guides the processes involved in system
+analysis, design, implementation, and evaluation. Given the
+software-oriented nature of the study, the methodology is designed to
+ensure that standard software engineering principles are applied in
+developing a reliable, secure, and user-centered digital platform. This
+chapter therefore outlines the research approach, system development
+model, requirement analysis techniques, and evaluation procedures used
+in achieving the objectives of the study.
+
+Domestic service delivery, which includes services such as cleaning,
+cooking, caregiving, laundry, and home maintenance, is often
+characterized by informal arrangements, poor coordination, and limited
+accountability. These limitations create challenges for both service
+seekers and service providers, including difficulties in service
+matching, trust issues, inconsistent service quality, and payment
+disputes. The increasing adoption of digital technologies presents an
+opportunity to address these challenges through the development of a
+centralized virtual platform that facilitates efficient interaction
+between service providers and service seekers.
+
+A comprehensive system analysis is essential for identifying user
+requirements and effectively structuring the core components of the
+virtual space for domestic services, including the user-facing
+application, backend server, service management modules, and matching
+mechanism between service seekers and service providers. This analysis
+ensures seamless interaction among system components, resulting in
+improved performance, reliability, security, and overall user
+satisfaction. Through this process, the project’s goals and objectives
+such as reducing service search and booking time, improving trust and
+transparency, and ensuring equitable access to domestic service
+opportunities are refined to align with the overarching aim of
+developing an efficient and reliable digital platform for domestic
+service coordination. This chapter therefore presents a detailed
+analysis of the existing domestic service delivery system, followed by
+the design and methodology of the proposed virtual solution. It further
+outlines the multi-layered system architecture, the specific role of
+each component, and the strategic development and implementation
+approach adopted in the study.
+
+3.1 Overview of Existing System
+
+In the current domestic services landscape, most service coordination is
+conducted through informal mechanisms such as personal contacts,
+referrals, notice boards, and ad-hoc agencies. Households seeking help
+for cleaning, caregiving, cooking, or maintenance typically rely on
+word-of-mouth, walk-in agents, or unverified intermediaries rather than
+digitally mediated platforms. This informal system often lacks
+standardized matching, transparent pricing, secure payments, service
+tracking, and quality assurance. As a result, users experience
+inefficient service discovery, limited accountability, and variable
+service quality. Additionally, domestic workers face challenges such as
+inconsistent work supply, lack of visibility to potential users, and
+absence of digital records for their work history and reputation.
+
+Despite these advances, many of the existing systems remain limited in
+one or more respects. Challenges include inconsistent provider
+verification, inefficient, limited customization of services, and
+insufficient support for digital payments or scheduling in real time.
+Many platforms are also oriented toward general home services rather
+than strictly domestic help, meaning that users may need to navigate
+broad service categories rather than a system optimized for household
+work. Furthermore, informal platforms and traditional agencies still
+dominate in many regions, especially where smartphone penetration or
+digital literacy is low, limiting the reach of existing digital
+solutions.
+
+In summary, while various on-demand service platforms have significantly
+modernized aspects of domestic and home-related services, the existing
+system still reveals gaps in seamless service discovery, equitable
+provider representation, reliable matching, and user-centric design.
+These limitations underscore the need for a more integrated virtual
+space specifically tailored to domestic services. This proposed system
+will incorporate optimized efficient scheduling, secure digital
+payments, and a strong feedback and reputation framework to enhance
+performance, reliability, and satisfaction for both service seekers and
+providers.
+
+3.2 Virtual Space for Domestic Services
+
+3.2.1 Overview of The Proposed System
+
+The proposed Virtual Space for Domestic Services is designed as a
+centralized, web-based platform that facilitates seamless interaction
+between service seekers and domestic service providers. Its primary
+objective is to provide a reliable, secure, and user-centered
+environment for managing service requests, scheduling, payments,
+communication, and feedback. The system addresses the inefficiencies of
+traditional domestic service sourcing, such as informal arrangements,
+lack of trust, inconsistent service quality, and payment disputes.
+
+The platform is intended for use by multiple stakeholders:
+
+1.  Users (Service Seekers): Individuals or households seeking domestic
+    services such as cleaning, cooking, caregiving, plumbing, laundry,
+    or maintenance. Users require timely access to verified service
+    providers, transparent service pricing, and secure payment
+    mechanisms.
+
+2.  Service Providers (Domestic Workers): Individuals or professionals
+    offering domestic services. Providers require access to consistent
+    job opportunities, secure payments, a mechanism to establish
+    reputation, and tools to manage their service schedules.
+
+3.  System Administrator: The administrator oversees the platform’s
+    operations, including user verification, dispute resolution,
+    monitoring service delivery, and generating system reports. The
+    administrator ensures system security, data integrity, and
+    operational compliance.
+
+4.  External Payment Service Providers: These entities facilitate secure
+    digital transactions, ensuring compliance with financial standards,
+    processing payments accurately, and protecting user financial data.
+
+The system is designed with a multi-layered architecture, incorporating
+a presentation layer, a business logic layer, and a data management
+layer. The presentation layer provides user interfaces for users,
+providers, and administrators. The business logic layer handles
+authentication, service matching, messaging, and payment processing. The
+data layer maintains records of users, service providers, requests,
+transactions, and feedback.
+
+The system incorporates intelligent service matching algorithms that
+evaluate service providers based on skill relevance, availability,
+proximity, cost, and reputation. The workflow ensures that service
+requests are matched to the most suitable providers efficiently.
+Additionally, the platform integrates secure digital payment processing,
+real-time communication, and feedback mechanisms to enhance
+transparency, accountability, and user satisfaction.
+
+3.2.2 Requirement Gathering
+
+Requirements gathering is a vital stage in system development that
+focuses on identifying and understanding the needs of users and
+stakeholders in order to design an effective and user-oriented system.
+It ensures that the proposed system addresses real-life problems and
+meets user expectations. In this study, requirements were gathered from
+housewives, working-class individuals, and bachelors, as these groups
+represent the primary users of domestic and personal service platforms.
+The process of requirements gathering began with the identification of
+key stakeholders. Housewives were identified as important stakeholders
+because they are primarily responsible for managing household activities
+and often coordinate domestic services. Working-class individuals were
+also identified due to their busy schedules and dependence on efficient
+and time-saving service solutions. Bachelors were included because they
+typically live independently and require flexible and convenient service
+options. Identifying these groups helped ensure that the system
+requirements reflected diverse user needs. Interviews, Questionnaires,
+observation are forms in which requirement are done.
+
+Interviews was used as a primary data collection technique to obtain
+detailed information from respondents. Through these interviews,
+housewives expressed the need for reliable and trustworthy service
+providers, timely service delivery, and ease of communication.
+Working-class respondents highlighted challenges related to limited
+time, affordability, and the need for fast service booking. Bachelors
+emphasized convenience, simple system navigation, and flexible
+scheduling. These interviews provided in-depth insights into the
+practical challenges faced by each user group.
+
+3.2.2.1 Principles of Interview
+
+Interviews are an essential qualitative research method used to obtain
+detailed and meaningful information from participants. When interviews
+involve diverse social groups such as housewives, working-class
+individuals, and bachelors, it is important to follow established
+interview principles to ensure that the data collected is valid,
+ethical, and reliable. The principle of purpose clarity emphasizes that
+the interviewer must have a clear understanding of the objectives of the
+interview before interacting with respondents. Every question asked
+should directly relate to the research problem and objectives.
+Participants should be informed about the purpose of the interview so
+they understand why their opinions are being sought. In the case of
+housewives, the interview purpose may focus on household
+responsibilities and service needs; for working-class individuals, it
+may center on work-life balance and time constraints; while for
+bachelors, it may relate to independent living and convenience-based
+service requirements.
+
+Appropriateness: Housewives are appropriate respondents when the study
+involves domestic management and household services, working-class
+individuals are suitable when employment and income factors are
+relevant, and bachelors are appropriate when independent living patterns
+and personal service usage are being examined.
+
+Simple and clear: When interviewing housewives, practical and familiar
+terms related to home activities should be used. For working-class
+respondents, questions should be direct and concise, while for
+bachelors, language should be straightforward and relatable to their
+lifestyle.
+
+Neutrality and non-bias: Questions should not be leading or suggestive,
+and the interviewer should avoid expressing personal opinions that may
+influence the respondent’s answers. This is particularly important when
+interviewing housewives about household practices, working-class
+individuals about financial or work conditions, and bachelors about
+lifestyle choices, as assumptions and stereotypes can distort the
+accuracy of responses.
+
+Time management: Interviews should be conducted within a reasonable
+duration and scheduled at times that are convenient for participants.
+Housewives may prefer interviews during less busy household periods,
+working-class individuals may require interviews outside work hours, and
+bachelors often have more flexible schedules. Proper time management
+improves cooperation and the quality of responses.
+
+Ethical Consideration: Participants should be informed about the nature
+of the interview and give their consent before participating.
+Confidentiality and anonymity must be guaranteed, and respondents should
+be free to withdraw at any time without consequences. Ethical
+sensitivity is especially important when discussing private family
+matters with housewives, employment-related issues with working-class
+individuals, and personal living arrangements with bachelors.
+
+Flexibility: While the interviewer may have a set of prepared questions,
+follow-up questions can be asked to gain deeper insights when necessary.
+Flexibility allows housewives to fully explain domestic challenges,
+enables working-class respondents to discuss work-related constraints in
+detail, and encourages bachelors to express personal preferences and
+experiences freely.
+
+Accurate Recordings: All information provided by respondents must be
+captured correctly to ensure reliable analysis. This can be done through
+note-taking or audio recording, provided consent is obtained. The
+interviewer should avoid altering or summarizing responses in a way that
+changes their original meaning. Accurate recording ensures that the real
+experiences of housewives, working-class individuals, and bachelors are
+faithfully represented in the study.
+
+Consistency: This requires that all respondents be asked the same core
+questions to ensure comparability of responses across different groups.
+Although minor adjustments may be made to suit each group’s context,
+maintaining consistency allows the researcher to identify similarities
+and differences among housewives, working-class individuals, and
+bachelors in a systematic manner.
+
+The collected data was analyzed to identify both functional and
+non-functional requirements. Functional requirements include service
+request submission, scheduling, payment processing, and feedback
+mechanisms. Non-functional requirements include usability, reliability,
+security, and system performance. These requirements were carefully
+documented to guide system design and implementation.
+
+3.3 Functional and Non-Functional Requirements
+
+3.3.1 Functional Requirements
+
+Functional requirements define what the system must do to meet user
+needs. They describe the services provided by the system and ensure that
+it achieves its primary objectives of efficient domestic service
+coordination.
+
+The major functional requirements for the Virtual Space for Domestic
+Services are as follows:
+
+1.  User Registration and Authentication:
+
+    -   The system must allow users and service providers to securely
+        register with unique credentials.
+
+    -   The registration process must include verification of provider
+        credentials such as identification documents and skill
+        certifications.
+
+    -   Users must be able to log in and log out securely, with
+        role-based access applied to control the actions each user can
+        perform.
+
+2.  Profile Management:
+
+    -   Users should be able to create and manage profiles with
+        preferences, service history, and saved providers.
+
+    -   Providers must be able to create service portfolios detailing
+        skills, availability, rates, and locations.
+
+    -   Administrators must have access to manage and verify profiles
+        for accuracy and compliance.
+
+3.  Service Request and Booking:
+
+    -   Users can submit service requests specifying service type, date,
+        time, and location.
+
+    -   The system should validate the request and store it for
+        processing.
+
+    -   Providers should receive real-time notifications of service
+        requests and have the ability to accept or reject them.
+
+4.  Intelligent Matching and Scheduling:
+
+    -   The system must evaluate providers based on skill relevance,
+        location proximity, availability, cost, and reputation.
+
+    -   Optimal provider recommendations should be generated
+        automatically for each users request.
+
+    -   Scheduling conflicts must be prevented through availability
+        validation.
+
+5.  Communication Module:
+
+    -   The platform must provide secure messaging between users and
+        providers.
+
+    -   Message histories must be maintained for reference and dispute
+        resolution.
+
+    -   Notifications about service updates, confirmations,
+        cancellations, or rescheduling must be sent in real-time.
+
+6.  Payment Processing:
+
+    -   Users must be able to make secure digital payments through
+        integrated payment gateways.
+
+    -   Payments should be held in escrow until service completion to
+        ensure trust and reduce disputes.
+
+    -   The system should maintain a transaction history for auditing
+        and reporting.
+
+7.  Feedback and Rating System:
+
+    -   Users can rate service providers based on quality, timeliness,
+        and professionalism.
+
+    -   Reputation scores should be updated dynamically and used to
+        influence provider selection in future requests.
+
+    -   Administrators must monitor feedback for abuse or
+        inconsistencies.
+
+8.  Administrative Functions:
+
+    -   Administrators must verify provider credentials and approve
+        accounts before activation.
+
+    -   The system must provide dashboards for monitoring all active
+        service requests, user activity, and payments.
+
+    -   Administrators must be able to resolve disputes, generate
+        reports, and enforce platform policies.
+
+3.6.2 Non-Functional Requirements
+
+Non-functional requirements define how the system performs its
+functions. These include constraints and quality attributes critical for
+user satisfaction, reliability, and operational efficiency.
+
+1.  Usability:
+
+    -   The system must provide a clean, intuitive interface for users
+        with minimal technical expertise.
+
+    -   Navigation must be simple, and key actions such as booking
+        services or updating profiles should be accessible within
+        minimal steps.
+
+2.  Performance:
+
+    -   Service requests, notifications, and payment processing must
+        respond within 2–3 seconds under normal load conditions.
+
+    -   The platform must support multiple concurrent users without
+        degradation in performance.
+
+3.  Security:
+
+    -   Data confidentiality, integrity, and availability must be
+        ensured through encryption, secure authentication, and access
+        control mechanisms.
+
+    -   The system must comply with data protection regulations and
+        ensure secure storage of sensitive information such as payment
+        details and identification documents.
+
+4.  Scalability:
+
+    -   The system architecture must support horizontal and vertical
+        scaling to accommodate increasing numbers of users, service
+        providers, and transactions.
+
+5.  Reliability and Availability:
+
+    -   The platform must maintain high availability with minimal
+        downtime.
+
+    -   Backup mechanisms and failover strategies must be implemented to
+        prevent data loss.
+
+6.  Maintainability:
+
+    -   The system should follow modular design principles to allow easy
+        updates, debugging, and integration of new features.
+
+7.  Compatibility:
+
+    -   The platform must be accessible on multiple devices, including
+        desktops, tablets, and smartphones.
+
+    -   Cross-browser support must be ensured for web accessibility
+
+3.4 System Software and Hardware Requirements
+
+System software and hardware requirements define the technical resources
+needed for the successful development, deployment, and operation of the
+proposed system. Clearly specifying these requirements ensures that the
+system performs efficiently, securely, and reliably for all users,
+including housewives, working-class individuals, and bachelors.
+
+The software requirements describe the programs and platforms necessary
+to develop and run the system. The proposed system requires an operating
+system capable of supporting modern application development and
+deployment. For development and server environments, operating systems
+such as Windows, Linux, or macOS are suitable due to their stability and
+compatibility with web and mobile technologies. A web server environment
+is required to host the application, while a database management system
+is necessary for storing user information, service records,
+transactions, and feedback data. Commonly used DBMS solutions such as
+MySQL or MongoDB are suitable due to their reliability and scalability.
+
+The system also requires development tools and programming frameworks to
+support application creation. These include an integrated development
+environment (IDE) for coding, a backend framework to handle business
+logic and data processing, and a frontend framework to provide an
+interactive user interface. Web browsers such as Chrome or Edge are
+required for testing and accessing the system. For mobile access, the
+system should be compatible with Android and iOS platforms to ensure
+wide usability among users.
+
+Security software is another essential requirement. The system must
+include authentication mechanisms, encryption tools, and secure payment
+gateways to protect user data and financial transactions. Antivirus and
+firewall software are also required on the server to prevent
+unauthorized access and cyber threats.
+
+The hardware requirements specify the physical devices needed to operate
+the system. On the server side, a computer or cloud server with
+sufficient processing power, memory, and storage is required to host the
+application and database. A minimum of a multi-core processor, adequate
+RAM, and reliable storage is necessary to ensure smooth performance and
+fast response times. Backup storage devices are also required to prevent
+data loss.
+
+For end users, basic hardware devices are sufficient. Users require a
+smartphone, tablet, or computer with internet connectivity to access the
+system. Housewives, working-class individuals, and bachelors can use
+mobile phones or personal computers, making the system accessible and
+convenient. Input devices such as touchscreens, keyboards, and pointing
+devices are necessary for user interaction, while output devices such as
+screens and speakers enable information display and notifications.
+
+In conclusion, the identified software and hardware requirements provide
+the technical foundation needed to implement and operate the proposed
+system effectively. Meeting these requirements ensures that the system
+is reliable, secure, scalable, and accessible to all intended users.
+
+3.4.1System Software Requirements
+
+  ------------------------------------------------------------------------
+  S/N   Software          Description            Purpose
+        Component                                
+  ----- ----------------- ---------------------- -------------------------
+  1     Operating System  Windows, Linux, or     Provides a platform for
+                          macOS                  system development and
+                                                 deployment
+
+  2     Web Server        Vercel                 Hosts the web-based
+                                                 application and handles
+                                                 user requests
+
+  3     Database          MongoDB(NOSQL)         Stores user data, service
+        Management System                        records, transactions,
+                                                 and feedback
+
+  4     Backend           Node.js with           Handles business logic,
+        Development       Express/API routes     authentication, and data
+        Framework                                processing
+
+  5     Frontend          React native +         Provides an interactive
+        Framework         Tailwind CSS           and user-friendly
+                                                 interface
+
+                                                 
+
+  6     Web Browser       Chrome, Edge, or       Used for system access
+                          Firefox                and testing
+
+  7     Mobile Platform   Android and iOS        Ensures mobile
+        Support                                  accessibility for all
+                                                 users
+
+  8     Security Software SSL, authentication,   Protects user data and
+                          and encryption tools   secure transactions
+
+  9     Payment Gateway   Paystack or            Enables secure online
+        Software          Flutterwave            payments
+  ------------------------------------------------------------------------
+
+3.4.2 System Hardware Requirements
+
+  ------------------------------------------------------------------------
+  S/N   Hardware Component  Specification           Purpose
+  ----- ------------------- ----------------------- ----------------------
+  1     Server Computer /   Multi-core processor,   Hosts application and
+        Cloud Server        8GB RAM minimum         database
+
+  2     Storage Device      256GB SSD or higher     Stores system files
+                                                    and database
+
+  3     Backup Storage      External drive or cloud Prevents data loss
+                            backup                  
+
+  4     User Device         Android or iOS          Allows users to access
+        (Smartphone)        smartphone              the system
+
+  5     User Device         Desktop or laptop       Alternative access to
+        (Computer)                                  the system
+
+  6     Network Equipment   Router and modem        Provides internet
+                                                    connectivity
+
+  7     Input Devices       Keyboard, mouse,        Enables user
+                            touchscreen             interaction
+
+  8     Output Devices      Monitor, speakers       Displays system output
+                                                    and notifications
+
+  9     Power Supply        Stable electricity /    Ensures uninterrupted
+                            UPS                     system operation
+  ------------------------------------------------------------------------
+
+3.5 System Design
+
+System design is the phase of system development that translates user
+requirements into a structured blueprint for building the system. It
+defines how the system components interact, how data flows, and how
+users communicate with the system. The design of the proposed virtual
+platform for domestic services is aimed at ensuring efficiency,
+usability, security, and scalability for housewives, working-class
+individuals, and bachelors.
+
+The system adopts a users–server architecture, where users interact with
+the system through a web or mobile application, while all processing and
+data management are handled by a centralized server. This architecture
+allows multiple users to access the system simultaneously while ensuring
+centralized control of data and services. End users access the system
+using smartphones or computers connected to the internet, making the
+platform convenient and widely accessible.
+
+The user interface design focuses on simplicity and ease of navigation.
+The system provides different user views based on roles, such as service
+seekers and service providers. Users can register, log in, browse
+available domestic services, submit service requests, schedule
+appointments, make payments, and provide feedback. The interface is
+designed to minimize complexity so that users with different educational
+and technological backgrounds can interact with the system easily.
+
+The application logic design defines how the system processes user
+requests. When a user submits a service request, the system validates
+the information, stores it in the database, and matches it with an
+appropriate service provider. The system also handles scheduling,
+notifications, payment processing, and feedback management. Business
+rules are embedded in this layer to ensure proper service delivery and
+prevent errors.
+
+The database design focuses on efficient data storage and retrieval. The
+database contains tables for users, service providers, services, service
+requests, payments, and feedback. Relationships are established among
+these tables to ensure data integrity and reduce redundancy. Proper
+indexing and constraints are applied to improve performance and maintain
+consistency.
+
+Security is an important aspect of the system design. Authentication and
+authorization mechanisms are implemented to ensure that only registered
+users can access the system. User data and transactions are protected
+using encryption and secure communication protocols. Access control
+ensures that users can only perform actions permitted by their roles.
+
+In conclusion, the system design provides a clear structure for
+implementing the proposed domestic services platform. By defining the
+architecture, interface, application logic, database structure, and
+security mechanisms, the design ensures that the system meets user
+requirements and operates efficiently. This design serves as a
+foundation for system implementation and testing.
+
+For the Virtual Space for Domestic Services, System design helps in
+understanding how userss, service providers, administrators, and system
+components interact within the platform, ensuring clarity,
+maintainability, and alignment with functional requirements.
+
+3.5.1 Use Case Diagram
+
+The Use Case Diagram illustrates the primary interactions between the
+system actors and the system itself. It highlights the essential
+functions required by the platform while providing a visual
+representation of user roles and their corresponding actions.
+
+Primary Actors: User (Individuals or households) seeking domestic
+services such as cleaning, cooking, or maintenance.
+
+Secondary Actors: Artisans or Workers offering domestic services
+
+Use Cases:
+
+-   User Registration & Authentication
+
+-   Profile Management
+
+-   Service Request Submission
+
+-   Messaging & Notifications
+
+-   Payment Processing
+
+-   Feedback & Ratings
+
+-   []Administrative Oversight
+
+This diagram ensures that all critical functionalities of the platform
+are accounted for before detailed system implementation.
+
+3.5.2 Context Diagram
+
+A Context Diagram (also known as a Level 0 Data Flow Diagram) is the
+highest-level abstraction of a system. Its primary goal is to define the
+scope and boundaries of the software by showing how it interacts with
+the outside world. The entire system is represented by a single process,
+and the focus is entirely on the inputs and outputs between the system
+and external actors.
+
+Key Components
+
+A standard Context Diagram uses three main symbols to represent the
+environment:
+
+-   The System (The Central Process): Represented as a single large
+    circle or rounded rectangle at the center. It is labeled "0" and
+    named after the system (e.g., "Virtual Space for Domestic
+    Services").
+
+-   External Entities (Terminators): Represented as squares or
+    rectangles. These are the people, organizations, or other systems
+    that interact with your platform but exist outside of it (e.g.,
+    Userss, Banks, or Administrators).
+
+-   Data Flows: Represented by arrows. These show the information moving
+    between the entities and the system. They are labeled with the
+    specific type of data being exchanged.
+
+  []
+
+3.5.3 Document Flow Diagram
+
+-   Initiation: The lifecycle begins in the Users lane with the creation
+    of the Registration Form, which is transmitted to the System
+    Interface.
+
+-   Verification: The System extracts ID/Vetting Documents and passes
+    them to the Admin Office. The Admin reviews these and files them in
+    the Verified File (Permanent Storage).
+
+-   Transaction: A Service Request is generated by the Users. The System
+    then converts this into a Work Order and transmits it to the Service
+    Provider.
+
+-   Closure: Once work is done, the Provider submits a Completion Log.
+    This triggers the System to generate a Payment Receipt, which is
+    delivered back to the Users.
+
+  []
+
+3.5.3 Data flow diagram
+
+A Data Flow Diagram (DFD) is a graphical and logical representation that
+illustrates how data moves through a system, the processes that
+transform the data, the data stores where information is kept, and the
+external entities that interact with the system. In the context of a
+Virtual Space for Domestic Services System, the DFD explains how service
+requests, user information, payments, and feedback flow between users
+and the system to enable efficient domestic service delivery.
+
+COMPONENTS of Data flow diagram
+
+External Entities
+
+Users (Service Seeker), Service Provider (Artisan/Worker), System
+Administrator, and Payment Gateway. These entities exchange data with
+the system but remain outside the system boundary. The User provides
+personal details during registration, submits service requests, makes
+payments, and provides feedback after service completion. In return, the
+user receives service listings, booking confirmations, provider details,
+and service status updates. The service Provider submits registration
+details, updates service availability, and responds to job requests. The
+system sends job notifications, user details, and payment confirmations
+back to the provider
+
+The System Administrator interacts with the system by managing users,
+approving service providers, monitoring transactions, and generating
+reports. The administrator receives system logs, analytics, and
+performance summaries.
+
+The Payment Gateway processes financial transactions. It receives
+payment requests from the system and sends transaction confirmations or
+failure notifications back to the system.
+
+Major Processes in the DFD
+
+User Registration and Authentication: This process handles the
+collection and verification of user credentials for both users and
+service providers. Registration data flows from the users into the
+system, where it is validated and stored in the user database.
+Successful authentication enables access to system services, while
+failed authentication results in error notifications.
+
+Service Request Management: In this process, users submit service
+requests specifying service type, location, date, and time. The system
+processes these requests and forwards them to suitable service providers
+based on availability and service category. Providers respond by
+accepting or rejecting the requests, and the system updates the service
+status accordingly.
+
+Service Matching and Scheduling: This process matches users requests
+with appropriate service providers using predefined criteria such as
+service expertise, proximity, and availability. The matched results are
+communicated to both users and providers, ensuring efficient service
+allocation.
+
+Payment Processing: process manages all financial transactions within
+the system. When a service is booked, payment details are sent from the
+users to the system and then forwarded to the payment gateway for
+authorization. The payment gateway returns confirmation or failure
+messages, which are recorded by the system and communicated to both the
+users and service provider.
+
+Service Delivery and Feedback process captures service completion
+details and users feedback. After a service is completed, users submit
+ratings and comments, which are stored in the feedback database. These
+ratings help evaluate service provider performance and influence future
+service matching.
+
+Administration and Reporting process enables the system administrator to
+oversee platform operations. This process collects data from various
+data stores, generates reports on user activity and transactions, and
+allows administrators to enforce policies and resolve disputes.
+
+Data Stores
+
+Several data stores support the system’s operations. The User Database
+stores users and service provider profiles. The Service Database
+contains service categories, service requests, and scheduling
+information. The Transaction Database stores payment records and
+transaction histories. The Feedback Database maintains service ratings
+and reviews. Data flows continuously between these stores and the system
+processes to ensure consistency and reliability.
+
+[]
+
+Entity–Relationship (ER) Diagram
+
+An Entity Relationship Diagram (ERD) is a conceptual blueprint of your
+database. It defines the "entities" (the things we store data about),
+their "attributes" (the details of those things), and the
+"relationships" (how they connect to each other).
+
+For your Virtual Space for Domestic Services, the ERD is crucial because
+it ensures that a users is correctly linked to their booking and that
+the payment is tied to the right transaction.
+
+1. The Core Entities
+
+-   USER: This is the parent table. It stores login credentials for
+    everyone. By having a central USER table, you ensure that a person
+    doesn't have to register twice if they want to be both the users and
+    a provider.
+
+-   USERS & PROVIDER: These are "sub-entities." They hold specific
+    details. For example, a PROVIDER has a skills attribute, while a
+    USER has a home_address.
+
+-   BOOKING: The central "transactional" entity. It brings a User and a
+    Provider together for a specific date and service.
+
+-   PAYMENT: Stores the financial result of a booking.
+
+2. Key Relationships
+
+-   User to Users/Provider (1:1): One User record corresponds to exactly
+    one Users or Provider profile.
+
+-   Users to Booking (1:M): One Users can make Many (M) bookings over
+    time, but each booking belongs to only one user.
+
+-   Provider to Booking (1:M): One Provider can be hired for Many jobs,
+    but each specific booking instance is assigned to one provider.
+
+-   Booking to Payment (1:1): In this model, each booking generates
+    exactly one payment record.b
+
+3. Primary Keys (PK) and Foreign Keys (FK)
+
+-   Primary Key (PK): A unique identifier for every row (e.g., user_id).
+
+-   Foreign Key (FK): A "link" to another table. For example, user_id
+    inside the BOOKING table tells the database exactly which users made
+    that request.
+
+[]
+
+Relational Model Diagram
+
+The Relational Data Model (RDM), also known as the Physical Database
+Schema, is the most technical version of your data design. While the ERD
+focuses on the "concepts," the Relational Model focuses on the
+implementation.
+
+It details exactly how the tables will look in a database management
+system (like MySQL or PostgreSQL), including data types and key
+constraints.
+
+1. Data Types
+
+In this model, we specify how each piece of data is stored:
+
+-   INT (Integer): Used for IDs (e.g., user_id).
+
+-   VARCHAR (Variable Character): Used for text like names and emails.
+
+-   DECIMAL: Used for money (e.g., hourly_rate) to ensure precision.
+
+-   DATETIME: Used to record exactly when a job takes place.
+
+-   BOOL (Boolean): Used for simple Yes/No fields like is verified.
+
+2. Integrity Constraints
+
+-   Primary Key (PK): A unique identifier for every row. No two users
+    can have the same user_id.
+
+-   Foreign Key (FK): These are the "bridges" between tables. For
+    example, the user_id in the BOOKINGS table is a Foreign Key that
+    points back to the USER table.
+
+-   Unique (UQ): Applied to fields like email so that two people cannot
+    sign up with the same address.
+
+3. Table Relationships
+
+-   The "User" Split: To keep data clean, the USERS table holds common
+    info (login), while Users and providers hold specialized info. They
+    are linked via a user_id FK.
+
+-   The Transaction Link: The BOOKINGS table acts as a junction, linking
+    a user and a provider. The payments table then links to a specific
+    booking, ensuring every cent is accounted for.
+
+  []
+
+3.6 System Maintenance
+
+Long-term system sustainability requires structured maintenance
+procedures:
+
+1.  Routine Database Maintenance:
+
+    -   Index optimization, data cleanup, and archiving.
+
+2.  Codebase Updates:
+
+    -   Regular updates to frontend and backend dependencies.
+
+    -   Patching known vulnerabilities.
+
+3.  Monitoring & Logging:
+
+    -   Continuous server monitoring for uptime, error tracking, and
+        performance metrics.
+
+    -   Log aggregation for debugging and audit purposes.
+
+4.  Backup Strategy:
+
+    -   Daily incremental backups.
+
+    -   Weekly full backups stored securely in the cloud.
+
+5.  Scalability Planning:
+
+    -   Plan for horizontal scaling during peak demand periods.
+
+    -   Load balancing for high-traffic events.
+
+3.7 Future Enhancements
+
+The platform is designed to accommodate incremental improvements over
+time:
+
+1.  Mobile Application Development:
+
+    -   Native apps for iOS and Android for better performance and
+        offline access.
+
+2.  AI-Powered Matching:
+
+    -   Use machine learning algorithms to predict provider suitability
+        based on historical performance.
+
+3.  Location-Aware Services:
+
+    -   Integrate GPS-based provider-users matching for faster service
+        delivery.
+
+4.  Dynamic Pricing and Promotions:
+
+    -   Adaptive pricing based on demand, service complexity, and
+        provider experience.
+
+5.  Enhanced Security Features:
+
+    -   Biometric authentication (fingerprint, facial recognition) for
+        providers and users.
+
+    -   Fraud detection algorithms for suspicious payment or service
+        request patterns.
+
+6.  Expanded Service Categories:
+
+    -   Addition of more domestic services, including specialized
+        maintenance and emergency support.
+
+7.  Analytics Dashboard:
+
+    -   Real-time insights for administrators to monitor service
+        utilization, revenue, and provider performance.
