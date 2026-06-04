@@ -178,6 +178,14 @@ function LandingView({
               <span className="font-bold text-xl text-gray-900">Home Ease</span>
             </div>
             <div className="flex items-center gap-3">
+              <a
+                href="/api/download?file=final"
+                download
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download Writeup
+              </a>
               <button
                 onClick={() => onOpenAuth('login')}
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors"
