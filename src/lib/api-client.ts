@@ -188,6 +188,37 @@ class ApiClient {
     });
   }
 
+  // Wallet
+  async getWallet() {
+    return this.request<{
+      id: string;
+      userId: string;
+      balance: number;
+      totalEarnings: number;
+      totalWithdrawn: number;
+      totalCommission: number;
+      createdAt: string;
+      updatedAt: string;
+      ledger: any[];
+    }>('/wallet');
+  }
+
+  async withdrawFromWallet(amount: number) {
+    return this.request<{
+      id: string;
+      userId: string;
+      balance: number;
+      totalEarnings: number;
+      totalWithdrawn: number;
+      totalCommission: number;
+      updatedAt: string;
+      transaction: any;
+    }>('/wallet/withdraw', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    });
+  }
+
   // Feedback
   async getFeedback(providerId: string) {
     return this.request<any[]>(`/feedback?providerId=${providerId}`);

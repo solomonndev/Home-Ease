@@ -115,23 +115,51 @@ model SupportMessage {
 }
 
 model Transaction {
-  id             String         @id @default(cuid())
-  requestId      String         @unique
-  clientId       String
-  providerId     String
-  amount         Float
-  platformFee    Float          @default(0)
-  providerPayout Float          @default(0)
-  paymentMethod  String         @default("CARD") @db.VarChar(20)
-  status         String         @default("PENDING") @db.VarChar(20)
-  paidOutAt      DateTime?
-  transferRef    String?
-  transferStatus String?        @db.VarChar(20)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  client         User           @relation(fields: [clientId], references: [id])
-  provider       Provider       @relation(fields: [providerId], references: [id])
-  serviceRequest ServiceRequest @relation(fields: [requestId], references: [id])
+  id               String         @id @default(cuid())
+  requestId        String         @unique
+  clientId         String
+  providerId       String
+  amount           Float
+  platformFee      Float          @default(0)
+  providerPayout   Float          @default(0)
+  paymentMethod    String         @default("CARD") @db.VarChar(20)
+  status           String         @default("PENDING") @db.VarChar(20)
+  paidOutAt        DateTime?
+  transferRef      String?
+  transferStatus   String?        @db.VarChar(20)
+  walletCredited   Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  client           User           @relation(fields: [clientId], references: [id])
+  provider         Provider       @relation(fields: [providerId], references: [id])
+  serviceRequest   ServiceRequest @relation(fields: [requestId], references: [id])
+}
+
+model Wallet {
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  balance         Float               @default(0)
+  totalEarnings   Float               @default(0)
+  totalWithdrawn  Float               @default(0)
+  totalCommission Float               @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id])
+  ledger          WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  type        String   @db.VarChar(30)
+  amount      Float
+  description String?  @db.Text
+  reference   String?
+  balanceAfter Float
+  createdAt   DateTime @default(now())
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
 }
 
 model User {
@@ -154,4 +182,5 @@ model User {
   supportSent     SupportMessage[] @relation("SupportSender")
   supportReceived SupportMessage[] @relation("SupportReceiver")
   transactions    Transaction[]
+  wallet          Wallet?
 }

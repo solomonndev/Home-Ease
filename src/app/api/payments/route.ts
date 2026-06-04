@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
-import { sendToBank } from '@/lib/paystack-transfer';
 
 const PLATFORM_FEE_PERCENT = 0.05; // 5% platform fee
 
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/payments - Client pays AFTER artisan completes the work
-// Flow: Artisan checks out → calculates total (hours × rate) → client pays → artisan gets paid
+// Credits provider's virtual wallet instead of bank transfer
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -127,31 +126,7 @@ export async function POST(request: NextRequest) {
     const platformFee = Math.round(amount * PLATFORM_FEE_PERCENT);
     const providerPayout = amount - platformFee;
 
-    // --- ACTUAL BANK TRANSFER VIA PAYSTACK ---
-    let transferRef: string | null = null;
-    let transferStatus: string | null = null;
-
-    if (provider.bankName && provider.accountNumber) {
-      const transferResult = await sendToBank({
-        bankName: provider.bankName,
-        accountNumber: provider.accountNumber,
-        accountName: provider.accountName || provider.user.name,
-        amountInNaira: providerPayout,
-        requestId,
-        serviceType: serviceRequest.serviceType,
-      });
-
-      if (transferResult.success) {
-        transferRef = transferResult.reference || null;
-        transferStatus = transferResult.transferStatus || 'PENDING';
-      } else {
-        // Transfer failed — still record the payment but mark transfer as failed
-        console.error('[Payment POST] Bank transfer failed:', transferResult.error);
-        transferStatus = 'FAILED';
-      }
-    }
-
-    // Create transaction with transfer tracking
+    // Create transaction record
     const transaction = await db.transaction.create({
       data: {
         requestId,
@@ -161,10 +136,9 @@ export async function POST(request: NextRequest) {
         platformFee,
         providerPayout,
         paymentMethod: paymentMethod || 'CARD',
-        status: transferStatus === 'FAILED' ? 'ESCROW' : 'COMPLETED',
-        paidOutAt: transferStatus !== 'FAILED' ? new Date() : null,
-        transferRef,
-        transferStatus,
+        status: 'COMPLETED',
+        paidOutAt: new Date(),
+        walletCredited: true,
       },
       include: {
         serviceRequest: {
@@ -176,67 +150,71 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update service request status
-    if (transferStatus !== 'FAILED') {
-      await db.serviceRequest.update({
-        where: { id: requestId },
-        data: {
-          status: 'COMPLETED',
-          paymentStatus: 'RELEASED',
-        }
+    // Credit provider's virtual wallet
+    let wallet = await db.wallet.findUnique({
+      where: { userId: provider.userId },
+    });
+
+    if (!wallet) {
+      wallet = await db.wallet.create({
+        data: { userId: provider.userId },
       });
     }
 
-    // Update provider completed jobs only if transfer succeeded
-    if (transferStatus !== 'FAILED') {
-      await db.provider.update({
-        where: { id: provider.id },
-        data: { completedJobs: { increment: 1 } },
-      });
-    }
+    const newBalance = wallet.balance + providerPayout;
+
+    await db.wallet.update({
+      where: { id: wallet.id },
+      data: {
+        balance: { increment: providerPayout },
+        totalEarnings: { increment: providerPayout },
+        totalCommission: { increment: platformFee },
+      },
+    });
+
+    await db.walletTransaction.create({
+      data: {
+        walletId: wallet.id,
+        type: 'EARNING',
+        amount: providerPayout,
+        description: `Payment for ${serviceRequest.serviceType} service`,
+        reference: requestId,
+        balanceAfter: newBalance,
+      },
+    });
+
+    // Update service request status
+    await db.serviceRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'COMPLETED',
+        paymentStatus: 'RELEASED',
+      }
+    });
+
+    // Update provider completed jobs
+    await db.provider.update({
+      where: { id: provider.id },
+      data: { completedJobs: { increment: 1 } },
+    });
 
     // Notify provider
-    if (provider.bankName && provider.accountNumber) {
-      if (transferStatus === 'FAILED') {
-        await db.notification.create({
-          data: {
-            userId: provider.userId,
-            type: 'PAYMENT',
-            title: 'Payment Received (Transfer Pending)',
-            message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). Your payout: ₦${providerPayout.toLocaleString()}. The automatic bank transfer failed — please verify your bank details in your Profile. An admin can manually release the payment from escrow.`,
-          }
-        });
-      } else {
-        await db.notification.create({
-          data: {
-            userId: provider.userId,
-            type: 'PAYMENT',
-            title: 'Payment Transferred to Your Bank! 💰',
-            message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been transferred to your ${provider.bankName} account (${provider.accountNumber}). Transfer ref: ${transferRef || 'N/A'}. Status: ${transferStatus || 'processing'}. Money should arrive within 1-24 hours. Platform fee: ₦${platformFee.toLocaleString()}.`,
-          }
-        });
+    await db.notification.create({
+      data: {
+        userId: provider.userId,
+        type: 'PAYMENT',
+        title: 'Payment Received — Credited to Wallet! 💰',
+        message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been credited to your wallet. Platform fee: ₦${platformFee.toLocaleString()}.`,
       }
-    } else {
-      await db.notification.create({
-        data: {
-          userId: provider.userId,
-          type: 'PAYMENT',
-          title: 'Payment Received! 💰',
-          message: `${user.name} has paid ₦${amount.toLocaleString()} for the ${serviceRequest.serviceType.toLowerCase()} service (${serviceRequest.totalHours?.toFixed(1)} hours). Your payout: ₦${providerPayout.toLocaleString()}. Please add bank details in your Profile to receive payments.`,
-        }
-      });
-    }
+    });
 
     // Notify client
-    const clientMsg = transferStatus === 'FAILED'
-      ? `₦${amount.toLocaleString()} paid for ${serviceRequest.serviceType.toLowerCase()} (${serviceRequest.totalHours?.toFixed(1)} hours). The automatic transfer to the artisan's bank failed — it will be retried or an admin can release it manually.`
-      : `₦${amount.toLocaleString()} paid for ${serviceRequest.serviceType.toLowerCase()} (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been transferred to ${provider.user.name}'s bank account. Transfer ref: ${transferRef || 'N/A'}. Platform fee: ₦${platformFee.toLocaleString()}. Please leave a review!`;
     await db.notification.create({
       data: {
         userId: user.id,
         type: 'PAYMENT',
-        title: transferStatus === 'FAILED' ? 'Payment Processing' : 'Payment Confirmed ✅',
-        message: clientMsg,
+        title: 'Payment Received, Credited to Artisan\'s Wallet ✅',
+        message: `₦${amount.toLocaleString()} paid for ${serviceRequest.serviceType.toLowerCase()} (${serviceRequest.totalHours?.toFixed(1)} hours). ₦${providerPayout.toLocaleString()} has been credited to ${provider.user.name}'s wallet. Platform fee: ₦${platformFee.toLocaleString()}. Please leave a review!`,
       }
     });
 
@@ -247,7 +225,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/payments - Release escrow payment (with actual bank transfer) or refund
+// PUT /api/payments - Release escrow payment to wallet or refund
 export async function PUT(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -284,38 +262,46 @@ export async function PUT(request: NextRequest) {
     }
 
     if (action === 'release') {
-      if (!transaction.provider.bankName || !transaction.provider.accountNumber) {
-        return NextResponse.json({
-          error: 'Provider has not set up bank account details.',
-          needsBankDetails: true,
-        }, { status: 400 });
-      }
-
-      // --- ACTUAL BANK TRANSFER VIA PAYSTACK ---
-      const transferResult = await sendToBank({
-        bankName: transaction.provider.bankName,
-        accountNumber: transaction.provider.accountNumber,
-        accountName: transaction.provider.accountName || transaction.provider.user.name,
-        amountInNaira: transaction.providerPayout,
-        requestId: transaction.requestId,
-        serviceType: transaction.serviceRequest.serviceType,
+      // Credit provider's virtual wallet instead of bank transfer
+      let wallet = await db.wallet.findUnique({
+        where: { userId: transaction.provider.userId },
       });
 
-      if (!transferResult.success) {
-        return NextResponse.json({
-          error: `Bank transfer failed: ${transferResult.error}. The payment is still in escrow. Please check the provider's bank details and try again.`,
-          transferError: true,
-        }, { status: 400 });
+      if (!wallet) {
+        wallet = await db.wallet.create({
+          data: { userId: transaction.provider.userId },
+        });
       }
 
-      // Store the Paystack transfer reference and status
+      const newBalance = wallet.balance + transaction.providerPayout;
+
+      await db.wallet.update({
+        where: { id: wallet.id },
+        data: {
+          balance: { increment: transaction.providerPayout },
+          totalEarnings: { increment: transaction.providerPayout },
+          totalCommission: { increment: transaction.platformFee },
+        },
+      });
+
+      await db.walletTransaction.create({
+        data: {
+          walletId: wallet.id,
+          type: 'EARNING',
+          amount: transaction.providerPayout,
+          description: `Payment for ${transaction.serviceRequest.serviceType} service`,
+          reference: transaction.requestId,
+          balanceAfter: newBalance,
+        },
+      });
+
+      // Update transaction record
       const updated = await db.transaction.update({
         where: { id: transactionId },
         data: {
           status: 'COMPLETED',
           paidOutAt: new Date(),
-          transferRef: transferResult.reference || null,
-          transferStatus: transferResult.transferStatus || 'PENDING',
+          walletCredited: true,
         },
         include: {
           serviceRequest: {
@@ -332,13 +318,13 @@ export async function PUT(request: NextRequest) {
         data: { paymentStatus: 'RELEASED' }
       });
 
-      // Notify both parties about the actual bank transfer
+      // Notify both parties about the wallet credit
       await db.notification.create({
         data: {
           userId: transaction.provider.userId,
           type: 'PAYMENT',
-          title: 'Payment Transferred to Your Bank! 💰',
-          message: `₦${transaction.providerPayout.toLocaleString()} has been transferred to your ${transaction.provider.bankName} account (${transaction.provider.accountNumber}). Transfer ref: ${transferResult.reference || 'N/A'}. Status: ${transferResult.transferStatus || 'processing'}. The money should arrive within 1-24 hours. Platform fee: ₦${transaction.platformFee.toLocaleString()}.`,
+          title: 'Payment Released — Credited to Wallet! 💰',
+          message: `₦${transaction.providerPayout.toLocaleString()} has been credited to your wallet for the ${transaction.serviceRequest.serviceType.toLowerCase()} service. Platform fee: ₦${transaction.platformFee.toLocaleString()}.`,
         }
       });
       await db.notification.create({
@@ -346,7 +332,7 @@ export async function PUT(request: NextRequest) {
           userId: transaction.clientId,
           type: 'PAYMENT',
           title: 'Payment Released to Provider',
-          message: `₦${transaction.providerPayout.toLocaleString()} has been transferred to ${transaction.provider.user.name}'s ${transaction.provider.bankName} account. Transfer ref: ${transferResult.reference || 'N/A'}. Platform fee: ₦${transaction.platformFee.toLocaleString()}. Please leave a review!`,
+          message: `₦${transaction.providerPayout.toLocaleString()} has been credited to ${transaction.provider.user.name}'s wallet. Platform fee: ₦${transaction.platformFee.toLocaleString()}. Please leave a review!`,
         }
       });
 

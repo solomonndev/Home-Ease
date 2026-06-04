@@ -13,7 +13,7 @@ import {
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
   Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, XCircle, ArrowLeft, Download,
-  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2
+  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2, Landmark
 } from 'lucide-react';
 
 import {
@@ -1560,131 +1560,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
   }
 
   if (tab === 'earnings') {
-    const hasBankDetails = stats?.hasBankDetails;
-    return (
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900">Earnings & Payouts</h3>
-
-        {/* Bank Account Alert */}
-        {!hasBankDetails && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-            <Building2 className="w-8 h-8 text-red-500" />
-            <div className="flex-1">
-              <p className="font-medium text-red-800">Bank Account Required for Payout</p>
-              <p className="text-sm text-red-600">You need to add your bank account details to receive payments. Go to your Profile to set it up.</p>
-            </div>
-            <button
-              onClick={() => onNavigate('profile')}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
-            >
-              Add Bank Details
-            </button>
-          </div>
-        )}
-
-        {hasBankDetails && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-            <CircleCheck className="w-8 h-8 text-green-500" />
-            <div>
-              <p className="font-medium text-green-800">Payout Account Active</p>
-              <p className="text-sm text-green-600">
-                {stats?.bankName} ••••{stats?.accountNumber} — Payments will be sent to this account after work completion.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Earnings Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Hourglass className="w-3.5 h-3.5 text-amber-600" />
-              <span className="text-sm font-medium text-amber-800">Pending Payment</span>
-            </div>
-            <p className="text-2xl font-bold text-amber-900">₦{(paymentSummary?.totalInEscrow || stats?.pendingEarnings || 0).toLocaleString()}</p>
-            <p className="text-xs text-amber-600 mt-1">Awaiting client payment</p>
-          </div>
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Wallet className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-green-800">Paid Out</span>
-            </div>
-            <p className="text-2xl font-bold text-green-900">₦{payments.filter((t: any) => t.transferStatus === 'SUCCESS').reduce((s: number, t: any) => s + (t.providerPayout || 0), 0).toLocaleString()}</p>
-            <p className="text-xs text-green-600 mt-1">Transferred to your bank</p>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-blue-800">In Transit</span>
-            </div>
-            <p className="text-2xl font-bold text-blue-900">₦{payments.filter((t: any) => ['PENDING', 'PROCESSING'].includes(t.transferStatus || '')).reduce((s: number, t: any) => s + (t.providerPayout || 0), 0).toLocaleString()}</p>
-            <p className="text-xs text-blue-600 mt-1">Transfer in progress</p>
-          </div>
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span className="text-sm font-medium text-orange-800">Platform Fees</span>
-            </div>
-            <p className="text-2xl font-bold text-orange-900">₦{(stats?.totalPlatformFees || 0).toLocaleString()}</p>
-            <p className="text-xs text-orange-600 mt-1">5% service fee on all transactions</p>
-          </div>
-        </div>
-
-        {/* Transaction List */}
-        {payments.length ? (
-          <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Your Payout</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {payments.map((tx: any) => (
-                  <tr key={tx.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{tx.serviceRequest?.serviceType || 'N/A'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{tx.serviceRequest?.client?.name || 'N/A'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">₦{(tx.amount || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">₦{(tx.providerPayout || 0).toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={tx.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      {tx.transferStatus === 'SUCCESS' ? (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-700">Paid</span>
-                      ) : tx.transferStatus === 'PENDING' || tx.transferStatus === 'PROCESSING' ? (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">In Transit</span>
-                      ) : tx.transferStatus === 'FAILED' ? (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">Failed</span>
-                      ) : tx.transferStatus === 'REVERSED' ? (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-700">Reversed</span>
-                      ) : (
-                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">Not Sent</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {tx.transferStatus === 'SUCCESS' && tx.paidOutAt
-                        ? `Paid ${new Date(tx.paidOutAt).toLocaleDateString()}`
-                        : tx.status === 'ESCROW'
-                          ? 'Awaiting payout'
-                          : new Date(tx.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState message="No earnings yet" />
-        )}
-      </div>
-    );
+    return <WalletDashboard user={user} />;
   }
 
   if (tab === 'messages') {
@@ -2868,7 +2744,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
                 if (confirmResult.txStatus === 'COMPLETED') {
                   toast({
                     title: 'Payment Confirmed & Artisan Paid! ✅',
-                    description: `₦${request.amount.toLocaleString()} paid successfully. ₦${confirmResult.providerPayout.toLocaleString()} has been sent to the artisan's bank account.`,
+                    description: `₦${request.amount.toLocaleString()} paid. ₦${confirmResult.providerPayout.toLocaleString()} credited to artisan's wallet.`,
                   });
                 } else if (confirmResult.transferStatus === 'FAILED') {
                   toast({
@@ -4062,6 +3938,186 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
       ) : (
         <EmptyState message="No jobs assigned yet" />
       )}
+    </div>
+  );
+}
+
+// ==================== WALLET DASHBOARD (Provider Earnings) ====================
+function WalletDashboard({ user }: { user: any }) {
+  const [wallet, setWallet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawing, setWithdrawing] = useState(false);
+  const { toast } = useToast();
+
+  const loadWallet = useCallback(async () => {
+    try {
+      const data = await api.getWallet();
+      setWallet(data);
+    } catch (err) {
+      console.error('Wallet load error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadWallet(); }, [loadWallet]);
+
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount <= 0 || amount > (wallet?.balance || 0)) {
+      toast({ title: 'Invalid amount', description: 'Enter a valid amount within your wallet balance.', variant: 'destructive' });
+      return;
+    }
+    setWithdrawing(true);
+    try {
+      await api.withdrawFromWallet(amount);
+      toast({ title: 'Withdrawal Successful ✅', description: `₦${amount.toLocaleString()} has been withdrawn from your wallet.`, variant: 'success' });
+      setWithdrawAmount('');
+      await loadWallet();
+    } catch (err: any) {
+      toast({ title: 'Withdrawal Failed', description: err.message || 'Could not process withdrawal.', variant: 'destructive' });
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
+  if (loading) return <LoadingSkeleton />;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">My Wallet</h3>
+        <button onClick={loadWallet} className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1">
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+        </button>
+      </div>
+
+      {/* Wallet Balance Card */}
+      <div className="bg-gradient-to-br from-orange-600 to-orange-500 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Wallet className="w-5 h-5 opacity-90" />
+            <span className="text-sm font-medium opacity-90">Available Balance</span>
+          </div>
+          <span className="text-xs bg-white/20 px-2.5 py-1 rounded-full">Virtual Wallet</span>
+        </div>
+        <p className="text-3xl font-bold mt-2">₦{(wallet?.balance || 0).toLocaleString()}</p>
+        <p className="text-sm opacity-80 mt-1">Earnings from completed services are credited here instantly</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <CircleCheck className="w-3.5 h-3.5 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Total Earnings</span>
+          </div>
+          <p className="text-2xl font-bold text-green-900">₦{(wallet?.totalEarnings || 0).toLocaleString()}</p>
+          <p className="text-xs text-green-600 mt-1">Lifetime earnings</p>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 className="w-3.5 h-3.5 text-orange-600" />
+            <span className="text-sm font-medium text-orange-800">Platform Fees</span>
+          </div>
+          <p className="text-2xl font-bold text-orange-900">₦{(wallet?.totalCommission || 0).toLocaleString()}</p>
+          <p className="text-xs text-orange-600 mt-1">5% service commission</p>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">Withdrawn</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-900">₦{(wallet?.totalWithdrawn || 0).toLocaleString()}</p>
+          <p className="text-xs text-blue-600 mt-1">Withdrawn to bank</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Hourglass className="w-3.5 h-3.5 text-amber-600" />
+            <span className="text-sm font-medium text-amber-800">Pending</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-900">₦0</p>
+          <p className="text-xs text-amber-600 mt-1">Awaiting client payment</p>
+        </div>
+      </div>
+
+      {/* Withdraw Section */}
+      {user.role === 'PROVIDER' && (
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <Landmark className="w-4 h-4 text-gray-500" />
+            Withdraw to Bank Account
+          </h4>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">₦</span>
+              <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="w-full pl-7 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm"
+              />
+            </div>
+            <button
+              onClick={handleWithdraw}
+              disabled={withdrawing || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
+              className="px-5 py-2.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {withdrawing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Withdraw'}
+            </button>
+          </div>
+          {(user.provider?.bankName || user.provider?.accountNumber) && (
+            <p className="text-xs text-gray-400 mt-2">Funds will be withdrawn to {user.provider?.bankName} (••••{user.provider?.accountNumber?.slice(-4)})</p>
+          )}
+        </div>
+      )}
+
+      {/* Wallet Ledger */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+          <h4 className="text-sm font-semibold text-gray-900">Transaction History</h4>
+          <span className="text-xs text-gray-400">{wallet?.ledger?.length || 0} transactions</span>
+        </div>
+        {wallet?.ledger && wallet.ledger.length > 0 ? (
+          <div className="max-h-96 overflow-y-auto divide-y divide-gray-50">
+            {wallet.ledger.map((entry: any) => (
+              <div key={entry.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  entry.type === 'EARNING' ? 'bg-green-100' :
+                  entry.type === 'WITHDRAWAL' ? 'bg-red-100' :
+                  'bg-gray-100'
+                }`}>
+                  {entry.type === 'EARNING' ? <CircleCheck className="w-4 h-4 text-green-600" /> :
+                   entry.type === 'WITHDRAWAL' ? <ArrowLeftRight className="w-4 h-4 text-red-600" /> :
+                   <CreditCard className="w-4 h-4 text-gray-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{entry.description || entry.type}</p>
+                  <p className="text-xs text-gray-400">{new Date(entry.createdAt).toLocaleString()}</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className={`text-sm font-semibold ${
+                    entry.type === 'EARNING' ? 'text-green-700' :
+                    entry.type === 'WITHDRAWAL' ? 'text-red-700' :
+                    'text-gray-700'
+                  }`}>
+                    {entry.type === 'EARNING' ? '+' : '-'}₦{entry.amount.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-gray-400">Bal: ₦{entry.balanceAfter?.toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-12 text-center">
+            <Inbox className="w-10 h-10 text-gray-300 mx-auto" />
+            <p className="text-gray-500 mt-3 text-sm">No wallet transactions yet</p>
+            <p className="text-xs text-gray-400 mt-1">Earnings will appear here when clients pay for your services</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
