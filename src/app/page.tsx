@@ -179,6 +179,14 @@ function LandingView({
             </div>
             <div className="flex items-center gap-3">
               <a
+                href="/api/download?file=chapters45"
+                download
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Chapters 4-5
+              </a>
+              <a
                 href="/api/download?file=final"
                 download
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
