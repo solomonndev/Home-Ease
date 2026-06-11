@@ -2567,8 +2567,6 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
 
 // ==================== LIVE TIMER COMPONENT ====================
 function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: { checkInTime: string; checkOutTime?: string; showCheckInTime?: boolean; size?: 'sm' | 'lg' }) {
-  const isValid = !isNaN(new Date(String(checkInTime)).getTime());
-
   const formatTime = (ms: number) => {
     const diff = Math.max(0, ms);
     const hrs = Math.floor(diff / 3600000);
@@ -2579,27 +2577,48 @@ function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: 
 
   // For static (checked-out) timers, compute elapsed during render
   const staticElapsed = useMemo(() => {
-    if (!checkOutTime || !isValid) return null;
+    if (!checkOutTime) return null;
     const start = new Date(String(checkInTime)).getTime();
     const end = new Date(String(checkOutTime)).getTime();
+    if (isNaN(start) || isNaN(end)) return null;
     return formatTime(end - start);
-  }, [checkInTime, checkOutTime, isValid]);
+  }, [checkInTime, checkOutTime]);
 
-  // For live timers, use state + interval
+  // For live timers, use ref to avoid stale closures + state for display
+  const startRef = useRef<number>(0);
   const [liveElapsed, setLiveElapsed] = useState('00:00:00');
+  const isValid = useRef(false);
 
   useEffect(() => {
-    if (checkOutTime || !isValid) return;
+    if (checkOutTime) return;
 
-    const start = new Date(String(checkInTime)).getTime();
-    if (isNaN(start)) return;
+    const timeStr = String(checkInTime);
+    const start = new Date(timeStr).getTime();
+
+    if (isNaN(start)) {
+      console.error('[LiveTimer] Cannot parse checkInTime:', JSON.stringify(checkInTime), 'type:', typeof checkInTime);
+      isValid.current = false;
+      return;
+    }
+
+    isValid.current = true;
+    startRef.current = start;
+    console.log('[LiveTimer] Started. checkInTime:', timeStr, 'parsed:', new Date(timeStr).toISOString());
+
+    // Use setTimeout(fn, 0) for immediate first tick, then setInterval for ongoing
+    const immediate = setTimeout(() => {
+      setLiveElapsed(formatTime(Date.now() - startRef.current));
+    }, 0);
 
     const interval = setInterval(() => {
-      setLiveElapsed(formatTime(Date.now() - start));
+      setLiveElapsed(formatTime(Date.now() - startRef.current));
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [checkInTime, checkOutTime, isValid]);
+    return () => {
+      clearTimeout(immediate);
+      clearInterval(interval);
+    };
+  }, [checkInTime, checkOutTime]);
 
   // Format the check-in time for display
   const checkInDisplay = (() => {
@@ -2610,12 +2629,12 @@ function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: 
     } catch { return null; }
   })();
 
-  const display = staticElapsed || (isValid ? liveElapsed : '--:--:--');
+  const display = staticElapsed || liveElapsed;
   const sizeClass = size === 'sm' ? 'text-sm' : 'text-xl';
 
   return (
     <span>
-      <span className={`font-mono ${sizeClass} font-bold ${isValid ? 'text-orange-600' : 'text-red-500'}`}>
+      <span className={`font-mono ${sizeClass} font-bold text-orange-600`}>
         {display}
       </span>
       {showCheckInTime && checkInDisplay && (
