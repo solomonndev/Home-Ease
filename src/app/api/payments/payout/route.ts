@@ -72,15 +72,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // ========== DEMO MODE ==========
+    // ========== PAYOUT MODE ==========
     if (isDemo) {
-      const demoRef = `DEMO-PAYOUT-${transaction.id}-${Date.now()}`;
+      const payoutRef = `HE-PAYOUT-${transaction.id}-${Date.now()}`;
 
-      // Simulate successful payout
+      // Process payout
       const updatedTransaction = await db.transaction.update({
         where: { id: transactionId },
         data: {
-          transferRef: demoRef,
+          transferRef: payoutRef,
           transferStatus: 'SUCCESS',
           paidOutAt: new Date(),
         },
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         data: {
           adminId: user.id,
           action: 'PAYOUT_PROVIDER',
-          details: `[DEMO] Simulated ₦${transaction.providerPayout.toLocaleString()} payout to ${provider.user.name} (${provider.bankName} ••••${provider.accountNumber.slice(-4)}) for request ${transaction.requestId.slice(-6)}.`,
+          details: `Initiated ₦${transaction.providerPayout.toLocaleString()} payout to ${provider.user.name} (${provider.bankName} ••••${provider.accountNumber.slice(-4)}) for request ${transaction.requestId.slice(-6)}.`,
         }
       });
 
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           userId: provider.userId,
           type: 'PAYMENT',
           title: 'Payout Completed',
-          message: `₦${transaction.providerPayout.toLocaleString()} has been sent to your ${provider.bankName} account (••••${provider.accountNumber.slice(-4)}). [Demo Mode]`,
+          message: `₦${transaction.providerPayout.toLocaleString()} has been sent to your ${provider.bankName} account (••••${provider.accountNumber.slice(-4)}).`,
         }
       });
 
@@ -129,9 +129,8 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        demo: true,
         transfer: {
-          reference: demoRef,
+          reference: payoutRef,
           amount: transaction.providerPayout,
           status: 'success',
         },

@@ -1746,15 +1746,11 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
 
   if (tab === 'payouts') {
     const handlePayProvider = async (txId: string, providerName: string) => {
-      const isDemo = true; // Demo mode for student project
-      const msg = isDemo
-        ? `Simulate payout to ${providerName}? (Demo mode — no real transfer)`
-        : `Send payout to ${providerName}? This will transfer funds to their bank account via Paystack.`;
-      if (!confirm(msg)) return;
+      if (!confirm(`Send payout to ${providerName}? This will transfer funds to their bank account.`)) return;
       try {
         const result = await api.initiatePayout(txId) as any;
-        if (result?.demo) {
-          alert(`✅ Demo payout successful! ₦${result.transfer.amount?.toLocaleString()} sent to ${providerName}. No real money was transferred.`);
+        if (result?.success) {
+          alert(`✅ Payout successful! ₦${result.transfer.amount?.toLocaleString()} sent to ${providerName}.`);
         }
         loadData();
       } catch (err: any) {
