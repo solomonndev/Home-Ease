@@ -153,3 +153,20 @@ Stage Summary:
 - Payout now defaults to demo mode on all environments
 - Provider withdrawal no longer requires VERIFIED status
 - Pushed as commit b7e9c1a
+
+---
+Task ID: 6
+Agent: Main Agent
+Task: Fix provider page showing AWAITING_PAYMENT after payout + empty balance/earnings
+
+Work Log:
+- Added ServiceRequest status update (COMPLETED + RELEASED) to both demo and live payout modes
+- Rewrote wallet GET route to fallback to computing earnings from Transaction table when Wallet table doesn't exist in Supabase
+- Wallet route now returns totalEarnings, pending balance, and paid-out amounts from completed transactions
+- Built transaction-based ledger as fallback for wallet transaction history
+- Pushed as commit 870f51e
+
+Stage Summary:
+- After admin payout, provider will now see job as COMPLETED instead of AWAITING_PAYMENT
+- Provider wallet page will show earnings computed from Transaction table even without Wallet table
+- Both fixes are backward-compatible (graceful fallbacks with try/catch)
