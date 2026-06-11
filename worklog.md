@@ -67,3 +67,32 @@ Stage Summary:
 - Decline button now changes to gray "✗ Declined" after clicking
 - Card background tints green (accepted) or grays out (declined)
 - 1.5s visual delay before data refresh removes the card
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix check-in timer not reading/displaying on provider and client pages
+
+Work Log:
+- Investigated the `LiveTimer` component (line 2569 in `src/app/page.tsx`)
+- Found fragility: if `new Date(checkInTime)` returns NaN, timer silently shows `00:00:00`
+- Rewrote `LiveTimer` with robust date validation using `String()` wrapping and NaN checks
+- Split timer logic: `useMemo` for static (checked-out) timers, `useEffect` + `setInterval` only for live timers
+- Added `showCheckInTime` prop that displays "since HH:MM" next to the timer
+- Added `size` prop ('sm' | 'lg') for different contexts
+- Invalid dates now show `--:--:--` in red text (visible error state instead of silent 00:00:00)
+- Redesigned provider's "Time on Job" box: green theme, bigger timer (text-xl), "LIVE" indicator, Check Out button moved INSIDE the timer box
+- Removed duplicate Check Out button that was outside the timer box
+- Updated client's request card timer: green theme, "Service Timer" label, "LIVE" indicator, shows check-in time
+- Reduced auto-refresh interval: client 30s→10s, provider 30s→10s (when active job), 30s otherwise
+- Fixed missing `useMemo` import from React
+- All changes pass ESLint (only pre-existing generate-writeup.js errors remain)
+- Dev server compiles and returns 200 OK with no runtime errors
+
+Stage Summary:
+- Modified: `src/app/page.tsx` — `LiveTimer` component, provider My Jobs timer, client request card timer
+- Timer now validates dates and shows `--:--:--` in red if invalid
+- Timer shows "since HH:MM" for user confirmation
+- Provider timer box: green, larger, includes Check Out button
+- Client timer box: green, labeled "Service Timer", shows LIVE indicator
+- Auto-refresh: 10s for active jobs, 30s otherwise (both client and provider)

@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { useToast, toast } from '@/hooks/use-toast';
-import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from 'react';
 // socket.io-client imported dynamically in useEffect to avoid SSR issues
 import {
   Search, MapPin, Calendar, Clock, Star, Shield, MessageSquare,
@@ -1225,12 +1225,12 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Auto-refresh every 30 seconds when on overview or my-requests to pick up check-in/checkout changes
+  // Auto-refresh every 10 seconds when on overview or my-requests to pick up check-in/checkout changes
   useEffect(() => {
     if (tab !== 'overview' && tab !== 'my-requests') return;
     const hasActiveRequests = requests.some((r: any) => ['ACCEPTED', 'IN_PROGRESS', 'AWAITING_PAYMENT'].includes(r.status));
     if (!hasActiveRequests) return;
-    const interval = setInterval(loadData, 30000);
+    const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
   }, [tab, requests, loadData]);
 
@@ -2566,34 +2566,61 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
 }
 
 // ==================== LIVE TIMER COMPONENT ====================
-function LiveTimer({ checkInTime, checkOutTime }: { checkInTime: string; checkOutTime?: string }) {
-  const [elapsed, setElapsed] = useState('00:00:00');
+function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: { checkInTime: string; checkOutTime?: string; showCheckInTime?: boolean; size?: 'sm' | 'lg' }) {
+  const isValid = !isNaN(new Date(String(checkInTime)).getTime());
+
+  const formatTime = (ms: number) => {
+    const diff = Math.max(0, ms);
+    const hrs = Math.floor(diff / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  // For static (checked-out) timers, compute elapsed during render
+  const staticElapsed = useMemo(() => {
+    if (!checkOutTime || !isValid) return null;
+    const start = new Date(String(checkInTime)).getTime();
+    const end = new Date(String(checkOutTime)).getTime();
+    return formatTime(end - start);
+  }, [checkInTime, checkOutTime, isValid]);
+
+  // For live timers, use state + interval
+  const [liveElapsed, setLiveElapsed] = useState('00:00:00');
 
   useEffect(() => {
-    const start = new Date(checkInTime).getTime();
+    if (checkOutTime || !isValid) return;
 
-    const update = () => {
-      // Always use fresh Date.now() for live counting
-      const now = checkOutTime ? new Date(checkOutTime).getTime() : Date.now();
-      const diff = Math.max(0, now - start);
-      const hrs = Math.floor(diff / 3600000);
-      const mins = Math.floor((diff % 3600000) / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      setElapsed(
-        `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-      );
-    };
+    const start = new Date(String(checkInTime)).getTime();
+    if (isNaN(start)) return;
 
-    update();
-    if (!checkOutTime) {
-      const interval = setInterval(update, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [checkInTime, checkOutTime]);
+    const interval = setInterval(() => {
+      setLiveElapsed(formatTime(Date.now() - start));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [checkInTime, checkOutTime, isValid]);
+
+  // Format the check-in time for display
+  const checkInDisplay = (() => {
+    try {
+      const d = new Date(String(checkInTime));
+      if (isNaN(d.getTime())) return null;
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch { return null; }
+  })();
+
+  const display = staticElapsed || (isValid ? liveElapsed : '--:--:--');
+  const sizeClass = size === 'sm' ? 'text-sm' : 'text-xl';
 
   return (
-    <span className="font-mono text-lg font-bold text-orange-600">
-      {elapsed}
+    <span>
+      <span className={`font-mono ${sizeClass} font-bold ${isValid ? 'text-orange-600' : 'text-red-500'}`}>
+        {display}
+      </span>
+      {showCheckInTime && checkInDisplay && (
+        <span className="text-xs text-gray-400 ml-2">since {checkInDisplay}</span>
+      )}
     </span>
   );
 }
@@ -2810,16 +2837,18 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
 
         {/* Live timer */}
         {request.checkInTime && (
-          <div className="mt-3 flex items-center gap-3 px-3 py-2 bg-orange-50 border border-orange-100 rounded-lg">
-            <Timer className="w-4 h-4 text-orange-500" />
-            <span className="text-sm font-medium text-gray-700">
-              <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} />
-            </span>
+          <div className="mt-3 flex items-center gap-3 px-3 py-2.5 bg-green-50 border border-green-200 rounded-lg">
+            <Timer className="w-4 h-4 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Service Timer</span>
+            <LiveTimer checkInTime={request.checkInTime} checkOutTime={request.checkOutTime || undefined} showCheckInTime size="sm" />
             {!request.checkOutTime && (
-              <span className="text-[10px] font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded">LIVE</span>
+              <span className="flex items-center gap-1 ml-auto">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-bold text-green-700 uppercase tracking-wide">Live</span>
+              </span>
             )}
             {request.totalHours && (
-              <span className="text-xs text-gray-400">{request.totalHours} hour{request.totalHours > 1 ? 's' : ''}</span>
+              <span className="text-xs text-gray-500">{request.totalHours}hr</span>
             )}
           </div>
         )}
@@ -3757,11 +3786,12 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
 
   useEffect(() => { loadJobs(); }, [loadJobs]);
 
-  // Auto-refresh every 30 seconds for live timer data
+  // Auto-refresh every 10 seconds for live timer data
   useEffect(() => {
-    const interval = setInterval(loadJobs, 30000);
+    const hasActive = jobs.some((j: any) => j.status === 'IN_PROGRESS');
+    const interval = setInterval(loadJobs, hasActive ? 10000 : 30000);
     return () => clearInterval(interval);
-  }, [loadJobs]);
+  }, [loadJobs, jobs]);
 
   const handleAction = async (jobId: string, action: string) => {
     setActionLoading(jobId);
@@ -3804,17 +3834,27 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
 
                   {/* Live Timer for IN_PROGRESS jobs */}
                   {job.status === 'IN_PROGRESS' && job.checkInTime && (
-                    <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
-                      <div className="flex items-center justify-between">
+                    <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Timer className="w-5 h-5 text-orange-600" />
-                          <span className="text-sm font-medium text-orange-800">Time on Job</span>
+                          <Timer className="w-5 h-5 text-green-600" />
+                          <span className="text-sm font-semibold text-green-800">Time on Job</span>
                           <span className="flex items-center gap-1">
-                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                            <span className="text-xs text-green-600 font-medium">LIVE</span>
+                            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                            <span className="text-xs text-green-700 font-bold uppercase tracking-wide">Live</span>
                           </span>
                         </div>
-                        <LiveTimer checkInTime={job.checkInTime} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <LiveTimer checkInTime={job.checkInTime} showCheckInTime />
+                        <button
+                          onClick={() => handleAction(job.id, 'checkout')}
+                          disabled={actionLoading === job.id}
+                          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5"
+                        >
+                          {actionLoading === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                          Check Out
+                        </button>
                       </div>
                     </div>
                   )}
@@ -3827,7 +3867,7 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                         <span className="text-sm font-medium text-purple-800">Service Summary</span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
-                        <span className="text-purple-600">Time: <LiveTimer checkInTime={job.checkInTime} checkOutTime={job.checkOutTime || undefined} /></span>
+                        <span className="text-purple-600">Time: <LiveTimer checkInTime={job.checkInTime} checkOutTime={job.checkOutTime || undefined} showCheckInTime size="sm" /></span>
                         <span className="text-purple-600">({job.totalHours} hour{job.totalHours > 1 ? 's' : ''})</span>
                       </div>
                       <div className="mt-1 text-lg font-bold text-purple-900">
@@ -3864,21 +3904,12 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
                     </>
                   )}
                   {job.status === 'IN_PROGRESS' && (
-                    <>
-                      <button
-                        onClick={() => handleAction(job.id, 'checkout')}
-                        disabled={actionLoading === job.id}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-                      >
-                        {actionLoading === job.id ? '...' : 'Check Out'}
-                      </button>
-                      <button
-                        onClick={() => onNavigate('messages')}
-                        className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </button>
-                    </>
+                    <button
+                      onClick={() => onNavigate('messages')}
+                      className="px-3 py-1.5 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 flex items-center gap-1"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
               </div>
