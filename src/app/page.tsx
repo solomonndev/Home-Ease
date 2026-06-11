@@ -13,7 +13,7 @@ import {
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
   Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, XCircle, ArrowLeft, Download,
-  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2, Landmark
+  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2, Landmark, TrendingUp
 } from 'lucide-react';
 
 import {
@@ -1588,8 +1588,8 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Users" value={summary?.totalUsers || 0} icon={<Users className="w-5 h-5" />} color="orange" />
           <StatCard label="Service Providers" value={summary?.totalProviders || 0} icon={<Wrench className="w-5 h-5" />} color="blue" />
-          <StatCard label="Total Requests" value={summary?.totalRequests || 0} icon={<ClipboardList className="w-5 h-5" />} color="amber" />
-          <StatCard label="Revenue" value={`₦${(summary?.totalRevenue || 0).toLocaleString()}`} icon={<Wallet className="w-5 h-5" />} color="purple" />
+          <StatCard label="Platform Fees" value={`₦${(summary?.totalPlatformFees || 0).toLocaleString()}`} icon={<TrendingUp className="w-5 h-5" />} color="green" />
+          <StatCard label="Gross Revenue" value={`₦${(summary?.totalRevenue || 0).toLocaleString()}`} icon={<Wallet className="w-5 h-5" />} color="purple" />
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-xl border border-gray-100 p-6">
@@ -1827,6 +1827,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee (5%)</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payout</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transfer</th>
@@ -1849,6 +1850,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{tx.serviceRequest?.client?.name || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm text-gray-500">₦{(tx.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-sm text-green-600 font-medium">₦{(tx.platformFee || 0).toLocaleString()}</td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">₦{(tx.providerPayout || 0).toLocaleString()}</td>
                       <td className="px-4 py-3">
                         <StatusBadge status={tx.status} />
@@ -2741,7 +2743,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
                 if (confirmResult.txStatus === 'COMPLETED') {
                   toast({
                     title: 'Payment Confirmed & Artisan Paid! ✅',
-                    description: `₦${request.amount.toLocaleString()} paid. ₦${confirmResult.providerPayout.toLocaleString()} credited to artisan's wallet.`,
+                    description: `₦${request.amount.toLocaleString()} paid (incl. ₦${(confirmResult.platformFee || 0).toLocaleString()} platform fee). ₦${confirmResult.providerPayout.toLocaleString()} credited to artisan.`,
                   });
                 } else if (confirmResult.transferStatus === 'FAILED') {
                   toast({
@@ -2752,7 +2754,7 @@ function RequestCard({ request, showActions, onNavigate, onRefresh }: { request:
                 } else {
                   toast({
                     title: 'Payment Confirmed! ✅',
-                    description: `₦${request.amount.toLocaleString()} secured in escrow. The artisan will receive ₦${confirmResult.providerPayout?.toLocaleString()} once bank details are verified.`,
+                    description: `₦${request.amount.toLocaleString()} secured in escrow (incl. ₦${(confirmResult.platformFee || 0).toLocaleString()} platform fee). Artisan receives ₦${confirmResult.providerPayout?.toLocaleString()}.`,
                   });
                 }
               } catch (confirmErr: any) {

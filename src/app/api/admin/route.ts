@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
       completedRequests,
       totalTransactions,
       totalRevenue,
+      totalPlatformFees,
       pendingVerifications,
     ] = await Promise.all([
       db.user.count(),
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
       db.serviceRequest.count({ where: { status: 'COMPLETED' } }),
       db.transaction.count(),
       db.transaction.aggregate({ where: { status: 'COMPLETED' }, _sum: { amount: true } }),
+      db.transaction.aggregate({ where: { status: 'COMPLETED' }, _sum: { platformFee: true } }),
       db.provider.count({ where: { verificationStatus: 'PENDING' } }),
     ]);
 
@@ -106,6 +108,7 @@ export async function GET(request: NextRequest) {
       completedRequests,
       totalTransactions,
       totalRevenue: totalRevenue._sum.amount || 0,
+      totalPlatformFees: totalPlatformFees._sum.platformFee || 0,
       pendingVerifications,
     });
   } catch (error) {
