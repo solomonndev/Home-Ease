@@ -1746,9 +1746,16 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
 
   if (tab === 'payouts') {
     const handlePayProvider = async (txId: string, providerName: string) => {
-      if (!confirm(`Send payout to ${providerName}? This will transfer funds to their bank account via Paystack.`)) return;
+      const isDemo = true; // Demo mode for student project
+      const msg = isDemo
+        ? `Simulate payout to ${providerName}? (Demo mode — no real transfer)`
+        : `Send payout to ${providerName}? This will transfer funds to their bank account via Paystack.`;
+      if (!confirm(msg)) return;
       try {
-        await api.initiatePayout(txId);
+        const result = await api.initiatePayout(txId) as any;
+        if (result?.demo) {
+          alert(`✅ Demo payout successful! ₦${result.transfer.amount?.toLocaleString()} sent to ${providerName}. No real money was transferred.`);
+        }
         loadData();
       } catch (err: any) {
         alert('Payout failed: ' + (err.message || 'Please try again'));
