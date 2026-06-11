@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { useToast, toast } from '@/hooks/use-toast';
-import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 // socket.io-client imported dynamically in useEffect to avoid SSR issues
 import {
   Search, MapPin, Calendar, Clock, Star, Shield, MessageSquare,
@@ -2566,76 +2566,56 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
 }
 
 // ==================== LIVE TIMER COMPONENT ====================
+// Computes elapsed time DURING RENDER (not via useState+setInterval) so it can never get stuck.
+// A simple 1-second tick just forces re-renders; the actual time is always computed fresh.
 function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: { checkInTime: string; checkOutTime?: string; showCheckInTime?: boolean; size?: 'sm' | 'lg' }) {
-  const formatTime = (ms: number) => {
-    const diff = Math.max(0, ms);
-    const hrs = Math.floor(diff / 3600000);
-    const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  // For static (checked-out) timers, compute elapsed during render
-  const staticElapsed = useMemo(() => {
-    if (!checkOutTime) return null;
-    const start = new Date(String(checkInTime)).getTime();
-    const end = new Date(String(checkOutTime)).getTime();
-    if (isNaN(start) || isNaN(end)) return null;
-    return formatTime(end - start);
-  }, [checkInTime, checkOutTime]);
-
-  // For live timers, use ref to avoid stale closures + state for display
+  // Store parsed start time in a ref so we don't re-parse on every tick
   const startRef = useRef<number>(0);
-  const [liveElapsed, setLiveElapsed] = useState('00:00:00');
-  const isValid = useRef(false);
+  const parsedRef = useRef(false);
 
-  useEffect(() => {
-    if (checkOutTime) return;
-
-    const timeStr = String(checkInTime);
-    const start = new Date(timeStr).getTime();
-
-    if (isNaN(start)) {
+  // Parse the check-in time once
+  if (!parsedRef.current) {
+    const t = new Date(String(checkInTime)).getTime();
+    if (!isNaN(t)) {
+      startRef.current = t;
+      parsedRef.current = true;
+    } else {
       console.error('[LiveTimer] Cannot parse checkInTime:', JSON.stringify(checkInTime), 'type:', typeof checkInTime);
-      isValid.current = false;
-      return;
     }
+  }
 
-    isValid.current = true;
-    startRef.current = start;
-    console.log('[LiveTimer] Started. checkInTime:', timeStr, 'parsed:', new Date(timeStr).toISOString());
+  // Tick every second to force re-render (only for live timers)
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (checkOutTime) return; // static timer, no tick needed
+    const id = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [checkOutTime]);
 
-    // Use setTimeout(fn, 0) for immediate first tick, then setInterval for ongoing
-    const immediate = setTimeout(() => {
-      setLiveElapsed(formatTime(Date.now() - startRef.current));
-    }, 0);
+  // ALWAYS compute elapsed time fresh during render — this is the key fix
+  const now = checkOutTime ? new Date(String(checkOutTime)).getTime() : Date.now();
+  const start = startRef.current;
+  const diffMs = start && !isNaN(start) && !isNaN(now) ? Math.max(0, now - start) : 0;
 
-    const interval = setInterval(() => {
-      setLiveElapsed(formatTime(Date.now() - startRef.current));
-    }, 1000);
+  const hrs = Math.floor(diffMs / 3600000);
+  const mins = Math.floor((diffMs % 3600000) / 60000);
+  const secs = Math.floor((diffMs % 60000) / 1000);
+  const elapsed = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-    return () => {
-      clearTimeout(immediate);
-      clearInterval(interval);
-    };
-  }, [checkInTime, checkOutTime]);
-
-  // Format the check-in time for display
+  // Format check-in time for "since HH:MM" display
   const checkInDisplay = (() => {
+    if (!start) return null;
     try {
-      const d = new Date(String(checkInTime));
-      if (isNaN(d.getTime())) return null;
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch { return null; }
   })();
 
-  const display = staticElapsed || liveElapsed;
   const sizeClass = size === 'sm' ? 'text-sm' : 'text-xl';
 
   return (
     <span>
       <span className={`font-mono ${sizeClass} font-bold text-orange-600`}>
-        {display}
+        {elapsed}
       </span>
       {showCheckInTime && checkInDisplay && (
         <span className="text-xs text-gray-400 ml-2">since {checkInDisplay}</span>
