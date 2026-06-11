@@ -105,6 +105,16 @@ export async function POST(request: NextRequest) {
         }
       });
 
+      // Mark ServiceRequest as COMPLETED and payment as RELEASED
+      try {
+        await db.serviceRequest.update({
+          where: { id: transaction.requestId },
+          data: { status: 'COMPLETED', paymentStatus: 'RELEASED' },
+        });
+      } catch (srErr: unknown) {
+        console.warn('[Payout] ServiceRequest update skipped:', srErr instanceof Error ? srErr.message : srErr);
+      }
+
       // Credit provider wallet (skip if Wallet table doesn't exist in DB)
       try {
         await db.wallet.upsert({
@@ -194,6 +204,16 @@ export async function POST(request: NextRequest) {
           message: `₦${transaction.providerPayout.toLocaleString()} is being sent to your ${provider.bankName} account (••••${provider.accountNumber.slice(-4)}). You will be notified once the transfer is complete.`,
         }
       });
+
+      // Mark ServiceRequest as COMPLETED and payment as RELEASED
+      try {
+        await db.serviceRequest.update({
+          where: { id: transaction.requestId },
+          data: { status: 'COMPLETED', paymentStatus: 'RELEASED' },
+        });
+      } catch (srErr: unknown) {
+        console.warn('[Payout] ServiceRequest update skipped:', srErr instanceof Error ? srErr.message : srErr);
+      }
 
       return NextResponse.json({
         success: true,
