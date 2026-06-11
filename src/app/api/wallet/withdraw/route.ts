@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 
-// POST /api/wallet/withdraw - Withdraw from wallet (simulated)
+// POST /api/wallet/withdraw - Withdraw from wallet (simulated for demo)
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser(request.headers);
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Validate user is a PROVIDER with a verified provider profile
+    // Validate user is a PROVIDER with a provider profile
     if (user.role !== 'PROVIDER') {
       return NextResponse.json({ error: 'Only providers can withdraw from wallet' }, { status: 403 });
     }
@@ -23,10 +23,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Provider profile not found' }, { status: 404 });
     }
 
-    if (provider.verificationStatus !== 'VERIFIED') {
+    // Check bank details exist before withdrawal
+    if (!provider.bankName || !provider.accountNumber || !provider.accountName) {
       return NextResponse.json(
-        { error: 'Provider profile must be verified before withdrawal' },
-        { status: 403 }
+        { error: 'Please add your bank account details in your profile before withdrawing.' },
+        { status: 400 }
       );
     }
 
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!wallet) {
-      return NextResponse.json({ error: 'Wallet not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Wallet not found. No earnings to withdraw yet.' }, { status: 404 });
     }
 
     // Check sufficient balance
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
         walletId: wallet.id,
         type: 'WITHDRAWAL',
         amount,
-        description: 'Wallet withdrawal',
+        description: `Withdrawal to ${provider.bankName} (••••${provider.accountNumber.slice(-4)})`,
         balanceAfter: updatedWallet.balance,
       },
     });
@@ -80,12 +81,12 @@ export async function POST(request: NextRequest) {
       balance: updatedWallet.balance,
       totalEarnings: updatedWallet.totalEarnings,
       totalWithdrawn: updatedWallet.totalWithdrawn,
-      totalCommission: updatedWallet.totalCommission,
       updatedAt: updatedWallet.updatedAt,
       transaction: walletTx,
     });
-  } catch (error) {
-    console.error('Wallet withdraw POST error:', error);
-    return NextResponse.json({ error: 'Withdrawal failed' }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Wallet withdraw error:', msg, error);
+    return NextResponse.json({ error: 'Withdrawal failed', details: msg }, { status: 500 });
   }
 }
