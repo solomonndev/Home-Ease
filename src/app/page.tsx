@@ -2566,47 +2566,65 @@ function StatCard({ label, value, icon, color }: { label: string; value: string 
 }
 
 // ==================== LIVE TIMER COMPONENT ====================
-// Computes elapsed time DURING RENDER (not via useState+setInterval) so it can never get stuck.
-// A simple 1-second tick just forces re-renders; the actual time is always computed fresh.
+// Uses direct DOM manipulation via refs for the live tick — bypasses React re-renders
+// so the timer is guaranteed to count up every second regardless of React quirks.
 function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: { checkInTime: string; checkOutTime?: string; showCheckInTime?: boolean; size?: 'sm' | 'lg' }) {
-  // Store parsed start time in a ref so we don't re-parse on every tick
+  const timerRef = useRef<HTMLSpanElement>(null);
   const startRef = useRef<number>(0);
-  const parsedRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Parse the check-in time once
-  if (!parsedRef.current) {
+  // Format milliseconds into HH:MM:SS
+  const formatElapsed = (ms: number) => {
+    const d = Math.max(0, ms);
+    const h = Math.floor(d / 3600000);
+    const m = Math.floor((d % 3600000) / 60000);
+    const s = Math.floor((d % 60000) / 1000);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
+
+  // Parse start time
+  const startTime = (() => {
     const t = new Date(String(checkInTime)).getTime();
-    if (!isNaN(t)) {
-      startRef.current = t;
-      parsedRef.current = true;
-    } else {
+    if (isNaN(t)) {
       console.error('[LiveTimer] Cannot parse checkInTime:', JSON.stringify(checkInTime), 'type:', typeof checkInTime);
+      return 0;
     }
-  }
+    return t;
+  })();
 
-  // Tick every second to force re-render (only for live timers)
-  const [, setTick] = useState(0);
+  // Compute initial elapsed for render (works for both static and live)
+  const endTime = checkOutTime ? new Date(String(checkOutTime)).getTime() : Date.now();
+  const initialElapsed = startTime && !isNaN(endTime) ? formatElapsed(endTime - startTime) : '00:00:00';
+
+  // For live timers: start a DOM-direct interval that updates the text node
   useEffect(() => {
-    if (checkOutTime) return; // static timer, no tick needed
-    const id = setInterval(() => setTick(t => t + 1), 1000);
-    return () => clearInterval(id);
-  }, [checkOutTime]);
+    if (checkOutTime || !startTime) return; // static or unparseable — no interval needed
+    startRef.current = startTime;
 
-  // ALWAYS compute elapsed time fresh during render — this is the key fix
-  const now = checkOutTime ? new Date(String(checkOutTime)).getTime() : Date.now();
-  const start = startRef.current;
-  const diffMs = start && !isNaN(start) && !isNaN(now) ? Math.max(0, now - start) : 0;
+    const updateDOM = () => {
+      if (timerRef.current) {
+        timerRef.current.textContent = formatElapsed(Date.now() - startRef.current);
+      }
+    };
 
-  const hrs = Math.floor(diffMs / 3600000);
-  const mins = Math.floor((diffMs % 3600000) / 60000);
-  const secs = Math.floor((diffMs % 60000) / 1000);
-  const elapsed = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    // Update immediately
+    updateDOM();
+    // Then every second — writes DIRECTLY to DOM, no React state involved
+    intervalRef.current = setInterval(updateDOM, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [checkOutTime, startTime]);
 
   // Format check-in time for "since HH:MM" display
   const checkInDisplay = (() => {
-    if (!start) return null;
+    if (!startTime) return null;
     try {
-      return new Date(start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } catch { return null; }
   })();
 
@@ -2614,8 +2632,8 @@ function LiveTimer({ checkInTime, checkOutTime, showCheckInTime, size = 'lg' }: 
 
   return (
     <span>
-      <span className={`font-mono ${sizeClass} font-bold text-orange-600`}>
-        {elapsed}
+      <span ref={timerRef} className={`font-mono ${sizeClass} font-bold text-orange-600`}>
+        {initialElapsed}
       </span>
       {showCheckInTime && checkInDisplay && (
         <span className="text-xs text-gray-400 ml-2">since {checkInDisplay}</span>

@@ -96,3 +96,21 @@ Stage Summary:
 - Provider timer box: green, larger, includes Check Out button
 - Client timer box: green, labeled "Service Timer", shows LIVE indicator
 - Auto-refresh: 10s for active jobs, 30s otherwise (both client and provider)
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix live check-in timer not counting (third attempt)
+
+Work Log:
+- Diagnosed that previous approach using `setTick(t => t + 1)` inside `setInterval` to force React re-renders was unreliable in React 19/Next.js 16
+- Rewrote `LiveTimer` component to use direct DOM manipulation via `useRef<HTMLSpanElement>` instead of React state
+- Live ticking now uses `timerRef.current.textContent = formatElapsed(...)` inside `setInterval` — completely bypasses React's rendering cycle
+- Static timer (after checkout) computes `initialElapsed` during render as before — this already worked
+- The interval calls `updateDOM()` immediately on mount, then every 1000ms
+- No ESLint errors, no compilation errors, no console errors
+
+Stage Summary:
+- `LiveTimer` component at line 2568 of `src/app/page.tsx` rewritten with direct DOM update approach
+- The live timer will now count up every second by writing directly to the DOM via ref, making it immune to React re-render batching/concurrent mode issues
+- Static timer (post-checkout) continues to work as confirmed by user
