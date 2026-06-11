@@ -82,6 +82,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate date format
+    if (isNaN(new Date(requestedDate).getTime())) {
+      return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
+    }
+
     // If a specific provider is chosen, validate and assign directly
     let assignedProviderId = providerId || null;
     let initialStatus = 'PENDING';
@@ -98,11 +103,11 @@ export async function POST(request: NextRequest) {
       }
 
       if (providerData.verificationStatus !== 'VERIFIED') {
-        return NextResponse.json({ error: 'Provider is not verified' }, { status: 400 });
+        return NextResponse.json({ error: 'Provider is not verified', details: `Current status: ${providerData.verificationStatus}` }, { status: 400 });
       }
 
       // Check provider offers this service (flexible matching for free-text skills)
-      const providerSkills = providerData.skills.split(',').map(s => s.trim().toLowerCase());
+      const providerSkills = (providerData.skills || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
       const serviceTypeLower = serviceType.toLowerCase();
       const hasMatchingSkill = providerSkills.some(skill =>
         skill === serviceTypeLower ||
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
         serviceTypeLower.includes(skill)
       );
       if (!hasMatchingSkill) {
-        return NextResponse.json({ error: 'Provider does not offer this service' }, { status: 400 });
+        return NextResponse.json({ error: 'Provider does not offer this service', details: `Provider skills: ${providerData.skills}, Requested: ${serviceType}` }, { status: 400 });
       }
 
       initialStatus = 'MATCHED';
@@ -176,8 +181,12 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Services POST error:', error);
-    return NextResponse.json({ error: 'Failed to create service request' }, { status: 500 });
+    const message = error?.message || 'Unknown error';
+    return NextResponse.json(
+      { error: 'Failed to create service request', details: message },
+      { status: 500 }
+    );
   }
 }

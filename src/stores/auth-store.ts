@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface User {
   id: string;
@@ -53,6 +53,22 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'domestic-services-auth',
+      // Use sessionStorage so each browser tab has its own auth session.
+      // This allows logging into different accounts on different tabs
+      // without one tab overwriting the other's session.
+      storage: typeof window !== 'undefined'
+        ? createJSONStorage(() => {
+            // Clean up old localStorage entry to avoid stale auth confusion
+            try { localStorage.removeItem('domestic-services-auth'); } catch {}
+            return sessionStorage;
+          })
+        : undefined,
+      // Only persist these specific fields (not temporary UI state)
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );
