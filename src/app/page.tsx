@@ -1491,63 +1491,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
         {jobOffers.length ? (
           <div className="space-y-3">
             {jobOffers.map((req: any) => (
-              <div key={req.id} className="bg-white rounded-xl border border-orange-100 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <StatusBadge status={req.status} />
-                      <span className="text-sm font-medium text-gray-500">{req.serviceType}</span>
-                    </div>
-                    {req.description && <p className="text-sm text-gray-600 mt-1">{req.description}</p>}
-                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-                      <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {req.location}</span>
-                      <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(req.requestedDate).toLocaleDateString()}</span>
-                      <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {req.requestedTime}</span>
-                      <span><Wallet className="w-3.5 h-3.5 inline mr-0.5" /> ₦{(req.amount || 0).toLocaleString()}</span>
-                    </div>
-                    {req.provider && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
-                        <CreditCard className="w-3.5 h-3.5" />
-                        <span className="text-xs font-medium text-blue-700">
-                          You&apos;ll be paid per hour (₦{req.provider.hourlyRate?.toLocaleString() || '0'}/hr) after service
-                        </span>
-                      </div>
-                    )}
-                    <p className="text-xs text-gray-400 mt-2">Client: {req.client?.name}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={async () => {
-                          try {
-                            await api.serviceAction(req.id, 'accept');
-                            loadData();
-                          } catch (err: any) {
-                            console.error('Accept error:', err);
-                          }
-                        }}
-                        className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await api.serviceAction(req.id, 'decline');
-                            loadData();
-                          } catch (err: any) {
-                            console.error('Decline error:', err);
-                          }
-                        }}
-                        className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                    <p className="text-xs text-orange-500">Accept → Chat unlocked</p>
-                  </div>
-                </div>
-              </div>
+              <JobOfferCard key={req.id} request={req} onAction={loadData} />
             ))}
           </div>
         ) : (
@@ -4852,6 +4796,85 @@ function EmptyState({ message }: { message: string }) {
     <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
       <Inbox className="w-12 h-12 text-gray-300 mx-auto" />
       <p className="text-gray-500 mt-3">{message}</p>
+    </div>
+  );
+}
+
+// ==================== JOB OFFER CARD (Provider) ====================
+function JobOfferCard({ request: req, onAction }: { request: any; onAction: () => void }) {
+  const [acting, setActing] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const handleAction = async (action: 'accept' | 'decline') => {
+    setActing(true);
+    setActionError('');
+    try {
+      await api.serviceAction(req.id, action);
+      toast({
+        title: action === 'accept' ? 'Job Accepted! 🎉' : 'Job Declined',
+        description: action === 'accept'
+          ? 'You can now chat with the client and check in when you arrive.'
+          : 'The client will be notified.',
+      });
+      onAction();
+    } catch (err: any) {
+      const msg = err.message || 'Action failed. Please try again.';
+      setActionError(msg);
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setActing(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-orange-100 p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <StatusBadge status={req.status} />
+            <span className="text-sm font-medium text-gray-500">{req.serviceType}</span>
+          </div>
+          {req.description && <p className="text-sm text-gray-600 mt-1">{req.description}</p>}
+          <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+            <span><MapPin className="w-3.5 h-3.5 inline mr-0.5" /> {req.location}</span>
+            <span><Calendar className="w-3.5 h-3.5 inline mr-0.5" /> {new Date(req.requestedDate).toLocaleDateString()}</span>
+            <span><Clock className="w-3.5 h-3.5 inline mr-0.5" /> {req.requestedTime}</span>
+            <span><Wallet className="w-3.5 h-3.5 inline mr-0.5" /> ₦{(req.amount || 0).toLocaleString()}</span>
+          </div>
+          {req.provider && (
+            <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+              <CreditCard className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium text-blue-700">
+                You&apos;ll be paid per hour (₦{req.provider.hourlyRate?.toLocaleString() || '0'}/hr) after service
+              </span>
+            </div>
+          )}
+          <p className="text-xs text-gray-400 mt-2">Client: {req.client?.name}</p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          {actionError && (
+            <p className="text-xs text-red-600 text-right max-w-[160px]">{actionError}</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAction('accept')}
+              disabled={acting}
+              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              Accept
+            </button>
+            <button
+              onClick={() => handleAction('decline')}
+              disabled={acting}
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+            >
+              Decline
+            </button>
+          </div>
+          <p className="text-xs text-orange-500">Accept → Chat unlocked</p>
+        </div>
+      </div>
     </div>
   );
 }
