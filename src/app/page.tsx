@@ -107,6 +107,7 @@ export default function Home() {
       onOpenAuth={openAuth}
       showAuthDialog={showAuthDialog}
       authMode={authMode}
+      authKey={authKey}
       onCloseAuth={() => setShowAuthDialog(false)}
       onSwitchAuthMode={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
       onLogin={handleLogin}
@@ -121,6 +122,7 @@ function LandingView({
   onOpenAuth,
   showAuthDialog,
   authMode,
+  authKey,
   onCloseAuth,
   onSwitchAuthMode,
   onLogin,
@@ -130,6 +132,7 @@ function LandingView({
   onOpenAuth: (mode: 'login' | 'register') => void;
   showAuthDialog: boolean;
   authMode: 'login' | 'register';
+  authKey: number;
   onCloseAuth: () => void;
   onSwitchAuthMode: () => void;
   onLogin: (email: string, password: string) => Promise<void>;
