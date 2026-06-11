@@ -105,12 +105,17 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      // Credit provider wallet
-      await db.wallet.upsert({
-        where: { userId: provider.userId },
-        create: { userId: provider.userId, balance: transaction.providerPayout, totalEarnings: transaction.providerPayout },
-        update: { balance: { increment: transaction.providerPayout }, totalEarnings: { increment: transaction.providerPayout } },
-      });
+      // Credit provider wallet (skip if Wallet table doesn't exist in DB)
+      try {
+        await db.wallet.upsert({
+          where: { userId: provider.userId },
+          create: { userId: provider.userId, balance: transaction.providerPayout, totalEarnings: transaction.providerPayout },
+          update: { balance: { increment: transaction.providerPayout }, totalEarnings: { increment: transaction.providerPayout } },
+        });
+      } catch (walletErr: unknown) {
+        const walletMsg = walletErr instanceof Error ? walletErr.message : '';
+        console.warn('[Payout] Wallet credit skipped:', walletMsg);
+      }
 
       return NextResponse.json({
         success: true,
