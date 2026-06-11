@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
     }
 
     const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
-    const isDemo = process.env.PAYSTACK_DEMO_MODE === 'true';
+    // Default to demo mode unless explicitly set to "false" (works on Vercel without env config)
+    const isDemo = process.env.PAYSTACK_LIVE_MODE !== 'true';
 
     if (!paystackSecretKey && !isDemo) {
       return NextResponse.json({ error: 'Paystack is not configured. Add PAYSTACK_SECRET_KEY to your .env file.' }, { status: 500 });
