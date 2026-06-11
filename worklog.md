@@ -170,3 +170,23 @@ Stage Summary:
 - After admin payout, provider will now see job as COMPLETED instead of AWAITING_PAYMENT
 - Provider wallet page will show earnings computed from Transaction table even without Wallet table
 - Both fixes are backward-compatible (graceful fallbacks with try/catch)
+---
+Task ID: 1
+Agent: Main
+Task: Add docked Transactions panel for providers with commission visibility
+
+Work Log:
+- Added "Transactions" tab to provider sidebar navigation (between My Jobs and Earnings)
+- Created `ProviderTransactionsPanel` component with:
+  - Filter tabs (All, Paid, Escrow, Refunded)
+  - Summary cards showing: Client Paid (gross), Platform Fee (5%), Your Payout (net)
+  - Desktop table view with columns: Client, Service, Client Paid, Platform Fee, You Received, Status, Date
+  - Mobile card view with same data in responsive layout
+  - Each transaction shows full commission breakdown (amount, 5% fee, net payout)
+- Wired up the transactions tab in ProviderContent to render the new panel
+- Verified code compiles without errors (lint clean, dev server compiles)
+
+Stage Summary:
+- Provider sidebar now has 6 tabs: Job Offers, My Jobs, Transactions, Earnings, Messages, Profile
+- Platform commission (5%) is now clearly visible in the Transactions panel per-transaction and as a total
+- Responsive design with table on desktop and cards on mobile

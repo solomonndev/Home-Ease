@@ -1017,8 +1017,9 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
     ? [
         { id: 'job-offers', label: 'Job Offers', icon: <Inbox className="w-4 h-4" /> },
         { id: 'my-jobs', label: 'My Jobs', icon: <ClipboardList className="w-4 h-4" /> },
-        { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-4 h-4" /> },
+        { id: 'transactions', label: 'Transactions', icon: <CreditCard className="w-4 h-4" /> },
         { id: 'earnings', label: 'Earnings', icon: <Wallet className="w-4 h-4" /> },
+        { id: 'messages', label: 'Messages', icon: <MessageSquare className="w-4 h-4" /> },
         { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4" /> },
       ]
     : [
@@ -1507,6 +1508,10 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
 
   if (tab === 'my-jobs') {
     return <ProviderJobsView user={user} onRefresh={loadData} onNavigate={onNavigate} />;
+  }
+
+  if (tab === 'transactions') {
+    return <ProviderTransactionsPanel />;
   }
 
   if (tab === 'earnings') {
@@ -3940,6 +3945,202 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
         </div>
       ) : (
         <EmptyState message="No jobs assigned yet" />
+      )}
+    </div>
+  );
+}
+
+// ==================== PROVIDER TRANSACTIONS PANEL ====================
+function ProviderTransactionsPanel() {
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'COMPLETED' | 'ESCROW' | 'REFUNDED'>('all');
+
+  const loadTransactions = useCallback(async () => {
+    try {
+      const query = filter === 'all' ? '' : `?status=${filter}`;
+      const res = await fetch(`/api/payments${query}`, {
+        headers: { Authorization: `Bearer ${useAuthStore.getState().token}` },
+      });
+      if (!res.ok) throw new Error('Failed to load transactions');
+      const data = await res.json();
+      setTransactions(data.transactions || []);
+    } catch (err) {
+      console.error('Transactions load error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filter]);
+
+  useEffect(() => { loadTransactions(); }, [loadTransactions]);
+
+  // Compute totals
+  const totalAmount = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalFees = transactions.reduce((s, t) => s + (t.platformFee || 0), 0);
+  const totalPayout = transactions.reduce((s, t) => s + (t.providerPayout || 0), 0);
+
+  const statusColor: Record<string, string> = {
+    COMPLETED: 'bg-green-50 text-green-700 border-green-200',
+    ESCROW: 'bg-amber-50 text-amber-700 border-amber-200',
+    REFUNDED: 'bg-red-50 text-red-700 border-red-200',
+    PENDING: 'bg-gray-50 text-gray-700 border-gray-200',
+  };
+  const statusLabel: Record<string, string> = {
+    COMPLETED: 'Paid',
+    ESCROW: 'In Escrow',
+    REFUNDED: 'Refunded',
+    PENDING: 'Pending',
+  };
+
+  if (loading) return <LoadingSkeleton />;
+
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Transaction History</h3>
+          <p className="text-sm text-gray-500 mt-0.5">Full breakdown of all payments received for your services</p>
+        </div>
+        <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg p-1">
+          {(['all', 'COMPLETED', 'ESCROW', 'REFUNDED'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                filter === f
+                  ? 'bg-white text-orange-700 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {f === 'all' ? 'All' : f === 'COMPLETED' ? 'Paid' : f === 'ESCROW' ? 'Escrow' : 'Refunded'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      {transactions.length > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <p className="text-xs font-medium text-gray-500 mb-1">Client Paid</p>
+            <p className="text-lg font-bold text-gray-900">₦{totalAmount.toLocaleString()}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">Gross amount</p>
+          </div>
+          <div className="bg-orange-50 rounded-xl border border-orange-200 p-4">
+            <p className="text-xs font-medium text-orange-600 mb-1">Platform Fee (5%)</p>
+            <p className="text-lg font-bold text-orange-900">₦{totalFees.toLocaleString()}</p>
+            <p className="text-[10px] text-orange-500 mt-0.5">Service commission</p>
+          </div>
+          <div className="bg-green-50 rounded-xl border border-green-200 p-4">
+            <p className="text-xs font-medium text-green-600 mb-1">Your Payout</p>
+            <p className="text-lg font-bold text-green-900">₦{totalPayout.toLocaleString()}</p>
+            <p className="text-[10px] text-green-500 mt-0.5">Net credited to wallet</p>
+          </div>
+        </div>
+      )}
+
+      {/* Transaction List */}
+      {transactions.length > 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Client</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Service</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Client Paid</th>
+                  <th className="text-right px-4 py-3 font-semibold text-orange-600">Platform Fee</th>
+                  <th className="text-right px-4 py-3 font-semibold text-green-700">You Received</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-600">Status</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Date</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {transactions.map((tx: any) => (
+                  <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xs font-semibold flex-shrink-0">
+                          {(tx.serviceRequest?.client?.name || '?').charAt(0)}
+                        </div>
+                        <span className="font-medium text-gray-900 truncate max-w-[120px]">{tx.serviceRequest?.client?.name || '—'}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                        <Wrench className="w-3 h-3" />
+                        {tx.serviceRequest?.serviceType || '—'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="font-semibold text-gray-900">₦{(tx.amount || 0).toLocaleString()}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="font-medium text-orange-600">-₦{(tx.platformFee || 0).toLocaleString()}</span>
+                      <p className="text-[10px] text-orange-400">5%</p>
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="font-bold text-green-700">₦{(tx.providerPayout || 0).toLocaleString()}</span>
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusColor[tx.status] || statusColor.PENDING}`}>
+                        {statusLabel[tx.status] || tx.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right text-xs text-gray-500 whitespace-nowrap">
+                      {new Date(tx.createdAt).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-gray-100">
+            {transactions.map((tx: any) => (
+              <div key={tx.id} className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-sm font-semibold">
+                      {(tx.serviceRequest?.client?.name || '?').charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{tx.serviceRequest?.client?.name || '—'}</p>
+                      <p className="text-xs text-gray-500">{tx.serviceRequest?.serviceType || '—'}</p>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusColor[tx.status] || statusColor.PENDING}`}>
+                    {statusLabel[tx.status] || tx.status}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mt-3 bg-gray-50 rounded-lg p-3">
+                  <div>
+                    <p className="text-[10px] text-gray-500 uppercase font-medium">Client Paid</p>
+                    <p className="text-sm font-bold text-gray-900 mt-0.5">₦{(tx.amount || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-orange-500 uppercase font-medium">Fee (5%)</p>
+                    <p className="text-sm font-bold text-orange-700 mt-0.5">-₦{(tx.platformFee || 0).toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-green-500 uppercase font-medium">You Got</p>
+                    <p className="text-sm font-bold text-green-700 mt-0.5">₦{(tx.providerPayout || 0).toLocaleString()}</p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-2">{new Date(tx.createdAt).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <CreditCard className="w-12 h-12 text-gray-300 mx-auto" />
+          <p className="text-gray-500 mt-3 font-medium">No transactions yet</p>
+          <p className="text-sm text-gray-400 mt-1">Completed service payments with commission breakdown will appear here</p>
+        </div>
       )}
     </div>
   );
