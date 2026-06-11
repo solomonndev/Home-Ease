@@ -73,20 +73,21 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const totalEarnings = completedTxns.reduce((sum, t) => sum + (t.providerPayout || 0), 0);
-    const paidOut = completedTxns
+    // balance = total paid out by admin (what provider can withdraw)
+    const balance = completedTxns
       .filter(t => t.transferStatus === 'SUCCESS')
       .reduce((sum, t) => sum + (t.providerPayout || 0), 0);
-    const pendingEarnings = completedTxns
+    const totalEarnings = balance;
+    const pendingPayout = completedTxns
       .filter(t => t.transferStatus !== 'SUCCESS')
       .reduce((sum, t) => sum + (t.providerPayout || 0), 0);
 
     // Build ledger from transactions
     const txLedger = completedTxns.slice(0, 20).map(t => ({
       id: t.id,
-      type: t.transferStatus === 'SUCCESS' ? 'WITHDRAWAL' : 'EARNING',
+      type: t.transferStatus === 'SUCCESS' ? 'EARNING' : 'PENDING',
       amount: t.providerPayout,
-      description: `${t.serviceRequest?.serviceType || 'Service'} - ${t.transferStatus === 'SUCCESS' ? 'Paid out' : 'Pending payout'}`,
+      description: `${t.serviceRequest?.serviceType || 'Service'} - ${t.transferStatus === 'SUCCESS' ? 'Credited' : 'Pending'}`,
       balanceAfter: 0,
       createdAt: t.createdAt,
     }));
@@ -94,13 +95,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: 'fallback',
       userId: user.id,
-      balance: pendingEarnings,
+      balance,
       totalEarnings,
-      totalWithdrawn: paidOut,
+      totalWithdrawn: 0,
+      pendingPayout,
       createdAt: new Date(),
       updatedAt: new Date(),
       ledger: txLedger,
-      fallback: true,
     });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
