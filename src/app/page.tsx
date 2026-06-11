@@ -4804,19 +4804,22 @@ function EmptyState({ message }: { message: string }) {
 function JobOfferCard({ request: req, onAction }: { request: any; onAction: () => void }) {
   const [acting, setActing] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [actionResult, setResult] = useState<'accepted' | 'declined' | null>(null);
 
   const handleAction = async (action: 'accept' | 'decline') => {
     setActing(true);
     setActionError('');
     try {
       await api.serviceAction(req.id, action);
+      setResult(action);
       toast({
         title: action === 'accept' ? 'Job Accepted! 🎉' : 'Job Declined',
         description: action === 'accept'
           ? 'You can now chat with the client and check in when you arrive.'
           : 'The client will be notified.',
       });
-      onAction();
+      // Delay the refresh so the user sees the green/red confirmation
+      setTimeout(() => onAction(), 1500);
     } catch (err: any) {
       const msg = err.message || 'Action failed. Please try again.';
       setActionError(msg);
@@ -4827,7 +4830,7 @@ function JobOfferCard({ request: req, onAction }: { request: any; onAction: () =
   };
 
   return (
-    <div className="bg-white rounded-xl border border-orange-100 p-5">
+    <div className={`bg-white rounded-xl border p-5 transition-colors duration-300 ${actionResult === 'accepted' ? 'border-green-200 bg-green-50/30' : actionResult === 'declined' ? 'border-gray-200 bg-gray-50/50 opacity-70' : 'border-orange-100'}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -4856,23 +4859,43 @@ function JobOfferCard({ request: req, onAction }: { request: any; onAction: () =
             <p className="text-xs text-red-600 text-right max-w-[160px]">{actionError}</p>
           )}
           <div className="flex gap-2">
-            <button
-              onClick={() => handleAction('accept')}
-              disabled={acting}
-              className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5"
-            >
-              {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-              Accept
-            </button>
-            <button
-              onClick={() => handleAction('decline')}
-              disabled={acting}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
-            >
-              Decline
-            </button>
+            {actionResult === 'accepted' ? (
+              <button
+                disabled
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg flex items-center gap-1.5 cursor-default"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                Accepted
+              </button>
+            ) : actionResult === 'declined' ? (
+              <button
+                disabled
+                className="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-200 rounded-lg flex items-center gap-1.5 cursor-default"
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                Declined
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleAction('accept')}
+                  disabled={acting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 flex items-center gap-1.5 transition-colors"
+                >
+                  {acting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  Accept
+                </button>
+                <button
+                  onClick={() => handleAction('decline')}
+                  disabled={acting}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                >
+                  Decline
+                </button>
+              </>
+            )}
           </div>
-          <p className="text-xs text-orange-500">Accept → Chat unlocked</p>
+          {!actionResult && <p className="text-xs text-orange-500">Accept → Chat unlocked</p>}
         </div>
       </div>
     </div>

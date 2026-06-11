@@ -45,3 +45,25 @@ Stage Summary:
 - Output file: upload/HomeEase_Chapters_4_and_5.docx (876KB, 242 paragraphs, 7 tables, 6 figures)
 - Matching formatting: Times New Roman 12pt, 1.5 line spacing, consistent heading styles
 - Available for download at /api/download?file=chapters45
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix job offer accept button visual feedback on provider's page
+
+Work Log:
+- Investigated the `JobOfferCard` component in `src/app/page.tsx` (line 4803)
+- Found that after clicking Accept, the API call succeeded but the card immediately disappeared via `onAction()` reload with no visual confirmation
+- Added `actionResult` state to track accepted/declined status locally
+- After successful accept: button turns **green** with checkmark icon and "Accepted" text, card gets green border/background tint
+- After successful decline: button turns **gray** with X icon and "Declined" text, card gets grayed out
+- Added 1.5s delay before `onAction()` reload so provider sees the visual confirmation
+- Both buttons are disabled after any action to prevent double-clicks
+- Removed the "Accept → Chat unlocked" hint text after action (no longer relevant)
+
+Stage Summary:
+- Modified: `src/app/page.tsx` — `JobOfferCard` component
+- Accept button now changes to green "✓ Accepted" after clicking
+- Decline button now changes to gray "✗ Declined" after clicking
+- Card background tints green (accepted) or grays out (declined)
+- 1.5s visual delay before data refresh removes the card
