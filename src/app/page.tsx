@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { api } from '@/lib/api-client';
 import { useToast, toast } from '@/hooks/use-toast';
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { io, Socket } from 'socket.io-client';
+// socket.io-client imported dynamically in useEffect to avoid SSR issues
 import {
   Search, MapPin, Calendar, Clock, Star, Shield, MessageSquare,
   BarChart3, ClipboardList, CreditCard, User, Users, Bell, Settings,
@@ -4134,30 +4134,33 @@ function MessagesView({ user }: { user: any }) {
   const [sending, setSending] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any>(null);
 
   const chatStatuses = ['ACCEPTED', 'IN_PROGRESS', 'COMPLETED'];
 
   // Initialize WebSocket connection
   useEffect(() => {
-    const socket = io('/?XTransformPort=3003', {
-      transports: ['websocket', 'polling'],
-      forceNew: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 10000,
-    });
+    let socket: any;
+    (async () => {
+      try {
+        const { io } = await import('socket.io-client');
+        socket = io('/?XTransformPort=3003', {
+          transports: ['websocket', 'polling'],
+          forceNew: true,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          timeout: 10000,
+        });
+        socketRef.current = socket;
 
-    socketRef.current = socket;
+        socket.on('connect', () => {
+          console.log('Chat connected');
+        });
 
-    socket.on('connect', () => {
-      console.log('Chat connected');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Chat disconnected');
-    });
+        socket.on('disconnect', () => {
+          console.log('Chat disconnected');
+        });
 
     // Listen for new messages from WebSocket
     socket.on('new-message', (msg: any) => {
@@ -4180,9 +4183,16 @@ function MessagesView({ user }: { user: any }) {
     socket.on('user-stop-typing', () => {
       setTypingUser(null);
     });
+      } catch (err) {
+        console.error('Socket connection error:', err);
+      }
+    })();
 
     return () => {
-      socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
   }, [user.id]);
 
