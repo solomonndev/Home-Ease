@@ -36,6 +36,7 @@ export default function Home() {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
+  const [authKey, setAuthKey] = useState(0);
 
   // Check if user is authenticated on mount (use getState for reliable hydration)
   useEffect(() => {
@@ -88,6 +89,7 @@ export default function Home() {
 
   const openAuth = useCallback((mode: 'login' | 'register') => {
     setAuthMode(mode);
+    setAuthKey((k) => k + 1);
     setShowAuthDialog(true);
   }, []);
 
@@ -352,6 +354,7 @@ function LandingView({
       {/* Auth Dialog */}
       {showAuthDialog && (
         <AuthDialog
+          key={authKey}
           mode={authMode}
           onClose={onCloseAuth}
           onLogin={onLogin}
@@ -455,7 +458,7 @@ function AuthDialog({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             {mode === 'register' && (
               <>
                 <div>
