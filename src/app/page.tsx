@@ -231,6 +231,16 @@ function LandingView({
               </button>
             </div>
             <div className="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500">
+              <a
+                href="/files/HomeEase_Seminar.pptx"
+                download
+                className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-600 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download Seminar Slides
+              </a>
+            </div>
+            <div className="mt-4 flex items-center justify-center gap-8 text-sm text-gray-500">
               <div className="flex items-center gap-1.5">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                 <span className="text-orange-500 font-bold text-lg">4.8</span>
