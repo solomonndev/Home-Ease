@@ -422,6 +422,7 @@ function AuthDialog({
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'CLIENT' | 'PROVIDER'>('CLIENT');
+  const [registerStep, setRegisterStep] = useState<'choose-role' | 'form'>('choose-role');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [hourlyRate, setHourlyRate] = useState('');
@@ -512,7 +513,7 @@ function AuthDialog({
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              {mode === 'login' ? 'Sign In' : 'Sign Up'}
+              {mode === 'login' ? 'Sign In' : registerStep === 'choose-role' ? 'Join HomeEase' : 'Create Account'}
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
           </div>
@@ -523,9 +524,52 @@ function AuthDialog({
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+          {/* ===== REGISTER STEP 1: CHOOSE ROLE ===== */}
+          {mode === 'register' && registerStep === 'choose-role' && (
+            <div className="space-y-6">
+              <p className="text-gray-500 text-sm text-center">How would you like to use HomeEase?</p>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => { setRole('CLIENT'); setRegisterStep('form'); }}
+                  className="w-full p-5 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                      <HomeIcon className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Service Seeker</div>
+                      <div className="text-sm text-gray-500">I want to find and hire service providers</div>
+                    </div>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRole('PROVIDER'); setRegisterStep('form'); }}
+                  className="w-full p-5 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                      <Wrench className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900">Service Provider</div>
+                      <div className="text-sm text-gray-500">I want to offer my services and earn money</div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+              <p className="text-center text-sm text-gray-400">
+                Already have an account?{' '}
+                <button type="button" onClick={onSwitchMode} className="text-orange-600 font-medium hover:underline">Sign In</button>
+              </p>
+            </div>
+          )}
 
-            {/* ===== LOGIN MODE ===== */}
+          {/* ===== REGISTER STEP 2: FORM / LOGIN MODE ===== */}
+          {!(mode === 'register' && registerStep === 'choose-role') && (
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             {mode === 'login' && (
               <>
                 {/* Login method tabs */}
@@ -589,9 +633,17 @@ function AuthDialog({
               </>
             )}
 
-            {/* ===== REGISTER MODE — Name & Role ===== */}
+            {/* ===== REGISTER MODE — Name ===== */}
             {mode === 'register' && (
               <>
+                <div className="flex items-center gap-2 mb-1">
+                  <button type="button" onClick={() => setRegisterStep('choose-role')} className="text-orange-600 hover:text-orange-700 text-sm font-medium flex items-center gap-1">
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <span className="text-xs text-gray-400">
+                    Signing up as {role === 'CLIENT' ? 'Service Seeker' : 'Service Provider'}
+                  </span>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                   <input
@@ -620,35 +672,6 @@ function AuthDialog({
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     required
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">I am a</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setRole('CLIENT')}
-                      className={`p-3 rounded-lg border-2 text-center transition-all ${
-                        role === 'CLIENT'
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <HomeIcon className="w-6 h-6 mx-auto mb-1" />
-                      <span className="text-sm font-medium">Service Seeker</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRole('PROVIDER')}
-                      className={`p-3 rounded-lg border-2 text-center transition-all ${
-                        role === 'PROVIDER'
-                          ? 'border-orange-500 bg-orange-50 text-orange-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                      }`}
-                    >
-                      <Wrench className="w-6 h-6 mx-auto mb-1" />
-                      <span className="text-sm font-medium">Service Provider</span>
-                    </button>
-                  </div>
                 </div>
               </>
             )}
@@ -869,7 +892,9 @@ function AuthDialog({
               {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
           </form>
+          )}
 
+          {!(mode === 'register' && registerStep === 'choose-role') && (
           <div className="mt-6 text-center text-sm text-gray-600">
             {mode === 'login' ? (
               <>
@@ -887,6 +912,7 @@ function AuthDialog({
               </>
             )}
           </div>
+          )}
 
 
         </div>
