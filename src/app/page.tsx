@@ -1368,7 +1368,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
           {user.role !== 'ADMIN' && (
             <div className="mb-6 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 sm:p-5 text-white">
               <h2 className="text-lg sm:text-xl font-semibold">
-                Welcome back, {user.username ? `@${user.username}` : user.firstName || user.name?.split(' ')[0]}! 👋
+                Welcome back, {user.username || user.firstName || user.name?.split(' ')[0]}! 👋
               </h2>
               <p className="text-orange-100 text-sm mt-1">
                 {user.role === 'CLIENT'
