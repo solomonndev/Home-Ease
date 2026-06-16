@@ -652,7 +652,6 @@ function AuthDialog({
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_.\-]/g, '').toLowerCase())}
-                    placeholder="choose a username"
                     className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     required
                     minLength={3}
@@ -672,7 +671,6 @@ function AuthDialog({
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                 required
-                placeholder="you@example.com"
               />
             </div>
             )}
@@ -686,7 +684,6 @@ function AuthDialog({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                  placeholder="+234 800 000 0000"
                 />
               </div>
             )}
