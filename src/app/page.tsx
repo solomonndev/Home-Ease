@@ -1749,6 +1749,7 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
   const [pendingProviders, setPendingProviders] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [deletingUser, setDeletingUser] = useState<any | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [allRequests, setAllRequests] = useState<any[]>([]);
   const [disputes, setDisputes] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
@@ -1855,15 +1856,19 @@ function AdminContent({ tab, user }: { tab: string; user: any }) {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={async () => { await api.adminAction('verify-provider', p.id); loadData(); }}
-                      className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+                      onClick={async () => { setActionLoading('v-' + p.id); await api.adminAction('verify-provider', p.id); setActionLoading(null); loadData(); }}
+                      disabled={actionLoading === 'v-' + p.id}
+                      className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
+                      {actionLoading === 'v-' + p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                       Verify
                     </button>
                     <button
-                      onClick={async () => { await api.adminAction('reject-provider', p.id); loadData(); }}
-                      className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100"
+                      onClick={async () => { setActionLoading('r-' + p.id); await api.adminAction('reject-provider', p.id); setActionLoading(null); loadData(); }}
+                      disabled={actionLoading === 'r-' + p.id}
+                      className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
+                      {actionLoading === 'r-' + p.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                       Reject
                     </button>
                   </div>
