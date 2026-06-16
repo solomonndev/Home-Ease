@@ -899,6 +899,25 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isRejected = verificationStatus === 'REJECTED';
 
+  // Periodically check verification status — auto-approve when admin verifies
+  useEffect(() => {
+    if (isRejected || !authToken) return;
+    const checkStatus = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${authToken}` } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user?.provider?.verificationStatus === 'VERIFIED') {
+            useAuthStore.getState().login(authToken, data.user);
+          }
+        }
+      } catch {}
+    };
+    checkStatus();
+    const interval = setInterval(checkStatus, 10000);
+    return () => clearInterval(interval);
+  }, [authToken, isRejected]);
+
   const headers = (): Record<string, string> => {
     const h: Record<string, string> = {};
     if (authToken) h['Authorization'] = `Bearer ${authToken}`;
