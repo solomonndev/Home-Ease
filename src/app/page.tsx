@@ -730,6 +730,9 @@ function AuthDialog({
                     ) : null}
                   </div>
                 </div>
+                {confirmPassword && confirmPassword !== password && (
+                  <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+                )}
               </div>
             )}
 
