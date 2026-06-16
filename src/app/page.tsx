@@ -417,6 +417,24 @@ function AuthDialog({
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [error, setError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Password strength calculator
+  const getPasswordStrength = (pw: string) => {
+    if (!pw) return { label: '', color: '', width: '0%' };
+    let score = 0;
+    if (pw.length >= 6) score++;
+    if (pw.length >= 8) score++;
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^a-zA-Z0-9]/.test(pw)) score++;
+    if (pw.length >= 12) score++;
+    if (score <= 2) return { label: 'Weak', color: 'bg-red-500', width: '25%' };
+    if (score <= 3) return { label: 'Fair', color: 'bg-orange-500', width: '50%' };
+    if (score <= 4) return { label: 'Good', color: 'bg-yellow-500', width: '75%' };
+    return { label: 'Strong', color: 'bg-green-500', width: '100%' };
+  };
+  const pwStrength = mode === 'register' ? getPasswordStrength(password) : null;
 
   const addSkill = (value: string) => {
     const trimmed = value.trim();
@@ -448,6 +466,10 @@ function AuthDialog({
     }
     if (mode === 'register' && username.trim().length < 3) {
       setError('Username is required (minimum 3 characters)');
+      return;
+    }
+    if (mode === 'register' && password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
     try {
@@ -652,7 +674,9 @@ function AuthDialog({
 
             {/* ===== Password (shared) ===== */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {mode === 'register' ? 'Password' : 'Password'}
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -672,7 +696,42 @@ function AuthDialog({
                   {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
                 </button>
               </div>
+              {pwStrength && password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Password strength</span>
+                    <span className={`text-xs font-medium ${pwStrength.label === 'Weak' ? 'text-red-600' : pwStrength.label === 'Fair' ? 'text-orange-600' : pwStrength.label === 'Good' ? 'text-yellow-600' : 'text-green-600'}`}>{pwStrength.label}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-300 ${pwStrength.color}`} style={{ width: pwStrength.width }} />
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* ===== Confirm Password (register only) ===== */}
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`w-full px-4 py-2.5 pr-11 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none ${confirmPassword && confirmPassword !== password ? 'border-red-300 bg-red-50' : confirmPassword && confirmPassword === password ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}
+                    required
+                    minLength={6}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {confirmPassword && confirmPassword === password ? (
+                      <CheckCircle className="w-[18px] h-[18px] text-green-500" />
+                    ) : confirmPassword && confirmPassword !== password ? (
+                      <XCircle className="w-[18px] h-[18px] text-red-400" />
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* ===== Provider fields ===== */}
             {mode === 'register' && role === 'PROVIDER' && (
