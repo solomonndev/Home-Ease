@@ -3245,39 +3245,21 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
 
   const availLabels: Record<string, string> = { WEEKDAYS: 'Weekdays', WEEKENDS: 'Weekends', ALL_WEEK: 'All Week', CUSTOM: 'Custom' };
 
-  // Per-word matching for suggestions
+  // Per-word matching for suggestions — now shows registered artisans sorted alphabetically
   const getSuggestions = () => {
     const query = searchQuery.toLowerCase().trim();
-    if (!query) return serviceData.map(s => ({ ...s, matchScore: 0, matchedKeywords: [] as string[] }));
-    const queryWords = query.split(/\s+/).filter(w => w.length > 0);
-    const scored = serviceData.map(service => {
-      const labelLower = service.label.toLowerCase();
-      const valueLower = service.value.toLowerCase();
-      let matchScore = 0;
-      const matchedKeywords: string[] = [];
-      for (const word of queryWords) {
-        if (labelLower === word) matchScore += 100;
-        else if (labelLower.startsWith(word)) matchScore += 80;
-        else if (labelLower.includes(word)) matchScore += 60;
-        else if (valueLower.startsWith(word)) matchScore += 70;
-        else if (valueLower.includes(word)) matchScore += 50;
-        else {
-          const keywordMatch = service.keywords.find(kw => kw === word || kw.startsWith(word) || kw.includes(word));
-          if (keywordMatch) {
-            if (keywordMatch === word) matchScore += 40;
-            else if (keywordMatch.startsWith(word)) matchScore += 30;
-            else matchScore += 20;
-            if (!matchedKeywords.includes(keywordMatch)) matchedKeywords.push(keywordMatch);
-          }
-        }
-      }
-      return { ...service, matchScore, matchedKeywords };
+    if (artisans.length === 0) return [];
+    const sorted = [...artisans].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    if (!query) return sorted;
+    return sorted.filter(a => {
+      const nameMatch = a.name?.toLowerCase().includes(query);
+      const skillMatch = a.skills?.some((s: string) => s.toLowerCase().includes(query));
+      const locationMatch = a.location?.toLowerCase().includes(query);
+      return nameMatch || skillMatch || locationMatch;
     });
-    return scored.filter(s => s.matchScore > 0).sort((a, b) => b.matchScore - a.matchScore);
   };
 
   const suggestions = getSuggestions();
-  const hasQuery = searchQuery.trim().length > 0;
 
   // Search artisans
   const doSearch = useCallback(async () => {
@@ -3337,6 +3319,15 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     setHighlightedIndex(-1);
   };
 
+  const handleSelectArtisan = (artisan: any) => {
+    setShowSuggestions(false);
+    setSearchQuery(artisan.name || '');
+    setHighlightedIndex(-1);
+    // Filter artisans list to just this one
+    setArtisans([artisan]);
+    setHasSearched(true);
+  };
+
   const handleClearService = () => {
     setSelectedService('');
     setSearchQuery('');
@@ -3348,13 +3339,9 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      // If a suggestion is highlighted, select it; otherwise search the typed text
-      if (showSuggestions && highlightedIndex >= 0) {
-        const visibleItems = hasQuery ? suggestions : serviceData;
-        if (highlightedIndex < visibleItems.length) {
-          handleSelectService(visibleItems[highlightedIndex].value);
-          return;
-        }
+      if (showSuggestions && highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+        handleSelectArtisan(suggestions[highlightedIndex]);
+        return;
       }
       if (searchQuery.trim()) {
         setShowSuggestions(false);
@@ -3368,10 +3355,9 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
       return;
     }
     if (!showSuggestions) return;
-    const visibleItems = hasQuery ? suggestions : serviceData;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex(prev => Math.min(prev + 1, visibleItems.length - 1));
+      setHighlightedIndex(prev => Math.min(prev + 1, suggestions.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHighlightedIndex(prev => Math.max(prev - 1, 0));
@@ -3509,7 +3495,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                     onFocus={() => setShowSuggestions(true)}
                     onKeyDown={handleSearchKeyDown}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                    placeholder="Search by service... e.g., clean, fix, chef, leak, wash"
+                    placeholder="Search by artisan name, skill, or location"
                     autoComplete="off"
                   />
                 </div>
@@ -3521,68 +3507,42 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                   {searchLoading ? '...' : 'Search'}
                 </button>
               </div>
-              {showSuggestions && (
+              {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto">
-                  {hasQuery ? (
-                    <>
-                      {suggestions.length > 0 ? (
-                        suggestions.map((st, idx) => (
-                          <button
-                            key={st.value}
-                            type="button"
-                            onClick={() => handleSelectService(st.value)}
-                            onMouseEnter={() => setHighlightedIndex(idx)}
-                            className={`w-full px-4 py-3 text-left text-sm transition-colors ${
-                              highlightedIndex === idx
-                                ? 'bg-orange-50 text-orange-700'
-                                : 'hover:bg-orange-50 hover:text-orange-700'
-                            }`}
-                          >
-                            <span className="font-medium">{st.label}</span>
-                            {st.matchedKeywords && st.matchedKeywords.length > 0 && (
-                              <div className="mt-1 flex items-center gap-1 flex-wrap">
-                                <span className="text-xs text-gray-400">matched:</span>
-                                {st.matchedKeywords.slice(0, 3).map((kw) => (
-                                  <span key={kw} className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded">
-                                    {kw}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center text-sm text-gray-500">
-                          <p>No services match &quot;{searchQuery}&quot;</p>
-                          <p className="mt-1 text-xs text-gray-400">Try different words</p>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">All Services</div>
-                      {serviceData.map((st, idx) => (
-                        <button
-                          key={st.value}
-                          type="button"
-                          onClick={() => handleSelectService(st.value)}
-                          onMouseEnter={() => setHighlightedIndex(idx)}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                            highlightedIndex === idx
-                              ? 'bg-orange-50 text-orange-700'
-                              : 'hover:bg-orange-50 hover:text-orange-700'
-                          }`}
-                        >
-                          <span className="font-medium">{st.label}</span>
-                          <div className="mt-0.5 flex items-center gap-1 flex-wrap">
-                            {st.keywords.slice(0, 4).map((kw, ki) => (
-                              <span key={kw} className="text-xs text-gray-400">{kw}{ki < Math.min(st.keywords.length, 4) - 1 ? ' ·' : ''}</span>
-                            ))}
-                          </div>
-                        </button>
-                      ))}
-                    </>
-                  )}
+                  <div className="px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                    Registered Artisans ({suggestions.length})
+                  </div>
+                  {suggestions.map((artisan, idx) => (
+                    <button
+                      key={artisan.id}
+                      type="button"
+                      onClick={() => handleSelectArtisan(artisan)}
+                      onMouseEnter={() => setHighlightedIndex(idx)}
+                      className={`w-full px-4 py-3 text-left text-sm transition-colors ${
+                        highlightedIndex === idx
+                          ? 'bg-orange-50 text-orange-700'
+                          : 'hover:bg-orange-50 hover:text-orange-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{artisan.name}</span>
+                        {artisan.rating > 0 && (
+                          <span className="flex items-center gap-0.5 text-xs text-amber-600">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            {artisan.rating.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-1 flex-wrap">
+                        {artisan.skills?.slice(0, 3).map((s: string, ki: number) => (
+                          <span key={s} className="text-xs text-gray-400">{s}{ki < Math.min(artisan.skills.length, 3) - 1 ? ' ·' : ''}</span>
+                        ))}
+                        {artisan.location && (
+                          <span className="text-xs text-gray-400">· {artisan.location}</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               )}
             </>
