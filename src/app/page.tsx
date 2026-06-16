@@ -540,7 +540,6 @@ function AuthDialog({
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">Service Seeker</div>
-                      <div className="text-sm text-gray-500">I want to find and hire service providers</div>
                     </div>
                   </div>
                 </button>
@@ -555,7 +554,6 @@ function AuthDialog({
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900">Service Provider</div>
-                      <div className="text-sm text-gray-500">I want to offer my services and earn money</div>
                     </div>
                   </div>
                 </button>
