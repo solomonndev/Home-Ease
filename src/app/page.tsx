@@ -912,7 +912,7 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
       const res = await fetch('/api/support/messages', { headers: headers() });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${res.status}`);
+        throw new Error(errData.detail || errData.error || `HTTP ${res.status}`);
       }
       const data = await res.json();
       if (data.messages) setMessages(data.messages);
