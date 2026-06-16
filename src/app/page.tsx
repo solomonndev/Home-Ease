@@ -1348,6 +1348,19 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
 
         {/* Page content */}
         <div className="p-4 sm:p-6">
+          {/* Welcome banner */}
+          {user.role !== 'ADMIN' && (
+            <div className="mb-6 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 sm:p-5 text-white">
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Welcome back, {user.username ? `@${user.username}` : user.name?.split(' ')[0]}! 👋
+              </h2>
+              <p className="text-orange-100 text-sm mt-1">
+                {user.role === 'CLIENT'
+                  ? 'Find trusted service providers and manage your requests.'
+                  : 'Check your job offers and manage your services.'}
+              </p>
+            </div>
+          )}
           {user.role === 'CLIENT' && <ClientContent tab={activeTab} user={user} onNavigate={(t) => setActiveTab(t)} />}
           {user.role === 'PROVIDER' && <ProviderContent tab={activeTab} user={user} onNavigate={(t) => setActiveTab(t)} />}
           {user.role === 'ADMIN' && <AdminContent tab={activeTab} user={user} />}
