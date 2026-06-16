@@ -622,6 +622,7 @@ function AuthDialog({
             )}
 
             {/* ===== REGISTER MODE — Email ===== */}
+            {mode === 'register' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
@@ -630,9 +631,10 @@ function AuthDialog({
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                 required
-                placeholder={mode === 'register' ? 'you@example.com' : ''}
+                placeholder="you@example.com"
               />
             </div>
+            )}
 
             {/* ===== REGISTER MODE — Phone ===== */}
             {mode === 'register' && (
