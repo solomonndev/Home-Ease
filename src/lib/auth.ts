@@ -37,6 +37,14 @@ export function getTokenFromHeaders(headers: Headers): string | null {
   return null;
 }
 
+export function getAuthUserFast(headers: Headers): { id: string; email: string; role: string } | null {
+  const token = getTokenFromHeaders(headers);
+  if (!token) return null;
+  const payload = verifyToken(token);
+  if (!payload) return null;
+  return { id: payload.userId, email: payload.email, role: payload.role };
+}
+
 export async function getAuthUser(headers: Headers) {
   const token = getTokenFromHeaders(headers);
   if (!token) return null;

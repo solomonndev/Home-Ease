@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { searchServices, SERVICE_TYPES, SERVICE_LABELS, SERVICE_ICONS, SERVICE_KEYWORDS } from '@/lib/auth';
 
+// Simple in-memory cache
+let servicesCache: { data: any; ts: number } | null = null;
+const CACHE_TTL = 30_000; // 30 seconds
+
 // GET /api/services/search - Search service types with per-word auto-suggestions
 // Also dynamically includes actual skills from registered providers
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = (searchParams.get('q') || '').trim();
+
+    // Return cached data if still fresh
+    if (servicesCache && Date.now() - servicesCache.ts < CACHE_TTL) {
+      return NextResponse.json(servicesCache.data);
+    }
 
     // Fetch all unique skills from registered providers
     const allProviders = await db.provider.findMany({
@@ -48,7 +57,9 @@ export async function GET(request: NextRequest) {
           keywords: [] as string[],
         })),
       ];
-      return NextResponse.json({ services: allServices });
+      const allData = { services: allServices };
+      servicesCache = { data: allData, ts: Date.now() };
+      return NextResponse.json(allData);
     }
 
     // Use the per-word matching search function for predefined types
@@ -84,7 +95,9 @@ export async function GET(request: NextRequest) {
       ...customResults,
     ].sort((a, b) => b.matchScore - a.matchScore);
 
-    return NextResponse.json({ services });
+    const responseData = { services };
+    servicesCache = { data: responseData, ts: Date.now() };
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Service search error:', error);
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });

@@ -118,6 +118,17 @@ export default function Home() {
   );
 }
 
+// ==================== HOOKS ====================
+function usePageVisible(): boolean {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const onVisibility = () => setVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+  return visible;
+}
+
 // ==================== LANDING PAGE ====================
 function LandingView({
   onOpenAuth,
@@ -944,8 +955,13 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
   useEffect(() => {
     setChatLoading(true);
     fetchMessages().finally(() => setChatLoading(false));
-    const interval = setInterval(fetchMessages, 5000);
-    return () => clearInterval(interval);
+    let interval = setInterval(fetchMessages, 5000);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(fetchMessages, 5000); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [fetchMessages]);
 
   useEffect(() => {
@@ -1213,8 +1229,13 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
       }
     };
     fetchUnread();
-    const interval = setInterval(fetchUnread, 5000);
-    return () => clearInterval(interval);
+    let interval = setInterval(fetchUnread, 5000);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(fetchUnread, 5000); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [user.role, authToken]);
 
   const verificationStatus = user.role === 'PROVIDER' ? (user.provider?.verificationStatus || 'PENDING') : null;
@@ -1464,8 +1485,13 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
     if (tab !== 'overview' && tab !== 'my-requests') return;
     const hasActiveRequests = requests.some((r: any) => ['ACCEPTED', 'IN_PROGRESS', 'AWAITING_PAYMENT'].includes(r.status));
     if (!hasActiveRequests) return;
-    const interval = setInterval(loadData, 10000);
-    return () => clearInterval(interval);
+    let interval = setInterval(loadData, 10000);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(loadData, 10000); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [tab, requests, loadData]);
 
   if (loading && !stats) {
@@ -1617,6 +1643,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
   const [error, setError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const providerId = user.provider?.id;
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -1647,7 +1674,7 @@ function ProviderContent({ tab, user, onNavigate }: { tab: string; user: any; on
     } finally {
       setLoading(false);
     }
-  }, [tab, user.provider]);
+  }, [tab, providerId]);
 
   // Auto-retry with exponential backoff (max 3 retries)
   useEffect(() => {
@@ -2498,10 +2525,14 @@ function AdminSupportChat({ user }: { user: any }) {
     let mounted = true;
     setMessages([]);
     (async () => { if (mounted) await loadChat(selectedUser); })();
-    const interval = setInterval(() => {
-      if (mounted) { loadConversations(); loadChat(selectedUser); }
-    }, 5000);
-    return () => { mounted = false; clearInterval(interval); };
+    const pollFn = () => { if (mounted) { loadConversations(); loadChat(selectedUser); } };
+    let interval = setInterval(pollFn, 5000);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(pollFn, 5000); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { mounted = false; clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [selectedUser, loadChat, loadConversations]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -4002,8 +4033,14 @@ function ProviderJobsView({ user, onRefresh, onNavigate }: { user: any; onRefres
   // Auto-refresh every 10 seconds for live timer data
   useEffect(() => {
     const hasActive = jobs.some((j: any) => j.status === 'IN_PROGRESS');
-    const interval = setInterval(loadJobs, hasActive ? 10000 : 30000);
-    return () => clearInterval(interval);
+    const delay = hasActive ? 10000 : 30000;
+    let interval = setInterval(loadJobs, delay);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(loadJobs, delay); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [loadJobs, jobs]);
 
   const handleAction = async (jobId: string, action: string) => {
@@ -4630,7 +4667,7 @@ function MessagesView({ user }: { user: any }) {
   // Polling fallback: fetch messages every 5 seconds when a conversation is selected
   useEffect(() => {
     if (!selectedRequest) return;
-    const interval = setInterval(() => {
+    const pollMessages = () => {
       api.getMessages(selectedRequest).then((fetched) => {
         setMessages((prev) => {
           // Merge: keep local messages not yet in server, add server messages, deduplicate by ID
@@ -4648,8 +4685,14 @@ function MessagesView({ user }: { user: any }) {
           return merged.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         });
       }).catch(() => {});
-    }, 5000);
-    return () => clearInterval(interval);
+    };
+    let interval = setInterval(pollMessages, 5000);
+    const onVisibility = () => {
+      if (document.hidden) { clearInterval(interval); }
+      else { interval = setInterval(pollMessages, 5000); }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
   }, [selectedRequest]);
 
   // Auto-scroll to bottom on new messages

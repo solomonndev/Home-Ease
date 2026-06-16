@@ -158,14 +158,14 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      for (const provider of matchingProviders) {
-        await db.notification.create({
-          data: {
+      if (matchingProviders.length > 0) {
+        await db.notification.createMany({
+          data: matchingProviders.map(provider => ({
             userId: provider.userId,
-            type: 'SERVICE_REQUEST',
+            type: 'SERVICE_REQUEST' as const,
             title: 'New Service Request',
             message: `A client needs ${serviceType.toLowerCase()} service in ${location}`,
-          }
+          })),
         });
       }
     }

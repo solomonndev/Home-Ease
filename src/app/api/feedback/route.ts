@@ -92,18 +92,18 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update provider rating
-    const allFeedbacks = await db.feedback.findMany({
-      where: { providerId: serviceRequest.providerId }
+    // Update provider rating using aggregate
+    const agg = await db.feedback.aggregate({
+      where: { providerId: serviceRequest.providerId },
+      _avg: { rating: true },
+      _count: { id: true },
     });
 
-    const avgRating = allFeedbacks.reduce((sum, f) => sum + f.rating, 0) / allFeedbacks.length;
-    
     await db.provider.update({
       where: { id: serviceRequest.providerId },
       data: {
-        rating: Math.round(avgRating * 10) / 10,
-        totalReviews: allFeedbacks.length,
+        rating: Math.round((agg._avg.rating ?? 0) * 10) / 10,
+        totalReviews: agg._count.id,
       }
     });
 
