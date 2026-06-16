@@ -405,6 +405,9 @@ function AuthDialog({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'CLIENT' | 'PROVIDER'>('CLIENT');
@@ -477,7 +480,7 @@ function AuthDialog({
         await onLogin(loginIdentifier, password);
       } else {
         await onRegister({
-          name, username: username.trim().toLowerCase(), email, phone, password, role,
+          firstName, middleName, lastName, username: username.trim().toLowerCase(), email, phone, password, role,
           ...(role === 'PROVIDER' ? { skills: selectedSkills.join(','), hourlyRate: parseFloat(hourlyRate) || 0, location, bio, bankName, accountNumber, accountName } : {}),
         });
       }
@@ -582,13 +585,35 @@ function AuthDialog({
             {mode === 'register' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                   <input
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     required
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Middle Name <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <input
+                    type="text"
+                    value={middleName}
+                    onChange={(e) => setMiddleName(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    placeholder="Oluwaseun"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    required
+                    placeholder="Doe"
                   />
                 </div>
                 <div>
@@ -1352,7 +1377,7 @@ function DashboardView({ user, onLogout }: { user: any; onLogout: () => void }) 
           {user.role !== 'ADMIN' && (
             <div className="mb-6 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 sm:p-5 text-white">
               <h2 className="text-lg sm:text-xl font-semibold">
-                Welcome back, {user.username ? `@${user.username}` : user.name?.split(' ')[0]}! 👋
+                Welcome back, {user.username ? `@${user.username}` : user.firstName || user.name?.split(' ')[0]}! 👋
               </h2>
               <p className="text-orange-100 text-sm mt-1">
                 {user.role === 'CLIENT'

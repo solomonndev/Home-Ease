@@ -71,6 +71,9 @@ export async function POST(request: NextRequest) {
       token,
       user: {
         id: user.id,
+        firstName: user.firstName,
+        middleName: user.middleName,
+        lastName: user.lastName,
         name: user.name,
         username: user.username,
         email: user.email,

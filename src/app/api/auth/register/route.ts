@@ -5,11 +5,11 @@ import { hashPassword, generateToken } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, username, email, phone, password, role } = body;
+    const { firstName, middleName, lastName, username, email, phone, password, role } = body;
 
-    if (!name || !email || !password || !role) {
+    if (!firstName || !lastName || !email || !password || !role) {
       return NextResponse.json(
-        { error: 'Name, email, password, and role are required' },
+        { error: 'First name, last name, email, password, and role are required' },
         { status: 400 }
       );
     }
@@ -66,11 +66,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Build full name from parts
+    const fullName = [firstName.trim(), middleName?.trim(), lastName.trim()].filter(Boolean).join(' ');
+
     const passwordHash = await hashPassword(password);
     
     const user = await db.user.create({
       data: {
-        name,
+        firstName: firstName.trim(),
+        middleName: middleName?.trim() || null,
+        lastName: lastName.trim(),
+        name: fullName,
         username: cleanUsername,
         email,
         phone: phone ? phone.replace(/[\s-]/g, '') : null,
@@ -102,7 +108,7 @@ export async function POST(request: NextRequest) {
             userId: admin.id,
             type: 'SYSTEM_ALERT',
             title: 'New Provider Registration',
-            message: `A new provider "${name}" (${email}) has registered with skills: ${skills || 'none specified'}. Please review and verify their account.`,
+            message: `A new provider "${fullName}" (${email}) has registered with skills: ${skills || 'none specified'}. Please review and verify their account.`,
           }))
         });
       }
@@ -123,6 +129,9 @@ export async function POST(request: NextRequest) {
       token,
       user: {
         id: fullUser!.id,
+        firstName: fullUser!.firstName,
+        middleName: fullUser!.middleName,
+        lastName: fullUser!.lastName,
         name: fullUser!.name,
         username: fullUser!.username,
         email: fullUser!.email,

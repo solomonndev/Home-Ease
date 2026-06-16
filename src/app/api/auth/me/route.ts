@@ -10,6 +10,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       id: user.id,
+      firstName: user.firstName,
+      middleName: user.middleName,
+      lastName: user.lastName,
       name: user.name,
       username: user.username,
       email: user.email,
