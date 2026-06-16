@@ -13,7 +13,8 @@ import {
   RefreshCw, Check, Scale, ScrollText, Inbox, HardHat,
   CalendarDays, ShieldCheck, Hourglass, CircleCheck, Send, Filter,
   Sparkles, Eye, EyeOff, ChevronRight, ArrowLeftRight, CircleX, XCircle, ArrowLeft, Download,
-  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2, Landmark, TrendingUp
+  Trash2, Paperclip, FileText, Image as ImageIcon, CheckCircle2, Loader2, Landmark, TrendingUp,
+  Mail, Phone
 } from 'lucide-react';
 
 import {
@@ -54,10 +55,10 @@ export default function Home() {
     }
   }, []);
 
-  const handleLogin = useCallback(async (email: string, password: string) => {
+  const handleLogin = useCallback(async (identifier: string, password: string) => {
     setLoading(true);
     try {
-      const result = await api.login(email, password);
+      const result = await api.login(identifier, password);
       login(result.token, result.user);
       setShowAuthDialog(false);
       setView('dashboard');
@@ -135,7 +136,7 @@ function LandingView({
   authKey: number;
   onCloseAuth: () => void;
   onSwitchAuthMode: () => void;
-  onLogin: (email: string, password: string) => Promise<void>;
+  onLogin: (identifier: string, password: string) => Promise<void>;
   onRegister: (data: any) => Promise<void>;
   loading: boolean;
 }) {
@@ -391,15 +392,20 @@ function AuthDialog({
 }: {
   mode: 'login' | 'register';
   onClose: () => void;
-  onLogin: (email: string, password: string) => Promise<void>;
+  onLogin: (identifier: string, password: string) => Promise<void>;
   onRegister: (data: any) => Promise<void>;
   onSwitchMode: () => void;
   loading: boolean;
 }) {
+  // Login state
+  const [loginMethod, setLoginMethod] = useState<'email' | 'username' | 'phone'>('email');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  // Shared / register state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'CLIENT' | 'PROVIDER'>('CLIENT');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -440,18 +446,28 @@ function AuthDialog({
       setError('Please add at least one service you offer');
       return;
     }
+    if (mode === 'register' && username.trim().length < 3) {
+      setError('Username is required (minimum 3 characters)');
+      return;
+    }
     try {
       if (mode === 'login') {
-        await onLogin(email, password);
+        await onLogin(loginIdentifier, password);
       } else {
         await onRegister({
-          name, email, phone, password, role,
+          name, username: username.trim().toLowerCase(), email, phone, password, role,
           ...(role === 'PROVIDER' ? { skills: selectedSkills.join(','), hourlyRate: parseFloat(hourlyRate) || 0, location, bio, bankName, accountNumber, accountName } : {}),
         });
       }
     } catch (err: any) {
       setError(err.message);
     }
+  };
+
+  const loginInputProps: Record<string, any> = {
+    className: "w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none",
+    required: true,
+    autoFocus: true,
   };
 
   return (
@@ -472,6 +488,75 @@ function AuthDialog({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+
+            {/* ===== LOGIN MODE ===== */}
+            {mode === 'login' && (
+              <>
+                {/* Login method tabs */}
+                <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+                  {([
+                    { key: 'email' as const, label: 'Email', icon: <Mail className="w-3.5 h-3.5" /> },
+                    { key: 'username' as const, label: 'Username', icon: <User className="w-3.5 h-3.5" /> },
+                    { key: 'phone' as const, label: 'Phone', icon: <Phone className="w-3.5 h-3.5" /> },
+                  ]).map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => { setLoginMethod(tab.key); setLoginIdentifier(''); setError(''); }}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-md transition-all ${
+                        loginMethod === tab.key
+                          ? 'bg-white text-orange-700 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {tab.icon}
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Dynamic input based on login method */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {loginMethod === 'email' ? 'Email Address' : loginMethod === 'username' ? 'Username' : 'Phone Number'}
+                  </label>
+                  {loginMethod === 'email' && (
+                    <input
+                      type="email"
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="you@example.com"
+                      {...loginInputProps}
+                    />
+                  )}
+                  {loginMethod === 'username' && (
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                      <input
+                        type="text"
+                        value={loginIdentifier}
+                        onChange={(e) => setLoginIdentifier(e.target.value.replace(/[^a-zA-Z0-9_.\-]/g, ''))}
+                        placeholder="username"
+                        className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                  {loginMethod === 'phone' && (
+                    <input
+                      type="tel"
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="+234 800 000 0000"
+                      {...loginInputProps}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ===== REGISTER MODE — Name & Role ===== */}
             {mode === 'register' && (
               <>
                 <div>
@@ -516,6 +601,27 @@ function AuthDialog({
               </>
             )}
 
+            {/* ===== REGISTER MODE — Username ===== */}
+            {mode === 'register' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_.\-]/g, '').toLowerCase())}
+                    placeholder="choose a username"
+                    className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                    required
+                    minLength={3}
+                  />
+                </div>
+                <p className="mt-1 text-xs text-gray-400">Letters, numbers, dots, underscores, and hyphens only</p>
+              </div>
+            )}
+
+            {/* ===== REGISTER MODE — Email ===== */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
@@ -524,21 +630,25 @@ function AuthDialog({
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                 required
+                placeholder={mode === 'register' ? 'you@example.com' : ''}
               />
             </div>
 
+            {/* ===== REGISTER MODE — Phone ===== */}
             {mode === 'register' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  placeholder="+234 800 000 0000"
                 />
               </div>
             )}
 
+            {/* ===== Password (shared) ===== */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -562,6 +672,7 @@ function AuthDialog({
               </div>
             </div>
 
+            {/* ===== Provider fields ===== */}
             {mode === 'register' && role === 'PROVIDER' && (
               <>
                 <div>

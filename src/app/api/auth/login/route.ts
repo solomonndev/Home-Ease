@@ -5,23 +5,43 @@ import { verifyPassword, generateToken } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { identifier, password } = body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Identifier and password are required' },
         { status: 400 }
       );
     }
 
-    const user = await db.user.findUnique({
-      where: { email },
-      include: { provider: true }
-    });
+    // Determine lookup method: email contains @, phone starts with + or digit-only, else username
+    const trimmed = identifier.trim();
+    let user;
+
+    if (trimmed.includes('@')) {
+      // Login by email
+      user = await db.user.findUnique({
+        where: { email: trimmed.toLowerCase() },
+        include: { provider: true }
+      });
+    } else if (/^\+?\d[\d\s-]{6,}$/.test(trimmed)) {
+      // Login by phone number
+      const normalizedPhone = trimmed.replace(/[\s-]/g, '');
+      user = await db.user.findFirst({
+        where: { phone: { equals: normalizedPhone } },
+        include: { provider: true }
+      });
+    } else {
+      // Login by username
+      user = await db.user.findUnique({
+        where: { username: trimmed },
+        include: { provider: true }
+      });
+    }
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid credentials. No account found.' },
         { status: 401 }
       );
     }
@@ -29,7 +49,7 @@ export async function POST(request: NextRequest) {
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: 'Invalid credentials. Check your password.' },
         { status: 401 }
       );
     }
@@ -52,6 +72,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         name: user.name,
+        username: user.username,
         email: user.email,
         phone: user.phone,
         role: user.role,

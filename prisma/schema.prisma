@@ -165,6 +165,7 @@ model WalletTransaction {
 model User {
   id              String           @id @default(cuid())
   email           String           @unique
+  username        String?          @unique
   name            String           @db.VarChar(191)
   phone           String?
   passwordHash    String           @db.VarChar(255)

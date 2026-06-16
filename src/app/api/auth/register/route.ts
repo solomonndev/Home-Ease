@@ -5,11 +5,26 @@ import { hashPassword, generateToken } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, password, role } = body;
+    const { name, username, email, phone, password, role } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json(
         { error: 'Name, email, password, and role are required' },
+        { status: 400 }
+      );
+    }
+
+    // Username validation
+    if (!username || username.trim().length < 3) {
+      return NextResponse.json(
+        { error: 'Username is required (minimum 3 characters)' },
+        { status: 400 }
+      );
+    }
+    const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+    if (cleanUsername.length < 3) {
+      return NextResponse.json(
+        { error: 'Username must be at least 3 characters (letters, numbers, . _ -)' },
         { status: 400 }
       );
     }
@@ -21,12 +36,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existingUser = await db.user.findUnique({ where: { email } });
-    if (existingUser) {
+    // Check for existing email
+    const existingEmail = await db.user.findUnique({ where: { email } });
+    if (existingEmail) {
       return NextResponse.json(
         { error: 'Email already registered' },
         { status: 409 }
       );
+    }
+
+    // Check for existing username
+    const existingUsername = await db.user.findUnique({ where: { username: cleanUsername } });
+    if (existingUsername) {
+      return NextResponse.json(
+        { error: 'Username is already taken' },
+        { status: 409 }
+      );
+    }
+
+    // Check for existing phone
+    if (phone) {
+      const normalizedPhone = phone.replace(/[\s-]/g, '');
+      const existingPhone = await db.user.findFirst({ where: { phone: normalizedPhone } });
+      if (existingPhone) {
+        return NextResponse.json(
+          { error: 'Phone number already registered' },
+          { status: 409 }
+        );
+      }
     }
 
     const passwordHash = await hashPassword(password);
@@ -34,8 +71,9 @@ export async function POST(request: NextRequest) {
     const user = await db.user.create({
       data: {
         name,
+        username: cleanUsername,
         email,
-        phone: phone || null,
+        phone: phone ? phone.replace(/[\s-]/g, '') : null,
         passwordHash,
         role,
       }
@@ -86,6 +124,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: fullUser!.id,
         name: fullUser!.name,
+        username: fullUser!.username,
         email: fullUser!.email,
         phone: fullUser!.phone,
         role: fullUser!.role,
