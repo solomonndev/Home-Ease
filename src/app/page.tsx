@@ -592,7 +592,6 @@ function AuthDialog({
                     onChange={(e) => setFirstName(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     required
-                    placeholder="John"
                   />
                 </div>
                 <div>
@@ -602,7 +601,6 @@ function AuthDialog({
                     value={middleName}
                     onChange={(e) => setMiddleName(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                    placeholder="Oluwaseun"
                   />
                 </div>
                 <div>
@@ -613,7 +611,6 @@ function AuthDialog({
                     onChange={(e) => setLastName(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     required
-                    placeholder="Doe"
                   />
                 </div>
                 <div>
