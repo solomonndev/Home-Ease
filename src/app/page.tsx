@@ -550,7 +550,6 @@ function AuthDialog({
                       type="email"
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
-                      placeholder="you@example.com"
                       {...loginInputProps}
                     />
                   )}
@@ -561,7 +560,6 @@ function AuthDialog({
                         type="text"
                         value={loginIdentifier}
                         onChange={(e) => setLoginIdentifier(e.target.value.replace(/[^a-zA-Z0-9_.\-]/g, ''))}
-                        placeholder="username"
                         className="w-full pl-8 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                         required
                         autoFocus
@@ -573,7 +571,6 @@ function AuthDialog({
                       type="tel"
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
-                      placeholder="+234 800 000 0000"
                       {...loginInputProps}
                     />
                   )}
