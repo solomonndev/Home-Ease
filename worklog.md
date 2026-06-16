@@ -190,3 +190,20 @@ Stage Summary:
 - Provider sidebar now has 6 tabs: Job Offers, My Jobs, Transactions, Earnings, Messages, Profile
 - Platform commission (5%) is now clearly visible in the Transactions panel per-transaction and as a total
 - Responsive design with table on desktop and cards on mobile
+---
+Task ID: 7
+Agent: Main Agent
+Task: Change Find Artisan dropdown from artisan names to service roles (occupations)
+
+Work Log:
+- Replaced `getSuggestions()` to return service roles (occupations) instead of registered artisan names
+- Added `serviceRoles` array with 39 occupational names mapped to service values (e.g. "Cleaner"→CLEANING, "Cook"→COOKING, "Plumber"→PLUMBING, "Electrician"→ELECTRICAL)
+- Replaced `handleSelectArtisan()` with `handleSelectRole()` that sets `selectedService` from the role mapping
+- Updated dropdown UI: header now says "Services (N)" instead of "Registered Artisans (N)", each item shows just the role name
+- Updated search placeholder to "Search by service, e.g. Plumber, Cook, Electrician"
+- Updated selected service chip to display the role name (e.g. "Plumber") instead of category label (e.g. "Plumbing")
+
+Stage Summary:
+- Find Artisan dropdown now suggests occupational roles (Cleaner, Cook, Plumber, Electrician, etc.) instead of artisan names
+- Selecting a role auto-searches for artisans offering that service
+- No compilation errors, dev server running clean

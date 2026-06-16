@@ -3243,20 +3243,57 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     { value: 'OTHER', label: 'Other', keywords: ['other', 'custom', 'special'] },
   ];
 
+  // Service roles — occupational names for the search dropdown
+  const serviceRoles = [
+    { role: 'Cleaner', service: 'CLEANING' },
+    { role: 'Housekeeper', service: 'CLEANING' },
+    { role: 'Maid', service: 'CLEANING' },
+    { role: 'Janitor', service: 'CLEANING' },
+    { role: 'Cook', service: 'COOKING' },
+    { role: 'Chef', service: 'COOKING' },
+    { role: 'Caterer', service: 'COOKING' },
+    { role: 'Caregiver', service: 'CAREGIVING' },
+    { role: 'Nanny', service: 'CAREGIVING' },
+    { role: 'Babysitter', service: 'CAREGIVING' },
+    { role: 'Nurse', service: 'CAREGIVING' },
+    { role: 'Elderly Care', service: 'CAREGIVING' },
+    { role: 'Plumber', service: 'PLUMBING' },
+    { role: 'Laundry Worker', service: 'LAUNDRY' },
+    { role: 'Dry Cleaner', service: 'LAUNDRY' },
+    { role: 'Handyman', service: 'MAINTENANCE' },
+    { role: 'Repairman', service: 'MAINTENANCE' },
+    { role: 'Electrician', service: 'ELECTRICAL' },
+    { role: 'Painter', service: 'PAINTING' },
+    { role: 'Gardener', service: 'GARDENING' },
+    { role: 'Landscaper', service: 'GARDENING' },
+    { role: 'Engineer', service: 'ENGINEERING' },
+    { role: 'Carpenter', service: 'CARPENTRY' },
+    { role: 'Security Guard', service: 'SECURITY' },
+    { role: 'Watchman', service: 'SECURITY' },
+    { role: 'Driver', service: 'DRIVING' },
+    { role: 'Chauffeur', service: 'DRIVING' },
+    { role: 'Delivery Rider', service: 'DRIVING' },
+    { role: 'Tutor', service: 'TUTORING' },
+    { role: 'Teacher', service: 'TUTORING' },
+    { role: 'Instructor', service: 'TUTORING' },
+    { role: 'Hair Stylist', service: 'HAIRSTYLING' },
+    { role: 'Braider', service: 'HAIRSTYLING' },
+    { role: 'Barber', service: 'BARBING' },
+    { role: 'AC Technician', service: 'HVAC' },
+    { role: 'HVAC Technician', service: 'HVAC' },
+    { role: 'Mover', service: 'MOVING' },
+    { role: 'Packer', service: 'MOVING' },
+    { role: 'Pest Control Expert', service: 'PEST_CONTROL' },
+    { role: 'Fumigator', service: 'PEST_CONTROL' },
+  ];
+
   const availLabels: Record<string, string> = { WEEKDAYS: 'Weekdays', WEEKENDS: 'Weekends', ALL_WEEK: 'All Week', CUSTOM: 'Custom' };
 
-  // Per-word matching for suggestions — now shows registered artisans sorted alphabetically
+  // Suggestions show service roles (occupations) — what artisans do
   const getSuggestions = () => {
     const query = searchQuery.toLowerCase().trim();
-    if (artisans.length === 0) return [];
-    const sorted = [...artisans].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    if (!query) return sorted;
-    return sorted.filter(a => {
-      const nameMatch = a.name?.toLowerCase().includes(query);
-      const skillMatch = a.skills?.some((s: string) => s.toLowerCase().includes(query));
-      const locationMatch = a.location?.toLowerCase().includes(query);
-      return nameMatch || skillMatch || locationMatch;
-    });
+    if (!query) return serviceRoles;
+    return serviceRoles.filter(r => r.role.toLowerCase().includes(query));
   };
 
   const suggestions = getSuggestions();
@@ -3319,13 +3356,11 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     setHighlightedIndex(-1);
   };
 
-  const handleSelectArtisan = (artisan: any) => {
+  const handleSelectRole = (role: { role: string; service: string }) => {
     setShowSuggestions(false);
-    setSearchQuery(artisan.name || '');
+    setSelectedService(role.service);
+    setSearchQuery(role.role);
     setHighlightedIndex(-1);
-    // Filter artisans list to just this one
-    setArtisans([artisan]);
-    setHasSearched(true);
   };
 
   const handleClearService = () => {
@@ -3340,7 +3375,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     if (e.key === 'Enter') {
       e.preventDefault();
       if (showSuggestions && highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
-        handleSelectArtisan(suggestions[highlightedIndex]);
+        handleSelectRole(suggestions[highlightedIndex]);
         return;
       }
       if (searchQuery.trim()) {
@@ -3469,7 +3504,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
         <div className="relative">
           {selectedService ? (
             <div className="flex items-center gap-2 p-3 bg-orange-50 border-2 border-orange-500 rounded-lg">
-              <span className="text-sm font-medium text-orange-700">{serviceData.find(s => s.value === selectedService)?.label}</span>
+              <span className="text-sm font-medium text-orange-700">{searchQuery || serviceData.find(s => s.value === selectedService)?.label}</span>
               <button
                 type="button"
                 onClick={handleClearService}
@@ -3495,7 +3530,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                     onFocus={() => setShowSuggestions(true)}
                     onKeyDown={handleSearchKeyDown}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                    placeholder="Search by artisan name, skill, or location"
+                    placeholder="Search by service, e.g. Plumber, Cook, Electrician"
                     autoComplete="off"
                   />
                 </div>
@@ -3510,13 +3545,13 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
               {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto">
                   <div className="px-4 py-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
-                    Registered Artisans ({suggestions.length})
+                    Services ({suggestions.length})
                   </div>
-                  {suggestions.map((artisan, idx) => (
+                  {suggestions.map((item, idx) => (
                     <button
-                      key={artisan.id}
+                      key={item.role}
                       type="button"
-                      onClick={() => handleSelectArtisan(artisan)}
+                      onClick={() => handleSelectRole(item)}
                       onMouseEnter={() => setHighlightedIndex(idx)}
                       className={`w-full px-4 py-3 text-left text-sm transition-colors ${
                         highlightedIndex === idx
@@ -3524,23 +3559,7 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
                           : 'hover:bg-orange-50 hover:text-orange-700'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{artisan.name}</span>
-                        {artisan.rating > 0 && (
-                          <span className="flex items-center gap-0.5 text-xs text-amber-600">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            {artisan.rating.toFixed(1)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-0.5 flex items-center gap-1 flex-wrap">
-                        {artisan.skills?.slice(0, 3).map((s: string, ki: number) => (
-                          <span key={s} className="text-xs text-gray-400">{s}{ki < Math.min(artisan.skills.length, 3) - 1 ? ' ·' : ''}</span>
-                        ))}
-                        {artisan.location && (
-                          <span className="text-xs text-gray-400">· {artisan.location}</span>
-                        )}
-                      </div>
+                      <span className="font-medium">{item.role}</span>
                     </button>
                   ))}
                 </div>
