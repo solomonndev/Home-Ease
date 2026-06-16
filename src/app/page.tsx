@@ -1460,7 +1460,7 @@ function ClientContent({ tab, user, onNavigate }: { tab: string; user: any; onNa
           <StatCard label="Total Requests" value={stats?.totalRequests || 0} icon={<ClipboardList className="w-5 h-5" />} color="orange" />
           <StatCard label="Pending" value={stats?.pendingRequests || 0} icon={<Hourglass className="w-5 h-5" />} color="amber" />
           <StatCard label="Active" value={stats?.activeRequests || 0} icon={<RefreshCw className="w-5 h-5" />} color="blue" />
-          <StatCard label="Total Spent" value={`₦${(stats?.totalSpent || 0).toLocaleString()}`} icon={<CreditCard className="w-5 h-5" />} color="purple" />
+          <StatCard label="Bill" value={`₦${(stats?.totalSpent || 0).toLocaleString()}`} icon={<CreditCard className="w-5 h-5" />} color="purple" />
         </div>
 
         <div>
