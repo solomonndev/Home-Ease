@@ -906,9 +906,9 @@ function ProviderRestrictedView({ user, verificationStatus, onLogout }: { user: 
       try {
         const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${authToken}` } });
         if (res.ok) {
-          const data = await res.json();
-          if (data.user?.provider?.verificationStatus === 'VERIFIED') {
-            useAuthStore.getState().login(authToken, data.user);
+          const me = await res.json();
+          if (me.provider?.verificationStatus === 'VERIFIED') {
+            useAuthStore.getState().login(authToken, me);
           }
         }
       } catch {}
