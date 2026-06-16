@@ -3243,53 +3243,22 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     { value: 'OTHER', label: 'Other', keywords: ['other', 'custom', 'special'] },
   ];
 
-  // Service roles — occupational names for the search dropdown
-  const serviceRoles = [
-    { role: 'Cleaner', service: 'CLEANING' },
-    { role: 'Housekeeper', service: 'CLEANING' },
-    { role: 'Maid', service: 'CLEANING' },
-    { role: 'Janitor', service: 'CLEANING' },
-    { role: 'Cook', service: 'COOKING' },
-    { role: 'Chef', service: 'COOKING' },
-    { role: 'Caterer', service: 'COOKING' },
-    { role: 'Caregiver', service: 'CAREGIVING' },
-    { role: 'Nanny', service: 'CAREGIVING' },
-    { role: 'Babysitter', service: 'CAREGIVING' },
-    { role: 'Nurse', service: 'CAREGIVING' },
-    { role: 'Elderly Care', service: 'CAREGIVING' },
-    { role: 'Plumber', service: 'PLUMBING' },
-    { role: 'Laundry Worker', service: 'LAUNDRY' },
-    { role: 'Dry Cleaner', service: 'LAUNDRY' },
-    { role: 'Handyman', service: 'MAINTENANCE' },
-    { role: 'Repairman', service: 'MAINTENANCE' },
-    { role: 'Electrician', service: 'ELECTRICAL' },
-    { role: 'Painter', service: 'PAINTING' },
-    { role: 'Gardener', service: 'GARDENING' },
-    { role: 'Landscaper', service: 'GARDENING' },
-    { role: 'Engineer', service: 'ENGINEERING' },
-    { role: 'Carpenter', service: 'CARPENTRY' },
-    { role: 'Security Guard', service: 'SECURITY' },
-    { role: 'Watchman', service: 'SECURITY' },
-    { role: 'Driver', service: 'DRIVING' },
-    { role: 'Chauffeur', service: 'DRIVING' },
-    { role: 'Delivery Rider', service: 'DRIVING' },
-    { role: 'Tutor', service: 'TUTORING' },
-    { role: 'Teacher', service: 'TUTORING' },
-    { role: 'Instructor', service: 'TUTORING' },
-    { role: 'Hair Stylist', service: 'HAIRSTYLING' },
-    { role: 'Braider', service: 'HAIRSTYLING' },
-    { role: 'Barber', service: 'BARBING' },
-    { role: 'AC Technician', service: 'HVAC' },
-    { role: 'HVAC Technician', service: 'HVAC' },
-    { role: 'Mover', service: 'MOVING' },
-    { role: 'Packer', service: 'MOVING' },
-    { role: 'Pest Control Expert', service: 'PEST_CONTROL' },
-    { role: 'Fumigator', service: 'PEST_CONTROL' },
-  ];
+  // Derive unique service roles from registered artisans' actual skills
+  const serviceRoles = useMemo(() => {
+    const skillSet = new Set<string>();
+    for (const a of artisans) {
+      if (a.skills) {
+        for (const s of a.skills) {
+          skillSet.add(s);
+        }
+      }
+    }
+    return [...skillSet].sort((a, b) => a.localeCompare(b)).map(role => ({ role }));
+  }, [artisans]);
 
   const availLabels: Record<string, string> = { WEEKDAYS: 'Weekdays', WEEKENDS: 'Weekends', ALL_WEEK: 'All Week', CUSTOM: 'Custom' };
 
-  // Suggestions show service roles (occupations) — what artisans do
+  // Suggestions show only the registered artisans' actual skills
   const getSuggestions = () => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return serviceRoles;
@@ -3356,10 +3325,10 @@ function FindArtisansView({ user, onSuccess }: { user: any; onSuccess: () => voi
     setHighlightedIndex(-1);
   };
 
-  const handleSelectRole = (role: { role: string; service: string }) => {
+  const handleSelectRole = (role: { role: string }) => {
     setShowSuggestions(false);
-    setSelectedService(role.service);
     setSearchQuery(role.role);
+    setSelectedService('');
     setHighlightedIndex(-1);
   };
 
