@@ -207,3 +207,25 @@ Stage Summary:
 - Find Artisan dropdown now suggests occupational roles (Cleaner, Cook, Plumber, Electrician, etc.) instead of artisan names
 - Selecting a role auto-searches for artisans offering that service
 - No compilation errors, dev server running clean
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Create system architecture diagram for HomeEase project
+
+Work Log:
+- Analyzed full system architecture from Prisma schema (11 models), API routes (13 endpoint groups), and tech stack
+- Created professional layered architecture diagram as pure HTML+CSS at `public/architecture-diagram.html`
+- Diagram includes 4 main layers: Client/Presentation, API/Server, Data Access, Database
+- Left panel shows 3 User Roles (Service Seeker, Service Provider, Administrator)
+- Right panel shows 3 External Services (Paystack, Vercel, Supabase)
+- Bidirectional arrows between layers with data flow labels (HTTP/REST, Prisma Client Calls, SQL Queries)
+- Professional blue-gray color scheme with teal accent, suitable for thesis
+- Print CSS included for A4 portrait output
+- Legend with layer colors and arrow type explanations
+- File accessible at `/architecture-diagram.html` (static file in public folder)
+
+Stage Summary:
+- Output: `public/architecture-diagram.html` (32KB, 1158 lines)
+- 4-tier layered architecture with all components labeled
+- Print-ready for A4 paper

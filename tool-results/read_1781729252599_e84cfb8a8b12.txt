@@ -1,0 +1,1172 @@
+     1→<!DOCTYPE html>
+     2→<html lang="en">
+     3→<head>
+     4→  <meta charset="UTF-8">
+     5→  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6→  <title>HomeEase — System Architecture Diagram</title>
+     7→  <style>
+     8→    /* ===== CSS Custom Properties ===== */
+     9→    :root {
+    10→      --bg-white: #FFFFFF;
+    11→      --bg-layer-1: #F8FAFC;
+    12→      --bg-layer-2: #F1F5F9;
+    13→      --bg-layer-3: #E8EDF2;
+    14→      --bg-layer-4: #DEE4EB;
+    15→      --border-light: #CBD5E1;
+    16→      --border-medium: #94A3B8;
+    17→      --border-dark: #64748B;
+    18→      --text-dark: #1E293B;
+    19→      --text-body: #475569;
+    20→      --text-light: #64748B;
+    21→      --accent: #0D9488;
+    22→      --accent-light: #CCFBF1;
+    23→      --accent-dark: #0F766E;
+    24→      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    25→      --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', 'Courier New', monospace;
+    26→    }
+    27→
+    28→    /* ===== Reset & Base ===== */
+    29→    *, *::before, *::after {
+    30→      margin: 0;
+    31→      padding: 0;
+    32→      box-sizing: border-box;
+    33→    }
+    34→
+    35→    body {
+    36→      font-family: var(--font-sans);
+    37→      background: #F1F5F9;
+    38→      color: var(--text-body);
+    39→      display: flex;
+    40→      justify-content: center;
+    41→      padding: 30px 15px;
+    42→      line-height: 1.4;
+    43→    }
+    44→
+    45→    /* ===== Page Container ===== */
+    46→    .page {
+    47→      width: 1200px;
+    48→      max-width: 100%;
+    49→      background: var(--bg-white);
+    50→      border: 1px solid var(--border-light);
+    51→      border-radius: 8px;
+    52→      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    53→      padding: 36px 40px 32px;
+    54→    }
+    55→
+    56→    /* ===== Title Block ===== */
+    57→    .title-block {
+    58→      text-align: center;
+    59→      margin-bottom: 28px;
+    60→      padding-bottom: 20px;
+    61→      border-bottom: 2px solid var(--accent);
+    62→    }
+    63→
+    64→    .title-block h1 {
+    65→      font-size: 22px;
+    66→      font-weight: 700;
+    67→      color: var(--text-dark);
+    68→      letter-spacing: -0.3px;
+    69→      margin-bottom: 4px;
+    70→    }
+    71→
+    72→    .title-block .subtitle {
+    73→      font-size: 13px;
+    74→      color: var(--text-light);
+    75→      font-weight: 400;
+    76→    }
+    77→
+    78→    /* ===== Diagram Grid ===== */
+    79→    .diagram-grid {
+    80→      display: grid;
+    81→      grid-template-columns: 152px 44px 1fr 44px 172px;
+    82→      grid-template-rows: auto 46px auto 46px auto 46px auto;
+    83→      gap: 0;
+    84→      align-items: stretch;
+    85→    }
+    86→
+    87→    /* ===== Side Panels (Shared) ===== */
+    88→    .side-panel {
+    89→      border: 1.5px solid var(--border-medium);
+    90→      border-radius: 8px;
+    91→      background: var(--bg-layer-1);
+    92→      display: flex;
+    93→      flex-direction: column;
+    94→      overflow: hidden;
+    95→    }
+    96→
+    97→    .panel-header {
+    98→      background: var(--text-dark);
+    99→      color: #fff;
+   100→      font-size: 11px;
+   101→      font-weight: 700;
+   102→      text-transform: uppercase;
+   103→      letter-spacing: 0.8px;
+   104→      padding: 8px 12px;
+   105→      text-align: center;
+   106→    }
+   107→
+   108→    .panel-body {
+   109→      padding: 10px;
+   110→      flex: 1;
+   111→      display: flex;
+   112→      flex-direction: column;
+   113→      gap: 8px;
+   114→    }
+   115→
+   116→    /* ===== Roles Panel ===== */
+   117→    .roles-panel {
+   118→      grid-column: 1;
+   119→      grid-row: 1 / -1;
+   120→    }
+   121→
+   122→    .role-card {
+   123→      background: var(--bg-white);
+   124→      border: 1px solid var(--border-light);
+   125→      border-radius: 6px;
+   126→      padding: 10px 10px;
+   127→      text-align: center;
+   128→    }
+   129→
+   130→    .role-card .role-icon {
+   131→      font-size: 20px;
+   132→      margin-bottom: 4px;
+   133→      line-height: 1;
+   134→    }
+   135→
+   136→    .role-card .role-name {
+   137→      font-size: 11.5px;
+   138→      font-weight: 700;
+   139→      color: var(--text-dark);
+   140→      margin-bottom: 2px;
+   141→    }
+   142→
+   143→    .role-card .role-desc {
+   144→      font-size: 9.5px;
+   145→      color: var(--text-light);
+   146→      line-height: 1.3;
+   147→    }
+   148→
+   149→    .role-spacer {
+   150→      flex: 1;
+   151→    }
+   152→
+   153→    /* ===== External Services Panel ===== */
+   154→    .ext-panel {
+   155→      grid-column: 5;
+   156→      grid-row: 3 / -1;
+   157→    }
+   158→
+   159→    .ext-card {
+   160→      background: var(--bg-white);
+   161→      border: 1px solid var(--border-light);
+   162→      border-radius: 6px;
+   163→      padding: 10px;
+   164→      text-align: center;
+   165→    }
+   166→
+   167→    .ext-card .ext-icon {
+   168→      font-size: 18px;
+   169→      margin-bottom: 4px;
+   170→      line-height: 1;
+   171→    }
+   172→
+   173→    .ext-card .ext-name {
+   174→      font-size: 11.5px;
+   175→      font-weight: 700;
+   176→      color: var(--text-dark);
+   177→      margin-bottom: 2px;
+   178→    }
+   179→
+   180→    .ext-card .ext-desc {
+   181→      font-size: 9px;
+   182→      color: var(--text-light);
+   183→      line-height: 1.3;
+   184→    }
+   185→
+   186→    .ext-spacer {
+   187→      flex: 1;
+   188→      min-height: 20px;
+   189→    }
+   190→
+   191→    /* ===== Horizontal Arrow Zones ===== */
+   192→    .h-arrow-zone {
+   193→      display: flex;
+   194→      align-items: center;
+   195→      justify-content: center;
+   196→      position: relative;
+   197→      padding: 8px 0;
+   198→    }
+   199→
+   200→    .h-arrow-zone .h-line {
+   201→      position: absolute;
+   202→      top: 50%;
+   203→      left: 6px;
+   204→      right: 6px;
+   205→      height: 2px;
+   206→      background: var(--accent);
+   207→      transform: translateY(-50%);
+   208→    }
+   209→
+   210→    .h-arrow-zone .h-head-right {
+   211→      position: absolute;
+   212→      right: 2px;
+   213→      top: 50%;
+   214→      transform: translateY(-50%);
+   215→      width: 0;
+   216→      height: 0;
+   217→      border-top: 6px solid transparent;
+   218→      border-bottom: 6px solid transparent;
+   219→      border-left: 9px solid var(--accent);
+   220→    }
+   221→
+   222→    .h-arrow-zone .h-head-left {
+   223→      position: absolute;
+   224→      left: 2px;
+   225→      top: 50%;
+   226→      transform: translateY(-50%);
+   227→      width: 0;
+   228→      height: 0;
+   229→      border-top: 6px solid transparent;
+   230→      border-bottom: 6px solid transparent;
+   231→      border-right: 9px solid var(--accent);
+   232→    }
+   233→
+   234→    .h-arrow-zone .h-label {
+   235→      position: relative;
+   236→      z-index: 1;
+   237→      background: var(--bg-white);
+   238→      padding: 3px 5px;
+   239→      font-size: 8.5px;
+   240→      font-weight: 700;
+   241→      color: var(--accent);
+   242→      writing-mode: vertical-rl;
+   243→      text-orientation: mixed;
+   244→      transform: rotate(180deg);
+   245→      white-space: nowrap;
+   246→      letter-spacing: 0.3px;
+   247→      text-transform: uppercase;
+   248→    }
+   249→
+   250→    /* Horizontal arrow in row 1 (left side - Roles → Client) */
+   251→    .h-arrow-roles {
+   252→      grid-column: 2;
+   253→      grid-row: 1;
+   254→    }
+   255→
+   256→    /* Horizontal arrows in row 3 (right side - API ↔ External) */
+   257→    .h-arrow-ext-api {
+   258→      grid-column: 4;
+   259→      grid-row: 3;
+   260→    }
+   261→
+   262→    /* Horizontal arrow in row 7 (right side - DB ↔ Supabase) */
+   263→    .h-arrow-ext-db {
+   264→      grid-column: 4;
+   265→      grid-row: 7;
+   266→    }
+   267→
+   268→    /* ===== Layers ===== */
+   269→    .layer {
+   270→      border: 1.5px solid var(--border-medium);
+   271→      border-radius: 8px;
+   272→      overflow: hidden;
+   273→      position: relative;
+   274→    }
+   275→
+   276→    .layer::before {
+   277→      content: '';
+   278→      position: absolute;
+   279→      left: 0;
+   280→      top: 0;
+   281→      bottom: 0;
+   282→      width: 4px;
+   283→      background: var(--accent);
+   284→      border-radius: 8px 0 0 8px;
+   285→    }
+   286→
+   287→    .layer-header {
+   288→      padding: 8px 14px 8px 18px;
+   289→      font-size: 12.5px;
+   290→      font-weight: 700;
+   291→      color: var(--text-dark);
+   292→      letter-spacing: -0.1px;
+   293→      border-bottom: 1px solid var(--border-light);
+   294→      display: flex;
+   295→      align-items: center;
+   296→      gap: 8px;
+   297→    }
+   298→
+   299→    .layer-number {
+   300→      display: inline-flex;
+   301→      align-items: center;
+   302→      justify-content: center;
+   303→      width: 22px;
+   304→      height: 22px;
+   305→      background: var(--accent);
+   306→      color: #fff;
+   307→      font-size: 11px;
+   308→      font-weight: 800;
+   309→      border-radius: 50%;
+   310→      flex-shrink: 0;
+   311→    }
+   312→
+   313→    .layer-body {
+   314→      padding: 12px 14px;
+   315→    }
+   316→
+   317→    /* ===== Client Layer ===== */
+   318→    .client-layer {
+   319→      grid-column: 3;
+   320→      grid-row: 1;
+   321→      background: var(--bg-layer-1);
+   322→    }
+   323→
+   324→    /* ===== API Layer ===== */
+   325→    .api-layer {
+   326→      grid-column: 3;
+   327→      grid-row: 3;
+   328→      background: var(--bg-layer-2);
+   329→    }
+   330→
+   331→    /* ===== Data Access Layer ===== */
+   332→    .data-layer {
+   333→      grid-column: 3;
+   334→      grid-row: 5;
+   335→      background: var(--bg-layer-3);
+   336→    }
+   337→
+   338→    /* ===== Database Layer ===== */
+   339→    .db-layer {
+   340→      grid-column: 3;
+   341→      grid-row: 7;
+   342→      background: var(--bg-layer-4);
+   343→    }
+   344→
+   345→    /* ===== Component Grids ===== */
+   346→    .comp-grid {
+   347→      display: grid;
+   348→      gap: 7px;
+   349→    }
+   350→
+   351→    .comp-grid.cols-3 {
+   352→      grid-template-columns: repeat(3, 1fr);
+   353→    }
+   354→
+   355→    .comp-box {
+   356→      background: var(--bg-white);
+   357→      border: 1px solid var(--border-light);
+   358→      border-radius: 6px;
+   359→      padding: 8px 10px;
+   360→      text-align: center;
+   361→    }
+   362→
+   363→    .comp-box .comp-name {
+   364→      font-size: 11.5px;
+   365→      font-weight: 700;
+   366→      color: var(--text-dark);
+   367→      line-height: 1.3;
+   368→    }
+   369→
+   370→    .comp-box .comp-detail {
+   371→      font-size: 9px;
+   372→      color: var(--text-light);
+   373→      margin-top: 2px;
+   374→      line-height: 1.2;
+   375→    }
+   376→
+   377→    /* ===== API Layer Internal Elements ===== */
+   378→    .api-section-label {
+   379→      font-size: 9px;
+   380→      font-weight: 700;
+   381→      color: var(--text-light);
+   382→      text-transform: uppercase;
+   383→      letter-spacing: 0.5px;
+   384→      margin: 8px 0 4px;
+   385→    }
+   386→
+   387→    .api-section-label:first-child {
+   388→      margin-top: 0;
+   389→    }
+   390→
+   391→    .gateway-bar {
+   392→      background: var(--bg-white);
+   393→      border: 1.5px solid var(--border-medium);
+   394→      border-radius: 6px;
+   395→      padding: 7px 12px;
+   396→      text-align: center;
+   397→      font-size: 11.5px;
+   398→      font-weight: 700;
+   399→      color: var(--text-dark);
+   400→    }
+   401→
+   402→    .gateway-bar .gw-detail {
+   403→      font-size: 9px;
+   404→      color: var(--text-light);
+   405→      font-weight: 400;
+   406→      margin-top: 1px;
+   407→    }
+   408→
+   409→    .endpoint-grid {
+   410→      display: grid;
+   411→      grid-template-columns: repeat(3, 1fr);
+   412→      gap: 5px;
+   413→    }
+   414→
+   415→    .endpoint-box {
+   416→      background: var(--bg-white);
+   417→      border: 1px solid var(--border-light);
+   418→      border-radius: 5px;
+   419→      padding: 5px 8px;
+   420→    }
+   421→
+   422→    .endpoint-box .ep-path {
+   423→      font-family: var(--font-mono);
+   424→      font-size: 10px;
+   425→      font-weight: 700;
+   426→      color: var(--accent-dark);
+   427→      line-height: 1.3;
+   428→    }
+   429→
+   430→    .endpoint-box .ep-desc {
+   431→      font-size: 8.5px;
+   432→      color: var(--text-light);
+   433→      line-height: 1.2;
+   434→      margin-top: 1px;
+   435→    }
+   436→
+   437→    .socket-bar {
+   438→      background: var(--bg-white);
+   439→      border: 1.5px solid var(--accent);
+   440→      border-radius: 6px;
+   441→      padding: 7px 12px;
+   442→      text-align: center;
+   443→      font-size: 11.5px;
+   444→      font-weight: 700;
+   445→      color: var(--accent-dark);
+   446→      border-style: dashed;
+   447→    }
+   448→
+   449→    .socket-bar .socket-detail {
+   450→      font-size: 9px;
+   451→      color: var(--text-light);
+   452→      font-weight: 400;
+   453→      margin-top: 1px;
+   454→    }
+   455→
+   456→    /* ===== Data Access Layer Components ===== */
+   457→    .da-grid {
+   458→      display: grid;
+   459→      grid-template-columns: repeat(3, 1fr);
+   460→      gap: 8px;
+   461→    }
+   462→
+   463→    .da-box {
+   464→      background: var(--bg-white);
+   465→      border: 1px solid var(--border-light);
+   466→      border-radius: 6px;
+   467→      padding: 10px 10px;
+   468→      text-align: center;
+   469→    }
+   470→
+   471→    .da-box .da-name {
+   472→      font-size: 12px;
+   473→      font-weight: 700;
+   474→      color: var(--text-dark);
+   475→      margin-bottom: 3px;
+   476→    }
+   477→
+   478→    .da-box .da-desc {
+   479→      font-size: 9px;
+   480→      color: var(--text-light);
+   481→      line-height: 1.3;
+   482→    }
+   483→
+   484→    /* ===== Database Layer ===== */
+   485→    .db-main-box {
+   486→      background: var(--bg-white);
+   487→      border: 1.5px solid var(--border-medium);
+   488→      border-radius: 6px;
+   489→      padding: 12px 14px;
+   490→    }
+   491→
+   492→    .db-title-row {
+   493→      display: flex;
+   494→      align-items: center;
+   495→      gap: 8px;
+   496→      margin-bottom: 10px;
+   497→    }
+   498→
+   499→    .db-icon {
+   500→      font-size: 20px;
+   501→      line-height: 1;
+   502→    }
+   503→
+   504→    .db-name {
+   505→      font-size: 13px;
+   506→      font-weight: 700;
+   507→      color: var(--text-dark);
+   508→    }
+   509→
+   510→    .db-host {
+   511→      font-size: 9.5px;
+   512→      color: var(--text-light);
+   513→      font-weight: 400;
+   514→    }
+   515→
+   516→    .db-tables-grid {
+   517→      display: grid;
+   518→      grid-template-columns: repeat(5, 1fr);
+   519→      gap: 5px;
+   520→    }
+   521→
+   522→    .db-table-chip {
+   523→      background: var(--bg-layer-3);
+   524→      border: 1px solid var(--border-light);
+   525→      border-radius: 4px;
+   526→      padding: 4px 6px;
+   527→      text-align: center;
+   528→      font-size: 9.5px;
+   529→      font-weight: 600;
+   530→      color: var(--text-body);
+   531→    }
+   532→
+   533→    /* ===== Vertical Arrow Zones ===== */
+   534→    .v-arrow-zone {
+   535→      grid-column: 3;
+   536→      display: flex;
+   537→      flex-direction: column;
+   538→      align-items: center;
+   539→      justify-content: center;
+   540→      position: relative;
+   541→      padding: 0 80px;
+   542→    }
+   543→
+   544→    .v-arrow-zone .v-line {
+   545→      position: absolute;
+   546→      left: 50%;
+   547→      top: 10px;
+   548→      bottom: 10px;
+   549→      width: 2px;
+   550→      background: var(--accent);
+   551→      transform: translateX(-50%);
+   552→    }
+   553→
+   554→    .v-arrow-zone .v-head-up {
+   555→      position: absolute;
+   556→      top: 0;
+   557→      left: 50%;
+   558→      transform: translateX(-50%);
+   559→      width: 0;
+   560→      height: 0;
+   561→      border-left: 7px solid transparent;
+   562→      border-right: 7px solid transparent;
+   563→      border-bottom: 9px solid var(--accent);
+   564→    }
+   565→
+   566→    .v-arrow-zone .v-head-down {
+   567→      position: absolute;
+   568→      bottom: 0;
+   569→      left: 50%;
+   570→      transform: translateX(-50%);
+   571→      width: 0;
+   572→      height: 0;
+   573→      border-left: 7px solid transparent;
+   574→      border-right: 7px solid transparent;
+   575→      border-top: 9px solid var(--accent);
+   576→    }
+   577→
+   578→    .v-arrow-zone .v-label {
+   579→      position: relative;
+   580→      z-index: 1;
+   581→      background: var(--bg-white);
+   582→      padding: 3px 16px;
+   583→      font-size: 10.5px;
+   584→      font-weight: 700;
+   585→      color: var(--accent);
+   586→      border: 1.5px solid var(--accent);
+   587→      border-radius: 4px;
+   588→      white-space: nowrap;
+   589→      letter-spacing: 0.2px;
+   590→    }
+   591→
+   592→    /* ===== Legend ===== */
+   593→    .legend {
+   594→      margin-top: 24px;
+   595→      padding-top: 16px;
+   596→      border-top: 1px solid var(--border-light);
+   597→    }
+   598→
+   599→    .legend-title {
+   600→      font-size: 11px;
+   601→      font-weight: 700;
+   602→      color: var(--text-dark);
+   603→      text-transform: uppercase;
+   604→      letter-spacing: 0.8px;
+   605→      margin-bottom: 12px;
+   606→    }
+   607→
+   608→    .legend-grid {
+   609→      display: flex;
+   610→      flex-wrap: wrap;
+   611→      gap: 20px 32px;
+   612→      align-items: center;
+   613→    }
+   614→
+   615→    .legend-item {
+   616→      display: flex;
+   617→      align-items: center;
+   618→      gap: 8px;
+   619→    }
+   620→
+   621→    .legend-swatch {
+   622→      width: 28px;
+   623→      height: 16px;
+   624→      border-radius: 3px;
+   625→      border: 1px solid var(--border-medium);
+   626→      flex-shrink: 0;
+   627→    }
+   628→
+   629→    .legend-swatch.layer-1 { background: var(--bg-layer-1); }
+   630→    .legend-swatch.layer-2 { background: var(--bg-layer-2); }
+   631→    .legend-swatch.layer-3 { background: var(--bg-layer-3); }
+   632→    .legend-swatch.layer-4 { background: var(--bg-layer-4); }
+   633→
+   634→    .legend-label {
+   635→      font-size: 10px;
+   636→      color: var(--text-body);
+   637→      line-height: 1.3;
+   638→    }
+   639→
+   640→    .legend-label strong {
+   641→      color: var(--text-dark);
+   642→      font-weight: 600;
+   643→    }
+   644→
+   645→    .legend-arrow-icon {
+   646→      display: flex;
+   647→      align-items: center;
+   648→      justify-content: center;
+   649→      width: 28px;
+   650→      height: 16px;
+   651→      position: relative;
+   652→      flex-shrink: 0;
+   653→    }
+   654→
+   655→    .legend-arrow-icon .la-line {
+   656→      position: absolute;
+   657→      width: 20px;
+   658→      height: 2px;
+   659→      background: var(--accent);
+   660→      top: 50%;
+   661→      left: 4px;
+   662→      transform: translateY(-50%);
+   663→    }
+   664→
+   665→    .legend-arrow-icon .la-head {
+   666→      position: absolute;
+   667→      right: 1px;
+   668→      top: 50%;
+   669→      transform: translateY(-50%);
+   670→      width: 0;
+   671→      height: 0;
+   672→      border-top: 4px solid transparent;
+   673→      border-bottom: 4px solid transparent;
+   674→      border-left: 6px solid var(--accent);
+   675→    }
+   676→
+   677→    .legend-arrow-icon .la-head-left {
+   678→      position: absolute;
+   679→      left: 1px;
+   680→      top: 50%;
+   681→      transform: translateY(-50%);
+   682→      width: 0;
+   683→      height: 0;
+   684→      border-top: 4px solid transparent;
+   685→      border-bottom: 4px solid transparent;
+   686→      border-right: 6px solid var(--accent);
+   687→    }
+   688→
+   689→    .legend-v-arrow-icon {
+   690→      display: flex;
+   691→      align-items: center;
+   692→      justify-content: center;
+   693→      width: 28px;
+   694→      height: 20px;
+   695→      position: relative;
+   696→      flex-shrink: 0;
+   697→    }
+   698→
+   699→    .legend-v-arrow-icon .lv-line {
+   700→      position: absolute;
+   701→      width: 2px;
+   702→      height: 14px;
+   703→      background: var(--accent);
+   704→      left: 50%;
+   705→      top: 3px;
+   706→      transform: translateX(-50%);
+   707→    }
+   708→
+   709→    .legend-v-arrow-icon .lv-up {
+   710→      position: absolute;
+   711→      top: 0;
+   712→      left: 50%;
+   713→      transform: translateX(-50%);
+   714→      width: 0;
+   715→      height: 0;
+   716→      border-left: 4px solid transparent;
+   717→      border-right: 4px solid transparent;
+   718→      border-bottom: 5px solid var(--accent);
+   719→    }
+   720→
+   721→    .legend-v-arrow-icon .lv-down {
+   722→      position: absolute;
+   723→      bottom: 0;
+   724→      left: 50%;
+   725→      transform: translateX(-50%);
+   726→      width: 0;
+   727→      height: 0;
+   728→      border-left: 4px solid transparent;
+   729→      border-right: 4px solid transparent;
+   730→      border-top: 5px solid var(--accent);
+   731→    }
+   732→
+   733→    /* ===== Footer Note ===== */
+   734→    .footer-note {
+   735→      margin-top: 14px;
+   736→      text-align: center;
+   737→      font-size: 9px;
+   738→      color: var(--text-light);
+   739→      letter-spacing: 0.2px;
+   740→    }
+   741→
+   742→    /* ===== Print Styles ===== */
+   743→    @media print {
+   744→      @page {
+   745→        size: A4 portrait;
+   746→        margin: 6mm;
+   747→      }
+   748→
+   749→      body {
+   750→        background: white;
+   751→        padding: 0;
+   752→        -webkit-print-color-adjust: exact;
+   753→        print-color-adjust: exact;
+   754→      }
+   755→
+   756→      .page {
+   757→        width: 1200px;
+   758→        box-shadow: none;
+   759→        border: 1px solid #CBD5E1;
+   760→        border-radius: 0;
+   761→        padding: 28px 32px 24px;
+   762→        transform: scale(0.48);
+   763→        transform-origin: top left;
+   764→      }
+   765→
+   766→      .layer,
+   767→      .comp-box,
+   768→      .endpoint-box,
+   769→      .da-box,
+   770→      .db-main-box,
+   771→      .role-card,
+   772→      .ext-card,
+   773→      .gateway-bar,
+   774→      .socket-bar,
+   775→      .side-panel,
+   776→      .db-table-chip {
+   777→        -webkit-print-color-adjust: exact;
+   778→        print-color-adjust: exact;
+   779→      }
+   780→
+   781→      .title-block {
+   782→        page-break-after: avoid;
+   783→      }
+   784→
+   785→      .layer {
+   786→        page-break-inside: avoid;
+   787→      }
+   788→    }
+   789→
+   790→    /* ===== Utility ===== */
+   791→    .text-muted { color: var(--text-light); }
+   792→    .text-accent { color: var(--accent); }
+   793→    .fw-600 { font-weight: 600; }
+   794→    .fw-700 { font-weight: 700; }
+   795→  </style>
+   796→</head>
+   797→<body>
+   798→  <div class="page">
+   799→    <!-- ===== Title Block ===== -->
+   800→    <div class="title-block">
+   801→      <h1>HomeEase — System Architecture Diagram</h1>
+   802→      <p class="subtitle">A Nigerian Domestic Service Marketplace Platform</p>
+   803→    </div>
+   804→
+   805→    <!-- ===== Main Diagram Grid ===== -->
+   806→    <div class="diagram-grid">
+   807→
+   808→      <!-- ============================================ -->
+   809→      <!-- COLUMN 1: User Roles Panel (rows 1–7)       -->
+   810→      <!-- ============================================ -->
+   811→      <div class="side-panel roles-panel">
+   812→        <div class="panel-header">User Roles</div>
+   813→        <div class="panel-body">
+   814→          <div class="role-card">
+   815→            <div class="role-icon">&#128100;</div>
+   816→            <div class="role-name">Service Seeker</div>
+   817→            <div class="role-desc">Browses artisans, books services, makes payments</div>
+   818→          </div>
+   819→          <div class="role-card">
+   820→            <div class="role-icon">&#128296;</div>
+   821→            <div class="role-name">Service Provider</div>
+   822→            <div class="role-desc">Receives jobs, checks in/out, gets paid</div>
+   823→          </div>
+   824→          <div class="role-card">
+   825→            <div class="role-icon">&#9881;</div>
+   826→            <div class="role-name">Administrator</div>
+   827→            <div class="role-desc">Verifies providers, processes payouts, manages platform</div>
+   828→          </div>
+   829→          <div class="role-spacer"></div>
+   830→        </div>
+   831→      </div>
+   832→
+   833→      <!-- ============================================ -->
+   834→      <!-- COLUMN 2: Horizontal Arrow — Roles → Client  -->
+   835→      <!-- ============================================ -->
+   836→      <div class="h-arrow-zone h-arrow-roles">
+   837→        <div class="h-line"></div>
+   838→        <div class="h-head-right"></div>
+   839→        <span class="h-label">User Interaction</span>
+   840→      </div>
+   841→
+   842→      <!-- ============================================ -->
+   843→      <!-- COLUMN 3: LAYER 1 — Client / Presentation   -->
+   844→      <!-- ============================================ -->
+   845→      <div class="layer client-layer">
+   846→        <div class="layer-header">
+   847→          <span class="layer-number">1</span>
+   848→          Client / Presentation Layer
+   849→        </div>
+   850→        <div class="layer-body">
+   851→          <div class="comp-grid cols-3">
+   852→            <div class="comp-box">
+   853→              <div class="comp-name">Web Browser</div>
+   854→              <div class="comp-detail">End-user interface</div>
+   855→            </div>
+   856→            <div class="comp-box">
+   857→              <div class="comp-name">React 19</div>
+   858→              <div class="comp-detail">UI component framework</div>
+   859→            </div>
+   860→            <div class="comp-box">
+   861→              <div class="comp-name">Next.js 16</div>
+   862→              <div class="comp-detail">App Router &middot; SSR / SSG</div>
+   863→            </div>
+   864→            <div class="comp-box">
+   865→              <div class="comp-name">TypeScript</div>
+   866→              <div class="comp-detail">Type safety</div>
+   867→            </div>
+   868→            <div class="comp-box">
+   869→              <div class="comp-name">Tailwind CSS 4</div>
+   870→              <div class="comp-detail">Utility-first styling</div>
+   871→            </div>
+   872→            <div class="comp-box">
+   873→              <div class="comp-name">shadcn/ui</div>
+   874→              <div class="comp-detail">Component library</div>
+   875→            </div>
+   876→            <div class="comp-box">
+   877→              <div class="comp-name">Zustand</div>
+   878→              <div class="comp-detail">Client state management</div>
+   879→            </div>
+   880→            <div class="comp-box">
+   881→              <div class="comp-name">TanStack Query</div>
+   882→              <div class="comp-detail">Server state &amp; caching</div>
+   883→            </div>
+   884→            <div class="comp-box">
+   885→              <div class="comp-name">Socket.IO Client</div>
+   886→              <div class="comp-detail">Real-time messaging</div>
+   887→            </div>
+   888→          </div>
+   889→        </div>
+   890→      </div>
+   891→
+   892→      <!-- ============================================ -->
+   893→      <!-- COLUMN 3: Vertical Arrow 1 (row 2)          -->
+   894→      <!-- ============================================ -->
+   895→      <div class="v-arrow-zone" style="grid-row: 2;">
+   896→        <div class="v-line"></div>
+   897→        <div class="v-head-up"></div>
+   898→        <div class="v-head-down"></div>
+   899→        <span class="v-label">HTTP / REST &middot; WebSocket</span>
+   900→      </div>
+   901→
+   902→      <!-- ============================================ -->
+   903→      <!-- COLUMN 3: LAYER 2 — API / Server Layer       -->
+   904→      <!-- ============================================ -->
+   905→      <div class="layer api-layer">
+   906→        <div class="layer-header">
+   907→          <span class="layer-number">2</span>
+   908→          API / Server Layer (Next.js API Routes)
+   909→        </div>
+   910→        <div class="layer-body">
+   911→          <!-- Caddy Gateway -->
+   912→          <div class="api-section-label">Reverse Proxy / Gateway</div>
+   913→          <div class="gateway-bar">
+   914→            Caddy Gateway
+   915→            <div class="gw-detail">HTTPS termination &middot; Reverse proxy &middot; Request routing</div>
+   916→          </div>
+   917→
+   918→          <!-- REST API Endpoints -->
+   919→          <div class="api-section-label" style="margin-top: 10px;">REST API Endpoints</div>
+   920→          <div class="endpoint-grid">
+   921→            <div class="endpoint-box">
+   922→              <div class="ep-path">/api/auth/*</div>
+   923→              <div class="ep-desc">Registration, Login, JWT Auth (NextAuth.js v4)</div>
+   924→            </div>
+   925→            <div class="endpoint-box">
+   926→              <div class="ep-path">/api/services/*</div>
+   927→              <div class="ep-desc">Service requests CRUD, search, matching</div>
+   928→            </div>
+   929→            <div class="endpoint-box">
+   930→              <div class="ep-path">/api/payments/*</div>
+   931→              <div class="ep-desc">Paystack integration, payouts, wallet</div>
+   932→            </div>
+   933→            <div class="endpoint-box">
+   934→              <div class="ep-path">/api/messages/*</div>
+   935→              <div class="ep-desc">Real-time chat via Socket.IO</div>
+   936→            </div>
+   937→            <div class="endpoint-box">
+   938→              <div class="ep-path">/api/notifications/*</div>
+   939→              <div class="ep-desc">Push notifications</div>
+   940→            </div>
+   941→            <div class="endpoint-box">
+   942→              <div class="ep-path">/api/feedback/*</div>
+   943→              <div class="ep-desc">Ratings &amp; reviews</div>
+   944→            </div>
+   945→            <div class="endpoint-box">
+   946→              <div class="ep-path">/api/admin/*</div>
+   947→              <div class="ep-desc">Admin dashboard, provider verification</div>
+   948→            </div>
+   949→            <div class="endpoint-box">
+   950→              <div class="ep-path">/api/support/*</div>
+   951→              <div class="ep-desc">Support chat</div>
+   952→            </div>
+   953→            <div class="endpoint-box">
+   954→              <div class="ep-path">/api/wallet/*</div>
+   955→              <div class="ep-desc">Provider wallet, withdrawals</div>
+   956→            </div>
+   957→            <div class="endpoint-box">
+   958→              <div class="ep-path">/api/providers/*</div>
+   959→              <div class="ep-desc">Provider search &amp; listing</div>
+   960→            </div>
+   961→            <div class="endpoint-box">
+   962→              <div class="ep-path">/api/artisans/search</div>
+   963→              <div class="ep-desc">Artisan / service search</div>
+   964→            </div>
+   965→            <div class="endpoint-box">
+   966→              <div class="ep-path">/api/profile/*</div>
+   967→              <div class="ep-desc">User profile management</div>
+   968→            </div>
+   969→          </div>
+   970→          <!-- Stats endpoint (13th, centered) -->
+   971→          <div style="display: flex; justify-content: center; margin-top: 5px;">
+   972→            <div class="endpoint-box" style="width: calc(33.333% - 4px);">
+   973→              <div class="ep-path">/api/stats/*</div>
+   974→              <div class="ep-desc">Dashboard statistics</div>
+   975→            </div>
+   976→          </div>
+   977→
+   978→          <!-- Socket.IO Server -->
+   979→          <div class="api-section-label" style="margin-top: 10px;">Real-time Service</div>
+   980→          <div class="socket-bar">
+   981→            Socket.IO Server
+   982→            <div class="socket-detail">Separate port &middot; Real-time chat &amp; notifications</div>
+   983→          </div>
+   984→        </div>
+   985→      </div>
+   986→
+   987→      <!-- ============================================ -->
+   988→      <!-- COLUMN 4: Horizontal Arrow — API ↔ External  -->
+   989→      <!-- ============================================ -->
+   990→      <div class="h-arrow-zone h-arrow-ext-api">
+   991→        <div class="h-line"></div>
+   992→        <div class="h-head-left"></div>
+   993→        <div class="h-head-right"></div>
+   994→        <span class="h-label">API Calls</span>
+   995→      </div>
+   996→
+   997→      <!-- ============================================ -->
+   998→      <!-- COLUMN 3: Vertical Arrow 2 (row 4)          -->
+   999→      <!-- ============================================ -->
+  1000→      <div class="v-arrow-zone" style="grid-row: 4;">
+  1001→        <div class="v-line"></div>
+  1002→        <div class="v-head-up"></div>
+  1003→        <div class="v-head-down"></div>
+  1004→        <span class="v-label">Prisma Client Calls</span>
+  1005→      </div>
+  1006→
+  1007→      <!-- ============================================ -->
+  1008→      <!-- COLUMN 3: LAYER 3 — Data Access Layer       -->
+  1009→      <!-- ============================================ -->
+  1010→      <div class="layer data-layer">
+  1011→        <div class="layer-header">
+  1012→          <span class="layer-number">3</span>
+  1013→          Data Access Layer
+  1014→        </div>
+  1015→        <div class="layer-body">
+  1016→          <div class="da-grid">
+  1017→            <div class="da-box">
+  1018→              <div class="da-name">Prisma ORM</div>
+  1019→              <div class="da-desc">Type-safe database client with schema-driven queries</div>
+  1020→            </div>
+  1021→            <div class="da-box">
+  1022→              <div class="da-name">In-Memory Cache</div>
+  1023→              <div class="da-desc">30-second TTL for search results &amp; frequently accessed data</div>
+  1024→            </div>
+  1025→            <div class="da-box">
+  1026→              <div class="da-name">JWT Verification</div>
+  1027→              <div class="da-desc">Token validation without database hit</div>
+  1028→            </div>
+  1029→          </div>
+  1030→        </div>
+  1031→      </div>
+  1032→
+  1033→      <!-- ============================================ -->
+  1034→      <!-- COLUMN 3: Vertical Arrow 3 (row 6)          -->
+  1035→      <!-- ============================================ -->
+  1036→      <div class="v-arrow-zone" style="grid-row: 6;">
+  1037→        <div class="v-line"></div>
+  1038→        <div class="v-head-up"></div>
+  1039→        <div class="v-head-down"></div>
+  1040→        <span class="v-label">SQL Queries</span>
+  1041→      </div>
+  1042→
+  1043→      <!-- ============================================ -->
+  1044→      <!-- COLUMN 3: LAYER 4 — Database Layer           -->
+  1045→      <!-- ============================================ -->
+  1046→      <div class="layer db-layer">
+  1047→        <div class="layer-header">
+  1048→          <span class="layer-number">4</span>
+  1049→          Database Layer
+  1050→        </div>
+  1051→        <div class="layer-body">
+  1052→          <div class="db-main-box">
+  1053→            <div class="db-title-row">
+  1054→              <span class="db-icon">&#128451;</span>
+  1055→              <div>
+  1056→                <div class="db-name">PostgreSQL</div>
+  1057→                <div class="db-host">Hosted on Supabase &middot; 11 Tables</div>
+  1058→              </div>
+  1059→            </div>
+  1060→            <div class="db-tables-grid">
+  1061→              <div class="db-table-chip">User</div>
+  1062→              <div class="db-table-chip">Provider</div>
+  1063→              <div class="db-table-chip">ServiceRequest</div>
+  1064→              <div class="db-table-chip">Message</div>
+  1065→              <div class="db-table-chip">Feedback</div>
+  1066→              <div class="db-table-chip">Notification</div>
+  1067→              <div class="db-table-chip">Transaction</div>
+  1068→              <div class="db-table-chip">Wallet</div>
+  1069→              <div class="db-table-chip">WalletTransaction</div>
+  1070→              <div class="db-table-chip">SupportMessage</div>
+  1071→              <div class="db-table-chip">AdminLog</div>
+  1072→            </div>
+  1073→          </div>
+  1074→        </div>
+  1075→      </div>
+  1076→
+  1077→      <!-- ============================================ -->
+  1078→      <!-- COLUMN 4: Horizontal Arrow — DB ↔ Supabase  -->
+  1079→      <!-- ============================================ -->
+  1080→      <div class="h-arrow-zone h-arrow-ext-db">
+  1081→        <div class="h-line"></div>
+  1082→        <div class="h-head-left"></div>
+  1083→        <div class="h-head-right"></div>
+  1084→        <span class="h-label">Managed DB</span>
+  1085→      </div>
+  1086→
+  1087→      <!-- ============================================ -->
+  1088→      <!-- COLUMN 5: External Services Panel (rows 3–7)-->
+  1089→      <!-- ============================================ -->
+  1090→      <div class="side-panel ext-panel">
+  1091→        <div class="panel-header">External Services</div>
+  1092→        <div class="panel-body">
+  1093→          <div class="ext-card">
+  1094→            <div class="ext-icon">&#128179;</div>
+  1095→            <div class="ext-name">Paystack</div>
+  1096→            <div class="ext-desc">Card payments, bank transfers, payouts</div>
+  1097→          </div>
+  1098→          <div class="ext-card">
+  1099→            <div class="ext-icon">&#9729;</div>
+  1100→            <div class="ext-name">Vercel</div>
+  1101→            <div class="ext-desc">Deployment, hosting, serverless functions</div>
+  1102→          </div>
+  1103→          <div class="ext-spacer"></div>
+  1104→          <div class="ext-card">
+  1105→            <div class="ext-icon">&#128451;</div>
+  1106→            <div class="ext-name">Supabase</div>
+  1107→            <div class="ext-desc">Managed PostgreSQL hosting &amp; BaaS</div>
+  1108→          </div>
+  1109→        </div>
+  1110→      </div>
+  1111→
+  1112→    </div>
+  1113→    <!-- End Diagram Grid -->
+  1114→
+  1115→    <!-- ===== Legend ===== -->
+  1116→    <div class="legend">
+  1117→      <div class="legend-title">Legend</div>
+  1118→      <div class="legend-grid">
+  1119→        <!-- Layer Colors -->
+  1120→        <div class="legend-item">
+  1121→          <div class="legend-swatch layer-1"></div>
+  1122→          <span class="legend-label"><strong>Presentation</strong> Layer</span>
+  1123→        </div>
+  1124→        <div class="legend-item">
+  1125→          <div class="legend-swatch layer-2"></div>
+  1126→          <span class="legend-label"><strong>API / Server</strong> Layer</span>
+  1127→        </div>
+  1128→        <div class="legend-item">
+  1129→          <div class="legend-swatch layer-3"></div>
+  1130→          <span class="legend-label"><strong>Data Access</strong> Layer</span>
+  1131→        </div>
+  1132→        <div class="legend-item">
+  1133→          <div class="legend-swatch layer-4"></div>
+  1134→          <span class="legend-label"><strong>Database</strong> Layer</span>
+  1135→        </div>
+  1136→        <!-- Separator -->
+  1137→        <div style="width: 1px; height: 20px; background: var(--border-light);"></div>
+  1138→        <!-- Arrow Types -->
+  1139→        <div class="legend-item">
+  1140→          <div class="legend-v-arrow-icon">
+  1141→            <div class="lv-line"></div>
+  1142→            <div class="lv-up"></div>
+  1143→            <div class="lv-down"></div>
+  1144→          </div>
+  1145→          <span class="legend-label"><strong>Bidirectional</strong> data flow between layers</span>
+  1146→        </div>
+  1147→        <div class="legend-item">
+  1148→          <div class="legend-arrow-icon">
+  1149→            <div class="la-line"></div>
+  1150→            <div class="la-head"></div>
+  1151→            <div class="la-head-left"></div>
+  1152→          </div>
+  1153→          <span class="legend-label"><strong>External</strong> service communication</span>
+  1154→        </div>
+  1155→        <div class="legend-item">
+  1156→          <div class="legend-arrow-icon">
+  1157→            <div class="la-line" style="border-style: dashed;"></div>
+  1158→            <div class="la-head"></div>
+  1159→          </div>
+  1160→          <span class="legend-label">Real-time / async connection</span>
+  1161→        </div>
+  1162→      </div>
+  1163→    </div>
+  1164→
+  1165→    <!-- ===== Footer ===== -->
+  1166→    <div class="footer-note">
+  1167→      Stack: Next.js 16 &middot; React 19 &middot; TypeScript &middot; Tailwind CSS 4 &middot; Prisma ORM &middot; PostgreSQL (Supabase) &middot; Socket.IO &middot; Paystack &middot; NextAuth.js v4
+  1168→    </div>
+  1169→
+  1170→  </div>
+  1171→</body>
+  1172→</html>
