@@ -229,3 +229,26 @@ Stage Summary:
 - Output: `public/architecture-diagram.html` (32KB, 1158 lines)
 - 4-tier layered architecture with all components labeled
 - Print-ready for A4 paper
+
+---
+Task ID: 9
+Agent: Main Agent
+Task: Rewrite Chapter 4 as step-by-step walkthrough per supervisor feedback
+
+Work Log:
+- Analyzed supervisor's guideline file (from another project - UI-Ride) to understand the expected format
+- Format: step-by-step numbered instructions with screenshots for every process
+- Captured 8 screenshots from Vercel deployment (landing page, role selection, auth forms, etc.)
+- Used existing screenshots from previous session (dashboard, services, registration, admin)
+- Created comprehensive Python generation script at upload/generate_chapter4_walkthrough.py
+- Generated Chapter 4 document at upload/HomeEase_Chapter_4_Walkthrough.docx (1.1MB, 424 paragraphs)
+- Document structure: 4.1 Introduction, 4.2 Implementation Environment (HW+SW tables), 4.3 System Interface & User Manual (3 role manuals), 4.4 Sample System Run (22-step Ada+Emeka narrative), 4.5 Summary
+- 9 subsections for Service Seeker, 9 for Service Provider, 6 for Administrator
+- 3 tables (Hardware dev, Hardware server, Software requirements)
+- 9 figures with screenshots and captions
+- Times New Roman 12pt, 1.5 line spacing throughout
+
+Stage Summary:
+- Output: upload/HomeEase_Chapter_4_Walkthrough.docx (1.1MB, 424 paragraphs)
+- Matches supervisor's requested format: step-by-step walkthrough of every process
+- Covers all 3 user roles with detailed numbered instructions
