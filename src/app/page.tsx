@@ -151,7 +151,6 @@ function LandingView({
   onRegister: (data: any) => Promise<void>;
   loading: boolean;
 }) {
-  const [showDiagram, setShowDiagram] = useState(false);
   const services = [
     { name: 'Cleaning', desc: 'Professional home & office cleaning' },
     { name: 'Cooking', desc: 'Expert chefs for your meals & events' },
@@ -361,53 +360,6 @@ function LandingView({
           </div>
         </div>
       </section>
-
-      {/* Architecture Diagram Button & Modal */}
-      <button
-        onClick={() => setShowDiagram(true)}
-        className="fixed bottom-6 right-6 z-50 bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-2 transition-colors text-sm font-semibold"
-      >
-        <FileText className="w-4 h-4" />
-        Architecture Diagram
-      </button>
-
-      {showDiagram && (
-        <div className="fixed inset-0 z-[100] bg-black/70 flex items-center justify-center p-4" onClick={() => setShowDiagram(false)}>
-          <div className="bg-white rounded-xl max-w-5xl w-full max-h-[95vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b px-4 py-3 flex items-center justify-between rounded-t-xl z-10">
-              <h2 className="font-bold text-lg text-gray-800">HomeEase — System Architecture Diagram</h2>
-              <div className="flex items-center gap-3">
-                <a
-                  href="/architecture-diagram.png"
-                  download
-                  className="flex items-center gap-1.5 text-sm font-medium text-teal-700 hover:text-teal-800"
-                >
-                  <Download className="w-4 h-4" />
-                  Download PNG
-                </a>
-                <a
-                  href="/architecture-diagram.html"
-                  download
-                  className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
-                >
-                  <Download className="w-4 h-4" />
-                  Download HTML
-                </a>
-                <button onClick={() => setShowDiagram(false)} className="p-1 hover:bg-gray-100 rounded-lg">
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
-              </div>
-            </div>
-            <div className="p-4">
-              <img
-                src="/architecture-diagram.png"
-                alt="HomeEase System Architecture Diagram"
-                className="w-full h-auto rounded-lg"
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12 mt-auto">
